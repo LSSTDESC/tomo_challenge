@@ -11,7 +11,7 @@ import h5py
 import numpy as np
 from sklearn.ensemble import RandomForestClassifier
 
-from tomo_challenge import compute_score
+from .score import compute_score
 
 def load_magnitudes_and_colors(filename, bands):
     """Load magnitudes and compute colors
