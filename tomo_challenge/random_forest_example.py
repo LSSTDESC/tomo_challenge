@@ -11,7 +11,7 @@ import h5py
 import numpy as np
 from sklearn.ensemble import RandomForestClassifier
 
-from .score import compute_score
+from . import metrics
 
 def load_magnitudes_and_colors(filename, bands):
     """Load magnitudes and compute colors
@@ -111,7 +111,7 @@ def build_random_forest(filename, bands, n_bin, **kwargs):
     duration = time.perf_counter() - t0
     print(f"... complete: fitting took {duration:.1f} seconds")
 
-    return classifier
+    return classifier, z_edges
 
 
 def apply_random_forest(classifier, filename, bands):
@@ -124,7 +124,8 @@ def main(bands, n_bin):
     # Assume data in standard locations relative to current directory
     training_file = f'{bands}/training.hdf5'
     validation_file = f'{bands}/validation.hdf5'
-    classifier = build_random_forest(training_file, bands, n_bin,
+    output_file = f'{bands}_{n_bin}.png'
+    classifier, z_edges = build_random_forest(training_file, bands, n_bin,
                                      max_depth=10,
                                      max_features=None,
                                      n_estimators=20,
@@ -134,7 +135,10 @@ def main(bands, n_bin):
 
     # Get a score
     z = load_redshift(validation_file)
-    score = compute_score(z, tomo_bin)
+    score = metrics.compute_score(z, tomo_bin)
+
+    metrics.plot_distributions(z, tomo_bin, output_file, z_edges)
+
 
     # Return. Command line invovation also prints out
     return score
