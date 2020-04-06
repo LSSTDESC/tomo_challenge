@@ -12,8 +12,8 @@ def download_data():
     """
     if os.environ.get("NERSC_HOST"):
         # If we are on NERSC just make some links
-        os.symlink("riz", nersc_path + 'riz')
-        os.symlink("griz", nersc_path + 'griz')
+        os.symlink(nersc_path + 'riz', 'riz')
+        os.symlink(nersc_path + 'griz', 'griz')
     else:
         # Otherwise actually download both data sets
         for bands in ['riz', 'griz']:
