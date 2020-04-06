@@ -118,8 +118,8 @@ def apply_random_forest(classifier, filename, bands):
 
 def main(bands, n_bin):
     # Assume data in standard locations relative to current directory
-    testing_file = f'{band}/testing_data.hdf5'
-    validation_file = f'{band}/validation_data.hdf5'
+    testing_file = f'{bands}/testing_data.hdf5'
+    validation_file = f'{bands}/validation_data.hdf5'
     classifier = build_random_forest(training_file, bands, n_bin)
     tomo_bin = apply_random_forest(classifier, validation_file, bands)
 
