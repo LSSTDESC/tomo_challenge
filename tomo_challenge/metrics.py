@@ -1,5 +1,5 @@
 import matplotlib.pyplot as plt
-
+import numpy as np
 def compute_score(tomo_bin, z):
     """
     """
@@ -8,7 +8,7 @@ def compute_score(tomo_bin, z):
 
 def plot_distributions(z, tomo_bin, filename, nominal_edges=None):
     fig = plt.figure()
-    for i in range(tomo_bin.max()+1):
+    for i in range(int(tomo_bin.max())+1):
         w = np.where(tomo_bin == i)
         plt.hist(z[w], bins=50)
 
