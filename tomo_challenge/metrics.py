@@ -2,6 +2,10 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pyccl as ccl
 
+# if you just put all the objects into one bin you get something
+# like this.
+SNR_SCORE_BASELINE = 266.5
+
 def compute_snr_score(tomo_bin, z):
     """Compute a score metric based on the total spectrum S/N
 
@@ -25,9 +29,9 @@ def compute_snr_score(tomo_bin, z):
     # S/N for correlated data, I assume, from generalizing
     # sqrt(sum(mu**2/sigma**2))
     P = np.linalg.inv(C)
-    score = (mu.T @ P @ mu)**0.5
+    score = (mu.T @ P @ mu)**0.5 - SNR_SCORE_BASELINE
 
-    return score
+    return score -
 
 def compute_mean_covariance(tomo_bin, z):
     """Compute a mean and covariance for the chosen distribution of objects.

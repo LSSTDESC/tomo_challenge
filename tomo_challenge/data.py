@@ -1,6 +1,6 @@
 import os
 from urllib.request import urlretrieve
-
+import warnings
 import h5py
 import numpy as np
 
@@ -87,7 +87,7 @@ def load_magnitudes_and_colors(filename, bands):
         data[i] = f['mcal_mag_{}'.format(b)][:]
 
     f.close()
-    print(f"Loaded magnitudes. Setting infinite (undetected) bands to 30")
+    warnings.warn("Setting inf (undetected) bands to mag=30")
     data[:nband][~np.isfinite(data[:nband])] = 30.0
 
     # Starting column for the colors
@@ -95,7 +95,8 @@ def load_magnitudes_and_colors(filename, bands):
 
     # also get colors as data, from all the
     # (non-symmetric) pairs.  Note that we are getting some
-    # redundant colors here.
+    # redundant colors here, and some incorrect colors based
+    # on the choice to set undetected magnitudes to 30.
     for i in range(nband):
         for j in range(i+1, nband):
             data[n] = data[i] - data[j]
