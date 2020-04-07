@@ -1,7 +1,7 @@
 import os
 from urllib.request import urlretrieve
 
-nersc_path = '/project/projectdirs/lsst/www/txpipe/tomo_challenge_data/'
+nersc_path = '/global/projecta/projectdirs/lsst/groups/WL/users/zuntz/tomo_challenge_data/'
 url_root =  'https://portal.nersc.gov/project/lsst/txpipe/tomo_challenge_data/'
 
 
