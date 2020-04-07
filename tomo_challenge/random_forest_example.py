@@ -144,16 +144,19 @@ def main(bands, n_bin):
     return score
 
 
+
+
 if __name__ == '__main__':
     # Command line arguments
     try:
         bands = sys.argv[1]
-        n_bin = int(sys.argv[2])
+        n_bin_max = int(sys.argv[2])
         assert bands in ['riz', 'griz']
     except:
-        sys.stderr.write("Script takes two arguments, 'riz'/'griz' and nbin\n")
+        sys.stderr.write("Script takes two arguments, 'riz'/'griz' and n_bin_max\n")
         sys.exit(1)
 
     # Run main code
-    score = main(bands, n_bin)
-    print(f"Score = {score}")
+    for n_bin in range(1, n_bin_max+1):
+        score = main(bands, n_bin)
+        print(f"Score for {n_bin} bins = {score}")
