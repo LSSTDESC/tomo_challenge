@@ -7,70 +7,11 @@ Feel free to use any part of it in your own efforts.
 import time
 import sys
 
-import h5py
 import numpy as np
 from sklearn.ensemble import RandomForestClassifier
 
 from . import metrics
-
-def load_magnitudes_and_colors(filename, bands):
-    """Load magnitudes and compute colors
-    from a training or validation file
-    """
-
-    # Open the data file
-    f = h5py.File(filename)
-
-    # Get the number of features (mags + colors)
-    # and data points
-    ndata = f['ra'].size
-    nband = len(bands)
-    ncolor = (nband * (nband - 1)) // 2
-    nfeature = nband + ncolor
-
-    print(f"Loading {nband} columns and {ndata} rows from {filename}")
-
-    # np.empty is like np.zeros except it doesn't
-    # bother filling in the data with zeros, just
-    # allocates space.  We can use it because we
-    # are filling it in in a moment
-    data = np.empty((nfeature, ndata))
-
-    # Read the magnitudes into the array
-    for i, b in enumerate(bands):
-        data[i] = f['mcal_mag_{}'.format(b)][:]
-
-    f.close()
-    print(f"Loaded magnitudes. Setting infinite (undetected) bands to 30")
-    data[:nband][~np.isfinite(data[:nband])] = 30.0
-
-    # Starting column for the colors
-    n = nband
-
-    # also get colors as data, from all the
-    # (non-symmetric) pairs.  Note that we are getting some
-    # redundant colors here.
-    for i in range(nband):
-        for j in range(i+1, nband):
-            data[n] = data[i] - data[j]
-            n += 1
-
-    print(f"Computed colors")
-
-    
-    # Return the data. sklearn wants it the other way around
-    # because data scientists are weird and think of data as
-    # lots of rows instead of lots of columns.
-    return data.T
-
-def load_redshift(filename):
-    """Load a redshift column from a training or validation file"""
-    f = h5py.File(filename)
-    print(f"Loading redshift from {filename}")
-    z = f['redshift_true'][:]
-    f.close()
-    return z    
-
+from .data import load_magnitudes_and_colors, load_redshift
 
 def build_random_forest(filename, bands, n_bin, **kwargs):
     # Load the training data
