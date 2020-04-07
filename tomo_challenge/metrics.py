@@ -9,9 +9,9 @@ SNR_SCORE_BASELINE = 266.5
 def compute_snr_score(tomo_bin, z):
     """Compute a score metric based on the total spectrum S/N
 
-    This is given by mu^T . C^{-1} . mu
+    This is given by sqrt(mu^T . C^{-1} . mu) - baseline
     where mu is the theory prediction and C the Gaussian covariance
-    for this set of bins.
+    for this set of bins. The baseline is the score for no tomographic binning.
 
     Parameters
     ----------
@@ -31,7 +31,7 @@ def compute_snr_score(tomo_bin, z):
     P = np.linalg.inv(C)
     score = (mu.T @ P @ mu)**0.5 - SNR_SCORE_BASELINE
 
-    return score -
+    return score
 
 def compute_mean_covariance(tomo_bin, z):
     """Compute a mean and covariance for the chosen distribution of objects.
