@@ -6,7 +6,9 @@ import numpy as np
 
 nersc_path = '/global/projecta/projectdirs/lsst/groups/WL/users/zuntz/tomo_challenge_data/'
 url_root =  'https://portal.nersc.gov/project/lsst/txpipe/tomo_challenge_data/'
-
+# This is not supposed to be needed - I don't understand why in my shifter env the warning
+# is being repeated.
+warned = False
 
 def download_data():
     """Download challenge data (about 4GB) to current directory.
@@ -87,7 +89,10 @@ def load_magnitudes_and_colors(filename, bands):
         data[i] = f['mcal_mag_{}'.format(b)][:]
 
     f.close()
-    warnings.warn("Setting inf (undetected) bands to mag=30")
+    global warned
+    if not warned:
+        warnings.warn("Setting inf (undetected) bands to mag=30")
+        warned = True
     data[:nband][~np.isfinite(data[:nband])] = 30.0
 
     # Starting column for the colors

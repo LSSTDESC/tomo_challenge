@@ -44,19 +44,17 @@ def build_random_forest(filename, bands, n_bin, **kwargs):
     # Can be replaced with any classifier
     classifier = RandomForestClassifier(**kwargs)
 
-    print("Fitting data ...")
     t0 = time.perf_counter()
     # Lots of data, so this will take some time
     classifier.fit(training_data, training_bin)
     duration = time.perf_counter() - t0
-    print(f"... complete: fitting took {duration:.1f} seconds")
+    print(f"Fitting to {n_bin} bin(s) took {duration:.1f} seconds")
 
     return classifier, z_edges
 
 
 def apply_random_forest(classifier, filename, bands):
     data = load_magnitudes_and_colors(filename, bands)
-    print("Applying classifier")
     tomo_bin = classifier.predict(data)
     return tomo_bin
 
@@ -99,4 +97,4 @@ if __name__ == '__main__':
     # Run main code
     for n_bin in range(1, n_bin_max+1):
         score = main(bands, n_bin)
-        print(f"Score for {n_bin} bins = {score}")
+        print(f"Score for {n_bin} bin(s) = {score:.1f}")
