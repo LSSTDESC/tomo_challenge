@@ -95,9 +95,9 @@ def build_random_forest(filename, bands, n_bin, **kwargs):
         z_high = z_edges[i + 1]
         training_bin[(z > z_low) & (z <= z_high)] = i
 
-    print("Cutting down data for speed to 5% of original size")
+    print("Cutting down data for speed to 10% of original size")
     print("If you do this, do so at random - the data has an ordering to it")
-    cut = np.random.uniform(0, 1, z.size) < 0.05
+    cut = np.random.uniform(0, 1, z.size) < 0.1
     training_bin = training_bin[cut]
     training_data = training_data[cut]
 
@@ -135,7 +135,7 @@ def main(bands, n_bin):
 
     # Get a score
     z = load_redshift(validation_file)
-    score = metrics.compute_score(z, tomo_bin)
+    score = metrics.compute_snr_scores(z, tomo_bin)
 
     metrics.plot_distributions(z, tomo_bin, output_file, z_edges)
 
