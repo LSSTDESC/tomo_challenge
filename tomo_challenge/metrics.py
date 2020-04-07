@@ -21,7 +21,7 @@ def compute_snr_score(tomo_bin, z):
     score: float
         Metric for this configuration
     """
-    mu, C = tomo_challenge.metrics.compute_mean_covariance(tomo_bin, z)
+    mu, C = compute_mean_covariance(tomo_bin, z)
     # S/N for correlated data, I assume, from generalizing
     # sqrt(sum(mu**2/sigma**2))
     P = np.linalg.inv(C)

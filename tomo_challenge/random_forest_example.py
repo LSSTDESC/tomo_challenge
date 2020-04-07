@@ -135,7 +135,7 @@ def main(bands, n_bin):
 
     # Get a score
     z = load_redshift(validation_file)
-    score = metrics.compute_snr_scores(z, tomo_bin)
+    score = metrics.compute_snr_score(tomo_bin, z)
 
     metrics.plot_distributions(z, tomo_bin, output_file, z_edges)
 
