@@ -145,7 +145,7 @@ def plot_distributions(z, tomo_bin, filename, nominal_edges=None):
     nbin = int(tomo_bin.max()) + 1
     for i in range(nbin):
         w = np.where(tomo_bin == i)
-        plt.hist(z[w], bins=50)
+        plt.hist(z[w], bins=50, histtype='step')
 
     # Plot verticals at nominal edges, if given
     if nominal_edges is not None:
