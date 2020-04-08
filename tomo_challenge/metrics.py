@@ -52,7 +52,7 @@ def compute_scores(tomo_bin, z):
     score1 = (mu.T @ P @ mu)**0.5 - SNR_SCORE_BASELINE
 
 
-    sacc_data = make_sacc(tomo_bin, z, nbin, mu, C)
+    sacc_data = make_sacc(tomo_bin, z, mu, C)
     score2 = figure_of_merit(sacc_data)
 
     return score1, score2
@@ -213,7 +213,7 @@ def plot_distributions(z, tomo_bin, filename, nominal_edges=None):
 
 def make_sacc(tomo_bin, z, mu, C):
     # Basic numbers
-    nbin = tomo_bin.max() + 1
+    nbin = int(tomo_bin.max()) + 1
     z_mid, n_of_z = get_n_of_z(tomo_bin, z)
     npair = (nbin * (nbin + 1)) // 2
 
