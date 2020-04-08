@@ -1,0 +1,10 @@
+scikit-learn
+sacc
+git+https://github.com/LSSTDESC/firecrown/
+sacc
+h5py
+matplotlib
+git+https://github.com/cmbant/camb
+cosmosis-standalone
+pyccl
+camb
