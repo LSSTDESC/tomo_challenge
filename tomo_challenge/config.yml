@@ -1,0 +1,45 @@
+# This section defines fiducial values for all parameters.
+parameters:
+  Omega_k: 0.0
+  Omega_c: 0.27
+  Omega_b: 0.045
+  h: 0.67
+  n_s: 0.96
+  sigma8: 0.8404844953840714
+  w0: -1.0
+  wa: 0.0
+
+
+# Defines options when running one of the samplers
+# through cosmosis
+cosmosis:
+  sampler: fisher
+  debug: False
+  quiet: True
+  mpi: False
+  fisher:
+    step_size: 0.02
+  parameters:
+    Omega_c: [0.25, 0.27, 0.32]
+    Omega_b: [0.04, 0.045, 0.05]
+    h: [0.5, 0.67, 0.9]
+    sigma8: [0.74, 0.8404844953840714, 0.94]
+    n_s: [0.9,  0.96,  1.02]
+    # I'd like to do the proper DETF FoM,
+    # but right now our camb config rejects this
+    # since it crosses w=-1.  So for now use am
+    # Omega_c - sigma8 FoM instead.
+    # w0: [-2.0,  -1.0,  -0.33]
+    # wa: [-2.0,  0.0,   2.0]
+
+
+two_point:
+  module: firecrown.ccl.two_point
+  sacc_data: 0
+  sources: {}
+  systematics: {}
+  statistics: {}
+
+  likelihood:
+    kind: ConstGaussianLogLike
+    data_vector: {}

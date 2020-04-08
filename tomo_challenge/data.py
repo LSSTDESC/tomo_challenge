@@ -67,7 +67,7 @@ def load_magnitudes_and_colors(filename, bands):
     """
 
     # Open the data file
-    f = h5py.File(filename)
+    f = h5py.File(filename, 'r')
 
     # Get the number of features (mags + colors)
     # and data points
@@ -114,7 +114,7 @@ def load_magnitudes_and_colors(filename, bands):
 
 def load_redshift(filename):
     """Load a redshift column from a training or validation file"""
-    f = h5py.File(filename)
+    f = h5py.File(filename, 'r')
     z = f['redshift_true'][:]
     f.close()
     return z    
