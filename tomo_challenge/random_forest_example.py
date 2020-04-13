@@ -6,6 +6,7 @@ Feel free to use any part of it in your own efforts.
 """
 import time
 import sys
+import code
 
 import numpy as np
 from sklearn.ensemble import RandomForestClassifier
@@ -69,7 +70,6 @@ def main(bands, n_bin):
     )
 
     tomo_bin = apply_random_forest(classifier, validation_file, bands)
-
     # Get a score
     z = load_redshift(validation_file)
     scores = metrics.compute_scores(tomo_bin, z)
@@ -95,5 +95,5 @@ if __name__ == '__main__':
 
     # Run main code
     for n_bin in range(1, n_bin_max+1):
-        score1, score2 = main(bands, n_bin)
-        print(f"Scores for {n_bin} bin(s) = SNR score: {score1:.1f}, FOM score: {score2:.1f}")
+        scores = main(bands, n_bin)
+        print(f"Scores for {n_bin} bin(s) = ",scores)

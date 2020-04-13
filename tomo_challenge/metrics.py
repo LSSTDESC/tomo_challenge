@@ -8,9 +8,6 @@ import pathlib
 import tempfile
 import yaml
 
-# if you just put all the objects into one bin you get something
-# like this.
-SNR_SCORE_BASELINE = 266.5
 
 def compute_scores(tomo_bin, z):
     """Compute a set of score metrics.
@@ -38,24 +35,29 @@ def compute_scores(tomo_bin, z):
 
     Returns
     -------
-    score1: float
-        SNR metric
+    scores: dict
+         A dictionary of scores. The following dict keys are present
 
-    score2: float
-        FOM metric
+        "SNRww", "SNRgg", "SNR3x2": float
+        SNR scores for shear-shear, galaxy clustering and full 3x2pt
+
+        "FOMww", "FOMgg", "FOM3x2": float
+        FOM metric derived from SNR above
 
     """
-    mu, C = compute_mean_covariance(tomo_bin, z)
-    # S/N for correlated data, I assume, from generalizing
-    # sqrt(sum(mu**2/sigma**2))
-    P = np.linalg.inv(C)
-    score1 = (mu.T @ P @ mu)**0.5 - SNR_SCORE_BASELINE
 
+    scores = {}
+    for what in ["ww","gg","3x2"]:
+        mu, C, galaxy_galaxy_tracer_bias = compute_mean_covariance(tomo_bin, z, what)
+        # S/N for correlated data, I assume, from generalizing
+        # sqrt(sum(mu**2/sigma**2))
+        P = np.linalg.inv(C)
+        scores['SNR'+what] = (mu.T @ P @ mu)**0.5 
 
-    sacc_data = make_sacc(tomo_bin, z, mu, C)
-    score2 = figure_of_merit(sacc_data)
+        sacc_data = make_sacc(tomo_bin, z, what, mu, C)
+        scores['FOM'+what] = figure_of_merit(sacc_data, what, galaxy_galaxy_tracer_bias)
 
-    return score1, score2
+    return scores
 
 
 def compute_fom_metric(tomo_bin, z):
@@ -94,13 +96,26 @@ def ell_binning():
     ell = np.logspace(2, np.log10(ell_max), n_ell)
     return ell
 
+def get_tracertype (nbin,what):
+    """ returns a string of what tracers do we have with g for galaxy and w for weak lensing.
+    Utility func -- see below """
+
+    tracertype = ""
+    if (what=='gg' or what=='3x2'):
+        tracertype+= "g"*nbin
+    if (what=='ww' or what=='3x2'):
+        tracertype += "w"*nbin
+    return tracertype
 
 
-def compute_mean_covariance(tomo_bin, z):
+def compute_mean_covariance(tomo_bin, z, what):
     """Compute a mean and covariance for the chosen distribution of objects.
 
+    value can be 'ww' for shear-shear only, 'gg' for galaxy clustering and 
+    '3x2' for full '3x2pt'
     This assumes a cosmology, and the varions parameters affecting the noise
     and signal: the f_sky, ell choices, sigma_e, and n_eff
+
     """
     # 10,000 sq deg
     f_sky = 0.25
@@ -118,6 +133,7 @@ def compute_mean_covariance(tomo_bin, z):
         sigma8 = 0.8,
     )
 
+    
     # ell values we will use.  Computed centrally
     # since we want to avoid mismatches elsewhere.
     # should really sort this out better.
@@ -133,24 +149,37 @@ def compute_mean_covariance(tomo_bin, z):
     nbin = int(tomo_bin.max()) + 1
 
     z_mid, n_of_z = get_n_of_z(tomo_bin, z)
+    bz = 1/ccl.growth_factor(cosmo, 1/(1+z_mid))
+    bofz=(z_mid,bz)
+    galaxy_galaxy_tracer_bias = [(bz*nz_bin).sum()/(nz_bin).sum() for nz_bin in n_of_z]
+    print ('biases=',galaxy_galaxy_tracer_bias)
+    
     tracers = []
     counts = [nz_bin.sum() for nz_bin in n_of_z]
-    tracers = [
-        ccl.WeakLensingTracer(cosmo, dndz=(z_mid, nz_bin))
-        for nz_bin in n_of_z
-    ]
+    tracers = []
+    tracertype = get_tracertype(nbin,what)
+    ## start with number counts
+    if (what=='gg' or what=='3x2'):
+        tracers += [ccl.NumberCountsTracer(cosmo, has_rsd=False, dndz=(z_mid, nz_bin), bias=bofz)
+                    for nz_bin in n_of_z]
+    if (what=='ww' or what=='3x2'):
+        tracers += [ccl.WeakLensingTracer(cosmo, dndz=(z_mid, nz_bin))
+                    for nz_bin in n_of_z] 
 
-
+    ntracers = len(tracers)
+    print (tracertype)
     # Get the fraction of the total possible number of objects
     # in each bin, and the consequent effective number density.
     # We pretend here that all objects have the same weight.
     fractions = [c / tomo_bin.size for c in counts]
     n_eff = [n_eff_total * f for f in fractions]
 
+    n_bar = [c / (4*np.pi*f_sky) for c in counts] 
+    
     # Define an ordering of the theory vector
     blocks = []
-    for i in range(nbin):
-        for j in range(i, nbin):
+    for i in range(ntracers):
+        for j in range(i, ntracers):
             blocks.append((i,j))
 
 
@@ -158,17 +187,24 @@ def compute_mean_covariance(tomo_bin, z):
     # and the version with noise (for the covmat)
     C_sig = {}
     C_obs = {}
-    for i, j in blocks:
-        Ti = tracers[i]
-        Tj = tracers[j]
-        C_sig[i, j] = ccl.angular_cl(cosmo, Ti, Tj, ell)
-
+    for ci, cj in blocks:
+        i = ci % nbin
+        j = cj % nbin
+        Ti = tracers[ci]
+        Tj = tracers[cj]
+        C_sig[ci, cj] = ccl.angular_cl(cosmo, Ti, Tj, ell)
         # Noise contribution, if an auto-bin
-        if i == j:
-            C_obs[i, j] = C_sig[i, j] + sigma_e**2 / n_eff[i]
+        if ci == cj:
+            if tracertype[i]=='g':
+                C_obs[ci, cj] = C_sig[ci, cj] + 1/n_bar[i]
+            elif tracertype[i]=='w':
+                C_obs[ci, cj] = C_sig[ci, cj] + sigma_e**2 / n_eff[i]
+            else:
+                print ("Prasec!")
+                raise NotImplemented
         else:
-            C_obs[i, j] = C_sig[i, j]
-            C_obs[j, i] = C_sig[i, j]
+            C_obs[ci, cj] = C_sig[ci, cj]
+            C_obs[cj, ci] = C_sig[ci, cj]
 
 
     # concatenate all the theory predictions as our mean
@@ -192,7 +228,7 @@ def compute_mean_covariance(tomo_bin, z):
             c2 = (C_obs[i, m] * C_obs[j, n] + C_obs[i, n] * C_obs[j, m])
             C[start_a:end_a, start_b:end_b] = (c2 / norm) * np.eye(n_ell)
 
-    return mu, C
+    return mu, C, galaxy_galaxy_tracer_bias
 
 
 def plot_distributions(z, tomo_bin, filename, nominal_edges=None):
@@ -211,30 +247,50 @@ def plot_distributions(z, tomo_bin, filename, nominal_edges=None):
     plt.close()
 
 
-def make_sacc(tomo_bin, z, mu, C):
+def make_sacc(tomo_bin, z, what, mu, C):
     # Basic numbers
     nbin = int(tomo_bin.max()) + 1
+    tracertype = get_tracertype(nbin,what)
+    ntot = nbin*2 if what=='3x2' else nbin
+    
+    
     z_mid, n_of_z = get_n_of_z(tomo_bin, z)
-    npair = (nbin * (nbin + 1)) // 2
+    npair = (ntot * (ntot + 1)) // 2
 
     # Must be the same as above
     ell = ell_binning()
     n_ell = len(ell)
     # Just EE for now
     EE = sacc.data_types.standard_types.galaxy_shear_cl_ee
-
+    GG = sacc.data_types.standard_types.galaxy_density_cl
+    GE = sacc.data_types.standard_types.galaxy_shearDensity_cl_e
     # Start with empty sacc.
     S = sacc.Sacc()
 
     # Add all the tracers
-    for i in range(nbin):
-        S.add_tracer("NZ", f'source_{i}', z_mid, n_of_z[i])
-
+    for ci in range(ntot):
+        i = ci %nbin
+        if tracertype[ci]=='g':
+            S.add_tracer("NZ", f'lens_{i}', z_mid, n_of_z[i])
+        elif tracertype[ci]=='w':
+            S.add_tracer("NZ", f'source_{i}', z_mid, n_of_z[i])
+        else:
+            raise NotImplemented
+        
     # Now put in all the data points
     n = 0
-    for i in range(nbin):
-        for j in range(i, nbin):
-            S.add_ell_cl(EE, f'source_{i}', f'source_{j}', ell, mu[n:n+n_ell])
+    for ic in range(ntot):
+        i = ic%nbin
+        name_i = f'lens_{i}' if tracertype[ic]=='g' else f'source_{i}'
+        for jc in range(ic, ntot):
+            j = jc%nbin
+            name_j = f'lens_{j}' if tracertype[jc]=='g' else f'source_{j}'
+            if tracertype[ic]+tracertype[jc]=='gg':
+                S.add_ell_cl(GG, name_i, name_j, ell, mu[n:n+n_ell])
+            elif tracertype[ic]+tracertype[jc]=='ww':
+                S.add_ell_cl(EE, name_i, name_j, ell, mu[n:n+n_ell])
+            else:
+                S.add_ell_cl(GE, name_i, name_j, ell, mu[n:n+n_ell])
             n += n_ell
 
     # And finally add the covmat
@@ -242,36 +298,61 @@ def make_sacc(tomo_bin, z, mu, C):
     return S
 
 
-def figure_of_merit(sacc_data):
-    nbin = len(sacc_data.tracers)
-
+def figure_of_merit(sacc_data,what, galaxy_tracer_bias):
+    ntot = len(sacc_data.tracers)
+    nbin = ntot//2 if what=="3x2" else ntot
+    tracertype = get_tracertype(nbin,what)
+    
     # Load the baseline configuration
     config = yaml.safe_load(open("./tomo_challenge/config.yml"))
 
+    
     # Override pieces of the configuration.
     # Start with the tracer list.
-    config['two_point']['sources'] = {
-        f'source_{b}' : {
-            'kind': 'WLSource',
-            'sacc_tracer': f'source_{b}',
-            'systematics': {}
-        } for b in range(nbin)
-    }
+    sourcename=[]
+    if what=="gg" or what=="3x2":
+        for b in range(nbin):
+            config['parameters'][f'bias_{b}'] = galaxy_tracer_bias[b]
+            config['two_point']['sources'][f'lens_{b}'] = {
+                'kind': 'NumberCountsSource',
+                'sacc_tracer': f'lens_{b}',
+                'bias' : f'bias_{b}',
+                'systematics': {}
+                }
+            sourcename.append(f"lens_{b}")
+    if what=="ww" or what=="3x2":
+        for b in range(nbin):
+            config['two_point']['sources'][f'source_{b}'] = {
+                'kind': 'WLSource',
+                'sacc_tracer': f'source_{b}',
+                'systematics': {}
+            } 
+            sourcename.append(f"source_{b}")
 
+    def corrtype(i,j,tracertype):
+        tt=tracertype[i]+tracertype[j]
+        if tt=='gg':
+            return "galaxy_density_cl"
+        elif tt=='ww':
+            return "galaxy_shear_cl_ee"
+        else:
+            return "galaxy_shearDensity_cl_e"
+
+    
     # Override pieces of the configuration.
     # Then the statistics list (all pairs).
     config['two_point']['statistics'] = {
         f'cl_{i}_{j}': {
-          'sources': [f'source_{i}', f'source_{j}'],
-          'sacc_data_type': 'galaxy_shear_cl_ee'
+          'sources': [sourcename[i], sourcename[j]],
+          'sacc_data_type': corrtype(i,j,tracertype)
         }
-        for i in range(nbin) for j in range(i, nbin)
+        for i in range(ntot) for j in range(i, ntot)
     }
 
     # The C_ell values going into the data vector (all of them)
     config['two_point']['likelihood']['data_vector'] = [
             f'cl_{i}_{j}'
-            for i in range(nbin) for j in range(i, nbin)
+            for i in range(ntot) for j in range(i, ntot)
     ]
 
     # and finally override the sacc_data object itself.
