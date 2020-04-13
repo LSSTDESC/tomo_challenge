@@ -96,4 +96,7 @@ if __name__ == '__main__':
     # Run main code
     for n_bin in range(1, n_bin_max+1):
         scores = main(bands, n_bin)
-        print(f"Scores for {n_bin} bin(s) = ",scores)
+        print(f"Scores for {n_bin} bin(s) : ")
+        for k,v in scores.items():
+            print ("      %s : %4.1f"%(k,v))
+            
