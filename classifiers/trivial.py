@@ -29,7 +29,8 @@ class Random:
 
 
 class ILover:
-    """ Classify in uniform bins in the i-band """
+    """Classifier for people who love nothing more than the i-band. 
+       Classifies in uniform bins in the i-band mag. """
     # Which bands are valid to call this with
     _valid_bads = ["riz","griz"]
     # List of options we want to be called in competition, i.e. each dict
