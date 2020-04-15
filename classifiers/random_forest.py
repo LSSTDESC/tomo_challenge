@@ -16,6 +16,7 @@ from sklearn.ensemble import RandomForestClassifier
 
 
 class RandomForest:
+    """ Random Forest Classifier """
     # Which bands are valid to call this with
     _valid_bads = ["riz","griz"]
     # List of options we want to be called in competition, i.e. each dict

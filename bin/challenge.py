@@ -26,7 +26,6 @@ def main(action, classifier, bands, options, competition):
         opts = json.loads("{"+options+"}")
         run_one(classifier, classifiers[classifier], bands, opts, competition)
 
-
     
 def find_modules():
     import glob, importlib.util
@@ -59,6 +58,7 @@ def run_one (id, classifier, bands, options, competition):
     validation_redshift = tc.load_redshift(validation_file)
     print ("Getting metric...")
     scores = tc.compute_scores(results, validation_z)
+    print ("Scores = ", scores)
 
 
 
