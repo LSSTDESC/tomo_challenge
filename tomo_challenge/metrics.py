@@ -9,7 +9,7 @@ import tempfile
 import yaml
 
 
-def compute_scores(tomo_bin, z):
+def compute_scores(tomo_bin, z, metrics = 'all'):
     """Compute a set of score metrics.
 
     Metric 1
@@ -33,6 +33,10 @@ def compute_scores(tomo_bin, z):
     z: array
         True redshift for each object
 
+    metrics: str or list of str
+        Which metrics to compute. If all it will return all metrics, 
+        otherwise just those required (see below)
+
     Returns
     -------
     scores: dict
@@ -47,15 +51,18 @@ def compute_scores(tomo_bin, z):
     """
 
     scores = {}
+    if metrics == 'all':
+        metrics = ["SNRww","SNRgg","SNR3x2", "FOMww","FOMgg","FOM3x2"]
     for what in ["ww","gg","3x2"]:
-        mu, C, galaxy_galaxy_tracer_bias = compute_mean_covariance(tomo_bin, z, what)
-        # S/N for correlated data, I assume, from generalizing
-        # sqrt(sum(mu**2/sigma**2))
-        P = np.linalg.inv(C)
-        scores['SNR'+what] = (mu.T @ P @ mu)**0.5 
-
-        sacc_data = make_sacc(tomo_bin, z, what, mu, C)
-        scores['FOM'+what] = figure_of_merit(sacc_data, what, galaxy_galaxy_tracer_bias)
+        if ("SNR"+what in metrics) or ("FOM"+what in metrics):
+            mu, C, galaxy_galaxy_tracer_bias = compute_mean_covariance(tomo_bin, z, what)
+            # S/N for correlated data, I assume, from generalizing
+            # sqrt(sum(mu**2/sigma**2))
+            P = np.linalg.inv(C)
+            scores['SNR'+what] = (mu.T @ P @ mu)**0.5 
+            if "FOM"+what in metrics:
+                sacc_data = make_sacc(tomo_bin, z, what, mu, C)
+                scores['FOM'+what] = figure_of_merit(sacc_data, what, galaxy_galaxy_tracer_bias)
 
     return scores
 

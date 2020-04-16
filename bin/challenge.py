@@ -2,7 +2,8 @@
 import sys
 import os
 import click
-import json
+import yaml
+import jinja2
 
 ## get root dir, one dir below this script
 root_dir=os.path.join(os.path.split(sys.argv[0])[0],"..")
@@ -10,23 +11,35 @@ sys.path.append(root_dir)
 import tomo_challenge as tc
 
 @click.command()
-@click.argument('action', type=str)
-@click.option('-c', '--classifier', type=str, default='RandomForest', show_default=True, help = "comma separated classifier(s)")
-@click.option('-b', '--bands', type=str, default="riz", show_default=True, help = "comma separated list of bands")
-@click.option('-o', '--options', type=str, default='"bins":3', show_default=True, help ="comma separated list of option dics")
-@click.option('-x', '--competition', is_flag=True, help = "run with competition catalog")
-def main(action, classifier, bands, options, competition):
+@click.argument('config_yaml', type=str)
+
+def main(config_yaml):
+    with open(config_yaml, 'r') as fp:
+        config_str = jinja2.Template(fp.read()).render()
+    config = yaml.load(config_str, Loader=yaml.Loader)
+                
     classifiers = find_modules()
     print ("Found classifiers: ",", ".join(classifiers.keys()))
+    ## First check if classifiers are there
+    for item in config['run']:
+        if item not in classifiers:
+            print (f'Classifier {item} not found.')
+            raise NotImplementedError
+    bands = config['bands']
+    print ("Loading data...")
+    training_data, training_z = load_data (config['training_file'], bands)
+    validation_data, validation_z = load_data (config['validation_file'], bands) 
+    of = open(config['output_file'],'w')
+    for classifier, runs in config['run'].items():
+        for run, settings in runs.items():
+            scores = run_one(classifier, classifiers[classifier], bands, settings,
+                             training_data, training_z, validation_data, validation_z,
+                             config['metrics'])
+            of.write (f"{classifier} {run} {settings} {scores} \n")
+    of.close()
     
-    if action == "one":
-        if classifier not in classifiers:
-            print (f"Classifier {classifier} not found.")
-            sys.exit(1)
-        opts = json.loads("{"+options+"}")
-        run_one(classifier, classifiers[classifier], bands, opts, competition)
+    
 
-    
 def find_modules():
     import glob, importlib.util
     classifiers = {}
@@ -39,26 +52,23 @@ def find_modules():
             if hasattr(obj,"train") and hasattr(obj,"apply"):
                 classifiers[item]= obj
     return classifiers
-    
 
-def run_one (id, classifier, bands, options, competition):
-    print ("Loading data...")
-    training_file = f'{bands}/training.hdf5'
-    train_data = tc.load_magnitudes_and_colors(training_file, bands)
-    train_z = tc.load_redshift(training_file)
-    validation_file = f'{bands}/validation.hdf5'
-    validation_data = tc.load_magnitudes_and_colors(validation_file, bands)
-    validation_z = tc.load_redshift(validation_file)
+def load_data(fname, bands):
+    data = tc.load_magnitudes_and_colors(fname, bands)
+    z = tc.load_redshift(fname)
+    return data,z
+
+def run_one (id, classifier, bands, set, train_data, train_z, valid_data,
+             valid_z, metrics):
     print ("Initializing classifier...")
-    C=classifier(bands, options)
+    C=classifier(bands, set[0])
     print ("Training...")
     C.train(train_data,train_z)
     print ("Applying...")
-    results = C.apply(validation_data)
-    validation_redshift = tc.load_redshift(validation_file)
+    results = C.apply(valid_data)
     print ("Getting metric...")
-    scores = tc.compute_scores(results, validation_z)
-    print ("Scores = ", scores)
+    scores = tc.compute_scores(results, valid_z, metrics=metrics)
+    return scores
 
 
 
