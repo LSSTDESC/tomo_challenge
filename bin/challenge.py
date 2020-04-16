@@ -32,6 +32,7 @@ def main(config_yaml):
     of = open(config['output_file'],'w')
     for classifier, runs in config['run'].items():
         for run, settings in runs.items():
+            print ("Executing: ", classifier, bands, settings)
             scores = run_one(classifier, classifiers[classifier], bands, settings,
                              training_data, training_z, validation_data, validation_z,
                              config['metrics'])
@@ -61,7 +62,7 @@ def load_data(fname, bands):
 def run_one (id, classifier, bands, set, train_data, train_z, valid_data,
              valid_z, metrics):
     print ("Initializing classifier...")
-    C=classifier(bands, set[0])
+    C=classifier(bands, set)
     print ("Training...")
     C.train(train_data,train_z)
     print ("Applying...")
@@ -69,7 +70,6 @@ def run_one (id, classifier, bands, set, train_data, train_z, valid_data,
     print ("Getting metric...")
     scores = tc.compute_scores(results, valid_z, metrics=metrics)
     return scores
-
 
 
 if __name__=="__main__":

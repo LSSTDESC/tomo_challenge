@@ -1,10 +1,12 @@
 """
 This is an example tomographic bin generator using a random forest.
 
-Every classifier module needs to implement define _provides variable 
-that list classifiers. 
+Every classifier module needs to implement two functions: 
+ train (self, training_data,training_z)
+and
+ apply (self, data)
 
-See Classifier Documentation below
+See Classifier Documentation below.
 """
 
 import time

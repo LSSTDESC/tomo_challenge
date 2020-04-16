@@ -1,21 +1,10 @@
 """
-This is an example tomographic bin generator using a random forest.
-
-Every classifier module needs to implement define _provides variable 
-that list classifiers. 
-
-See Classifier Documentation below
+Trivial classifiers. Used as example and testing.
 """
 import numpy as np
 
 class Random:
     """ Completely random classifier. """
-    # Which bands are valid to call this with
-    _valid_bads = ["riz","griz"]
-    # List of options we want to be called in competition, i.e. each dict
-    # in the list is an "entry" into competition
-    _opions = [{"bins":1},{"bins":2}, {"bins":10}]
-
     def __init__ (self, bands, options = {"bins":3}):
         self.opt = options
 
@@ -31,11 +20,6 @@ class Random:
 class ILover:
     """Classifier for people who love nothing more than the i-band. 
        Classifies in uniform bins in the i-band mag. """
-    # Which bands are valid to call this with
-    _valid_bads = ["riz","griz"]
-    # List of options we want to be called in competition, i.e. each dict
-    # in the list is an "entry" into competition
-    _opions = [{"bins":1},{"bins":2}, {"bins":10}]
 
     def __init__ (self, bands, options = {"bins":3}):
         self.indx = bands.find("i")
