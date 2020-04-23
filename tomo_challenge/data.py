@@ -4,8 +4,8 @@ import warnings
 import h5py
 import numpy as np
 
-nersc_path = '/global/projecta/projectdirs/lsst/groups/WL/users/zuntz/tomo_challenge_data/'
-url_root =  'https://portal.nersc.gov/project/lsst/txpipe/tomo_challenge_data/'
+nersc_path = '/global/projecta/projectdirs/lsst/groups/WL/users/zuntz/tomo_challenge_data'
+url_root =  'https://portal.nersc.gov/cfs/lsst/txpipe/tomo_challenge_data/ugrizy'
 # This is not supposed to be needed - I don't understand why in my shifter env the warning
 # is being repeated.
 warned = False
@@ -28,19 +28,14 @@ def download_data():
     """
     if os.environ.get("NERSC_HOST"):
         # If we are on NERSC just make some links
-        os.symlink(nersc_path + 'riz', 'riz')
-        os.symlink(nersc_path + 'griz', 'griz')
+        os.symlink(nersc_path, 'data')
     else:
         # Otherwise actually download both data sets
-        for bands in ['riz', 'griz']:
-            # These will raise an exception if the directories
-            # already exist, preventing downloading twice
-            os.makedirs(bands)
-            # Download each of the two files for these bands
-            for f in ['training', 'validation']:
-                filename = f'{bands}/{f}.hdf5'
-                urlretrieve(url_root + filename, filename)
-
+        os.makedirs('data')
+        # Download each of the two files for these bands
+        for f in ['training', 'testing']:
+            filename = f'{f}.hdf5'
+            urlretrieve(f'{url_root}/{filename}', f'data/{filename}')
 
 
 def load_magnitudes_and_colors(filename, bands):
@@ -89,6 +84,11 @@ def load_magnitudes_and_colors(filename, bands):
         data[i] = f['mcal_mag_{}'.format(b)][:]
 
     f.close()
+
+    # Warn about non-detections being set mag=30.
+    # The system is only supposed to warn once but on
+    # shifter it is warning every time and I don't understand why.
+    # Best guess is one of the libraries we load sets some option.
     global warned
     if not warned:
         warnings.warn("Setting inf (undetected) bands to mag=30")
