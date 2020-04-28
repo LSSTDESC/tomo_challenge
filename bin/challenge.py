@@ -50,7 +50,8 @@ def find_modules():
         spec.loader.exec_module(mod)
         for item in dir(mod):
             obj = getattr(mod,item) 
-            if hasattr(obj,"train") and hasattr(obj,"apply"):
+            if (hasattr(obj,"train") and hasattr(obj,"apply")
+                and hasattr(obj,"valid_options") ):
                 classifiers[item]= obj
     return classifiers
 
@@ -61,6 +62,11 @@ def load_data(fname, bands):
 
 def run_one (id, classifier, bands, set, train_data, train_z, valid_data,
              valid_z, metrics):
+    ## first check if options are valid
+    for key in set.keys():
+        if key not in classifier.valid_options:
+            print ("Key %s is not recognized by classifier %s."%(key,id))
+            raise NotImplementedError
     print ("Initializing classifier...")
     C=classifier(bands, set)
     print ("Training...")

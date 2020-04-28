@@ -10,7 +10,6 @@ run:
     {% for nbins in [1,3,5] %}
     run_{{ nbins}}:
       bins: {{ nbins }}
-      type: shit
     {% endfor %}
 
   ILover:

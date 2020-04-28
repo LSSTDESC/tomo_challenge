@@ -1,10 +1,13 @@
 """
 This is an example tomographic bin generator using a random forest.
 
-Every classifier module needs to implement two functions: 
- train (self, training_data,training_z)
-and
- apply (self, data)
+Every classifier module needs to:
+ - have construction of the type 
+       __init__ (self, bands, options) (see examples below)
+ -  implement two functions: 
+        train (self, training_data,training_z)
+        apply (self, data).
+ - define valid_options class varible.
 
 See Classifier Documentation below.
 """
@@ -19,17 +22,42 @@ from sklearn.ensemble import RandomForestClassifier
 
 class RandomForest:
     """ Random Forest Classifier """
-    # Which bands are valid to call this with
-    _valid_bads = ["riz","griz"]
-    # List of options we want to be called in competition, i.e. each dict
-    # in the list is an "entry" into competition
-    _opions = [{"bins":1},{"bins":2}, {"bins":3},{"bins":4},{"bins":5},{"bins":10}]
+    
+    # valid parameter -- see below
+    valid_options = ['bins']
+    
+    def __init__ (self, bands, options):
+        """Constructor
+        
+        Parameters:
+        -----------
+        bands: str
+          string containg valid bands, like 'riz' or 'griz'
+        options: dict
+          options come through here. Valid keys are listed as valid_options
+          class variable. 
 
-    def __init__ (self, bands, options = {"bins":3}):
+        Note:
+        -----
+        Valiad options are:
+            'bins' - number of tomographic bins
+
+        """
         self.bands = bands
         self.opt = options
 
     def train (self, training_data, training_z):
+        """Trains the classifier
+        
+        Parameters:
+        -----------
+        training_data: numpy array, size Ngalaxes x Nbands
+          training data, each row is a galaxy, each column is a band as per
+          band defined above
+        training_z: numpy array, size Ngalaxies
+          true redshift for the training sample
+
+        """
         n_bin = self.opt['bins']
         # Now put the training data into redshift bins.
         # Use zero so that the one object with minimum
@@ -65,6 +93,19 @@ class RandomForest:
 
 
     def apply (self, data):
+        """Applies training to the data.
+        
+        Parameters:
+        -----------
+        Data: numpy array, size Ngalaxes x Nbands
+          testing data, each row is a galaxy, each column is a band as per
+          band defined above
+
+        Returns: 
+        tomographic_selections: numpy array, int, size Ngalaxies
+          tomographic selection for galaxies return as bin number for 
+          each galaxy.
+        """
         tomo_bin = self.classifier.predict(data)
         return tomo_bin
 
