@@ -102,8 +102,10 @@ def ell_binning():
     ell_max = 2000
     n_ell = 100
     # choose ell bins from 10 .. 2000 log spaced
-    ell = np.logspace(2, np.log10(ell_max), n_ell)
-    return ell
+    ell_edges  = np.logspace(2, np.log10(ell_max), n_ell+1)
+    ell = 0.5*(ell_edges[1:]+ell_edges[:-1])
+    delta_ell =(ell_edges[1:]-ell_edges[:-1])
+    return ell, delta_ell
 
 
 def get_tracer_type(nbin, what):
@@ -146,11 +148,11 @@ def compute_mean_covariance(tomo_bin, z, what):
     # ell values we will use.  Computed centrally
     # since we want to avoid mismatches elsewhere.
     # should really sort this out better.
-    ell = ell_binning()
+    ell, delta_ell = ell_binning()
     n_ell = len(ell)
 
     # work out the number density per steradian
-    steradian_to_arcmin2 = 11818102.86004228
+    steradian_to_arcmin2 =  (180*60/np.pi)**2
     n_eff_total = n_eff_total_arcmin2 * steradian_to_arcmin2
 
     nbin = int(tomo_bin.max()) + 1
@@ -205,9 +207,9 @@ def compute_mean_covariance(tomo_bin, z, what):
         C_sig[ci, cj] = ccl.angular_cl(cosmo, Ti, Tj, ell)
         # Noise contribution, if an auto-bin
         if ci == cj:
-            if tracer_type[i] == 'g':
+            if tracer_type[ci] == 'g':
                 C_obs[ci, cj] = C_sig[ci, cj] + 1/n_bar[i]
-            elif tracer_type[i] == 'w':
+            elif tracer_type[ci] == 'w':
                 C_obs[ci, cj] = C_sig[ci, cj] + sigma_e**2 / n_eff[i]
             else:
                 print("Prasec!")
@@ -224,7 +226,7 @@ def compute_mean_covariance(tomo_bin, z, what):
 
     # normalization.  This and the bit below are Takada & Jain
     # equation 14
-    norm = (2*ell + 1) * np.gradient(ell) * f_sky
+    norm = (2*ell + 1) * delta_ell * f_sky
 
     # Fill in each covmat block.  We waste time here
     # doing the flip elements but not significant
