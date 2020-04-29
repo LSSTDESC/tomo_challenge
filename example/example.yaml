@@ -1,4 +1,4 @@
-metrics: [SNRww, SNR3x2]
+metrics: [SNRww, SNRgg, SNR3x2]
 bands: riz
 training_file: riz/training.hdf5
 validation_file: riz/validation.hdf5

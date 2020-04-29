@@ -183,7 +183,6 @@ def compute_mean_covariance(tomo_bin, z, what):
     # We pretend here that all objects have the same weight.
     fractions = [c / tomo_bin.size for c in counts]
     n_eff = [n_eff_total * f for f in fractions]
-    n_bar = [c / (4*np.pi*f_sky) for c in counts]
 
     # Define an ordering of the theory vector
     blocks = []
@@ -207,7 +206,7 @@ def compute_mean_covariance(tomo_bin, z, what):
         # Noise contribution, if an auto-bin
         if ci == cj:
             if tracer_type[ci] == 'g':
-                C_obs[ci, cj] = C_sig[ci, cj] + 1/n_bar[i]
+                C_obs[ci, cj] = C_sig[ci, cj] + 1/n_eff[i]
             elif tracer_type[ci] == 'w':
                 C_obs[ci, cj] = C_sig[ci, cj] + sigma_e**2 / n_eff[i]
             else:
