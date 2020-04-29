@@ -57,7 +57,12 @@ def find_modules():
 
 def load_data(fname, bands):
     data = tc.load_magnitudes_and_colors(fname, bands)
+    Nbands = len(bands)
+    print ('max mag before:',data[:,:Nbands].max(axis=0), 'nobj:',data.shape[0])
     z = tc.load_redshift(fname)
+    data, z = tc.add_noise_snr_cut(data, z,  bands)
+    print ('max mag after:',data[:,:Nbands].max(axis=0), 'nobj:',data.shape[0])
+
     return data,z
 
 def run_one (id, classifier, bands, set, train_data, train_z, valid_data,

@@ -183,7 +183,6 @@ def compute_mean_covariance(tomo_bin, z, what):
     # We pretend here that all objects have the same weight.
     fractions = [c / tomo_bin.size for c in counts]
     n_eff = [n_eff_total * f for f in fractions]
-
     n_bar = [c / (4*np.pi*f_sky) for c in counts]
 
     # Define an ordering of the theory vector

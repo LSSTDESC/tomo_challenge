@@ -88,7 +88,7 @@ class ILover:
     valid_options = ['bins']
 
     def __init__ (self, bands, options):
-        self.indx = bands.find("i")
+        self.indx = bands.find('i')
         self.opt = options
         if 'bins' not in options: self.opt['bins'] = 3
         
@@ -100,7 +100,6 @@ class ILover:
         iband = data[:,self.indx]
         tomo_bin = np.digitize(iband, np.linspace(iband.min(),iband.max(), nbins))
         tomo_bin -= 1 ## we need start with 0
-        print(tomo_bin.min(), tomo_bin.max())
         return tomo_bin
 
 
