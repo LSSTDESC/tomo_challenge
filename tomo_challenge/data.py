@@ -118,7 +118,7 @@ def load_magnitudes_and_colors(filename, bands):
     return data
 
 
-def add_noise_snr_cut (data, z, bands, iband_min_snr=10):
+def add_noise_snr_cut (data, z, bands, iband_min_snr=20):
     Nbands = len(bands)
     magdata = data[:,:Nbands]
     magerr = data[:,Nbands:]
