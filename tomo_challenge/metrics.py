@@ -266,7 +266,7 @@ def make_sacc(tomo_bin, z, what, mu, C):
     npair = (ntot * (ntot + 1)) // 2
 
     # Must be the same as above
-    ell = ell_binning()
+    ell, _ = ell_binning()
     n_ell = len(ell)
     # Just EE for now
     EE = sacc.data_types.standard_types.galaxy_shear_cl_ee
