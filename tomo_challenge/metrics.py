@@ -56,6 +56,7 @@ def compute_mean_covariance(tomo_bin, z):
         h = 0.71,
         n_s = 0.963,
         sigma8 = 0.8,
+        transfer_function='eisenstein_hu', matter_power_spectrum='linear'
     )
 
 
