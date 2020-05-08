@@ -7,7 +7,9 @@ from jax_cosmo.core import Cosmology
 from jax_cosmo.tracers import get_lensing_tracer_fn
 from jax_cosmo.angular_cl import angular_cl
 
-SNR_SCORE_BASELINE = 266.5
+#SNR_SCORE_BASELINE = 266.5
+# This is the score for the linear power spectrum only
+SNR_SCORE_BASELINE = 138.4
 
 @jit
 def compute_mean_covariance(weights, labels):

@@ -4,7 +4,9 @@ import pyccl as ccl
 
 # if you just put all the objects into one bin you get something
 # like this.
-SNR_SCORE_BASELINE = 266.5
+#SNR_SCORE_BASELINE = 266.5
+# This is the score for the linear power spectrum only
+SNR_SCORE_BASELINE = 138.4
 
 def compute_snr_score(tomo_bin, z):
     """Compute a score metric based on the total spectrum S/N
