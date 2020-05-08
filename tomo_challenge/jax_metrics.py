@@ -12,7 +12,7 @@ from jax_cosmo.angular_cl import angular_cl
 SNR_SCORE_BASELINE = 138.4
 
 @jit
-def compute_mean_covariance(weights, labels):
+def compute_mean_covariance(weights, labels, kernel_bandwidth=0.01):
     """
     JAX compatible version of the tomo challenge function
 
@@ -97,8 +97,8 @@ def compute_mean_covariance(weights, labels):
 
     @jit
     def get_cl(inds):
-        nz1 = kde_nz(zcat=labels, weight=weights[:,inds[0]], bw=0.1, zmax=4.)
-        nz2 = kde_nz(zcat=labels, weight=weights[:,inds[1]], bw=0.1, zmax=4.)
+        nz1 = kde_nz(zcat=labels, weight=weights[:,inds[0]], bw=kernel_bandwidth, zmax=4.)
+        nz2 = kde_nz(zcat=labels, weight=weights[:,inds[1]], bw=kernel_bandwidth, zmax=4.)
         return angular_cl(cosmo, ell, get_lensing_tracer_fn(nz1), get_lensing_tracer_fn(nz2))
 
     cl_signal = lax.map(get_cl, blocks)
@@ -112,7 +112,6 @@ def compute_mean_covariance(weights, labels):
 
     # Adding noise to auto-spectra
     cl_obs = cl_signal + cl_noise
-
 
     norm = (2*ell + 1) * np.gradient(ell) * f_sky
 
@@ -129,8 +128,6 @@ def compute_mean_covariance(weights, labels):
                                                          n_ell*len(blocks)))
 
     return cl_signal.flatten(), cov_mat
-
-SNR_SCORE_BASELINE = 266.5
 
 def compute_snr_score(weights, labels):
     """Compute a score metric based on the total spectrum S/N
