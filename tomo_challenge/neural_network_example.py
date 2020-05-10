@@ -134,8 +134,8 @@ def main(bands, n_bin):
     z = load_redshift(validation_file)
     original_metrics.plot_distributions(z, tomo_bin, output_file)
 
-    score =1.
-    #score = original_metrics.compute_snr_score(tomo_bin, z)
+    #score =1.
+    score = original_metrics.compute_snr_score(tomo_bin, z)
     # Return. Command line invovation also prints out
     return score
 
