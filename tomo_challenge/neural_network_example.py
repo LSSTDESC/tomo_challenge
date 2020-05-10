@@ -116,7 +116,7 @@ def main(bands, n_bin):
     # Assume data in standard locations relative to current directory
     training_file = f'{bands}/training.hdf5'
     validation_file = f'{bands}/validation.hdf5'
-    output_file = f'{bands}_{n_bin}.png'
+    output_file = f'nn_{bands}_{n_bin}.png'
     export_file =f'{bands}_{n_bin}.flax'
 
     # Let's check if model already exists, in which case we just load it
