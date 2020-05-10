@@ -1,0 +1,5 @@
+jax_cosmo
+jax
+jaxlib
+flax
+pyccl

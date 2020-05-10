@@ -117,7 +117,7 @@ def main(bands, n_bin):
     training_file = f'{bands}/training.hdf5'
     validation_file = f'{bands}/validation.hdf5'
     output_file = f'nn_{bands}_{n_bin}.png'
-    export_file =f'{bands}_{n_bin}.flax'
+    export_file =f'models/{bands}_{n_bin}.flax'
 
     # Let's check if model already exists, in which case we just load it
     if os.path.exists(export_file):
