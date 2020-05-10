@@ -1,12 +1,9 @@
 import matplotlib.pyplot as plt
 import numpy as np
-import pyccl as ccl
 
 # if you just put all the objects into one bin you get something
 # like this.
-#SNR_SCORE_BASELINE = 266.5
-# This is the score for the linear power spectrum only
-SNR_SCORE_BASELINE = 138.4
+SNR_SCORE_BASELINE = 266.5
 
 def compute_snr_score(tomo_bin, z):
     """Compute a score metric based on the total spectrum S/N
@@ -41,6 +38,7 @@ def compute_mean_covariance(tomo_bin, z):
     This assumes a cosmology, and the varions parameters affecting the noise
     and signal: the f_sky, ell choices, sigma_e, and n_eff
     """
+    import pyccl as ccl
     # plausible limits I guess
     ell_max = 2000
     n_ell = 100
