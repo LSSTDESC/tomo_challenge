@@ -61,12 +61,11 @@ def compute_mean_covariance(weights, labels, kernel_bandwidth=0.01):
     # but they have bin specific weights
     fractions = np.array([c / len(labels) for c in counts])
     n_eff = np.array([n_eff_total_arcmin2 * f for f in fractions])
-
     # Create redshift bins
     nzs = []
     for i in range(nbins):
       nzs.append(jc.redshift.kde_nz(labels, weights[:,i], bw=kernel_bandwidth,
-                                    ngals_per_arcmin2=n_eff[i], zmax=4.))
+                                    gals_per_arcmin2=n_eff[i], zmax=4.))
 
     # Now we can create a lensing probe
     probes = [ jc.probes.WeakLensing(nzs, sigma_e=sigma_e) ]
