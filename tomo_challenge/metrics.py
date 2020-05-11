@@ -68,12 +68,6 @@ def compute_scores(tomo_bin, z, metrics='all'):
     return scores
 
 
-def compute_fom_metric(tomo_bin, z):
-    # make a mean and covariance
-    # make a sacc data object using firecrown
-    # use firecrown to run a fisher analysis on it
-    pass
-
 
 def get_n_of_z(tomo_bin, z):
     nbin = int(tomo_bin.max()) + 1
