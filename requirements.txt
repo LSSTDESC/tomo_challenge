@@ -1,5 +1,15 @@
+scikit-learn
+sacc
+git+https://github.com/LSSTDESC/firecrown/
+sacc
+h5py
+matplotlib
+git+https://github.com/cmbant/camb
+cosmosis-standalone
+pyccl
+camb
+click
 jax_cosmo
 jax
 jaxlib
 flax
-pyccl

@@ -7,7 +7,7 @@ import jax_cosmo as jc
 SNR_SCORE_BASELINE = 266.5
 
 @jit
-def compute_mean_covariance(weights, labels, kernel_bandwidth=0.01):
+def compute_mean_covariance(weights, labels, what, kernel_bandwidth=0.01):
     """
     JAX compatible version of the tomo challenge function
 
@@ -67,8 +67,17 @@ def compute_mean_covariance(weights, labels, kernel_bandwidth=0.01):
       nzs.append(jc.redshift.kde_nz(labels, weights[:,i], bw=kernel_bandwidth,
                                     gals_per_arcmin2=n_eff[i], zmax=4.))
 
-    # Now we can create a lensing probe
-    probes = [ jc.probes.WeakLensing(nzs, sigma_e=sigma_e) ]
+    probes = []
+    tracer_type = get_tracer_type(nbin, what)
+
+    # start with number counts
+    if (what == 'gg' or what == '3x2'):
+      # Define a bias parameterization
+      bias = jc.bias.inverse_growth_linear_bias(cosmo, 1.)
+      probes.append(jc.probes.NumberCounts(nzs, bias))
+
+    if (what == 'ww' or what == '3x2'):
+      probes.append(jc.probes.WeakLensing(nzs, sigma_e=sigma_e))
 
     # Let's the mean and covariance
     mu, C = jc.angular_cl.gaussian_cl_covariance(cosmo, ell, probes, f_sky=f_sky)
