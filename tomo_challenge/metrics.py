@@ -203,8 +203,7 @@ def compute_mean_covariance(tomo_bin, z, what):
             elif tracer_type[ci] == 'w':
                 C_obs[ci, cj] = C_sig[ci, cj] + sigma_e**2 / n_eff[i]
             else:
-                print("Prasec!")
-                raise NotImplemented
+                raise NotImplementedError("Unknown tracer")
         else:
             C_obs[ci, cj] = C_sig[ci, cj]
             C_obs[cj, ci] = C_sig[ci, cj]
