@@ -27,7 +27,7 @@ cosmosis:
     n_s: [0.9,  0.96,  1.02]
     # I'd like to do the proper DETF FoM,
     # but right now our camb config rejects this
-    # since it crosses w=-1.  So for now use am
+    # since it crosses w=-1.  So for now use an
     # Omega_c - sigma8 FoM instead.
     # w0: [-2.0,  -1.0,  -0.33]
     # wa: [-2.0,  0.0,   2.0]

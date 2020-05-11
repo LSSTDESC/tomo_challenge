@@ -79,28 +79,3 @@ class Random:
         nbins = self.opt["bins"]
         tomo_bin = np.random.randint(0,nbins,len(data))
         return tomo_bin
-
-
-class ILover:
-    """Classifier for people who love nothing more than the i-band. 
-       Classifies in uniform bins in the i-band mag. """
-
-    valid_options = ['bins']
-
-    def __init__ (self, bands, options):
-        self.indx = bands.find('i')
-        self.opt = options
-        if 'bins' not in options: self.opt['bins'] = 3
-        
-    def train (self,training_data, training_z):
-        pass
-
-    def apply (self,data):
-        nbins = self.opt["bins"]
-        iband = data[:,self.indx]
-        tomo_bin = np.digitize(iband, np.linspace(iband.min(),iband.max(), nbins))
-        tomo_bin -= 1 ## we need start with 0
-        return tomo_bin
-
-
-

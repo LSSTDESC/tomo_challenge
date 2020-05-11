@@ -1,4 +1,3 @@
-import matplotlib.pyplot as plt
 import numpy as np
 import pyccl as ccl
 import sacc
@@ -42,28 +41,28 @@ def compute_scores(tomo_bin, z, metrics='all'):
     scores: dict
          A dictionary of scores. The following dict keys are present
 
-        "SNRww", "SNRgg", "SNR3x2": float
+        "SNR_ww", "SNR_gg", "SNR_3x2": float
         SNR scores for shear-shear, galaxy clustering and full 3x2pt
 
-        "FOMww", "FOMgg", "FOM3x2": float
+        "FOM_ww", "FOM_gg", "FOM_3x2": float
         FOM metric derived from SNR above
 
     """
 
     scores = {}
     if metrics == 'all':
-        metrics = ["SNRww", "SNRgg", "SNR3x2", "FOMww", "FOMgg", "FOM3x2"]
+        metrics = ["SNR_ww", "SNR_gg", "SNR_3x2", "FOM_ww", "FOM_gg", "FOM_3x2"]
     for what in ["ww", "gg", "3x2"]:
-        if ("SNR"+what in metrics) or ("FOM"+what in metrics):
+        if ("SNR_"+what in metrics) or ("FOM_"+what in metrics):
             mu, C, galaxy_galaxy_tracer_bias = compute_mean_covariance(
                 tomo_bin, z, what)
             # S/N for correlated data, I assume, from generalizing
             # sqrt(sum(mu**2/sigma**2))
             P = np.linalg.inv(C)
-            scores['SNR'+what] = (mu.T @ P @ mu)**0.5
-            if "FOM"+what in metrics:
+            scores['SNR_'+what] = (mu.T @ P @ mu)**0.5
+            if "FOM_"+what in metrics:
                 sacc_data = make_sacc(tomo_bin, z, what, mu, C)
-                scores['FOM'+what] = figure_of_merit(
+                scores['FOM_'+what] = figure_of_merit(
                     sacc_data, what, galaxy_galaxy_tracer_bias)
 
     return scores
@@ -241,6 +240,7 @@ def compute_mean_covariance(tomo_bin, z, what):
 
 
 def plot_distributions(z, tomo_bin, filename, nominal_edges=None):
+    import matplotlib.pyplot as plt
     fig = plt.figure()
     nbin = int(tomo_bin.max()) + 1
     for i in range(nbin):

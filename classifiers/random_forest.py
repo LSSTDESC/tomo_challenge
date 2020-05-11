@@ -12,10 +12,6 @@ Every classifier module needs to:
 See Classifier Documentation below.
 """
 
-import time
-import sys
-import code
-
 import numpy as np
 from sklearn.ensemble import RandomForestClassifier
 
@@ -83,10 +79,8 @@ class RandomForest:
         # Can be replaced with any classifier
         classifier = RandomForestClassifier()
 
-        t0 = time.perf_counter()
         # Lots of data, so this will take some time
         classifier.fit(training_data, training_bin)
-        duration = time.perf_counter() - t0
 
         self.classifier = classifier
         self.z_edges = z_edges

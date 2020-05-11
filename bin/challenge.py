@@ -44,6 +44,8 @@ def main(config_yaml):
 def find_modules():
     import glob, importlib.util
     classifiers = {}
+    # Find every class in every module in the classifiers subdirectory that has a
+    # method called train and another called apply.
     for file in glob.glob(os.path.join(root_dir,"classifiers","*.py")):
         spec = importlib.util.spec_from_file_location("", file)
         mod = importlib.util.module_from_spec(spec)

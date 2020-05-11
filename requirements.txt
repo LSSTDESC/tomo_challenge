@@ -8,3 +8,4 @@ git+https://github.com/cmbant/camb
 cosmosis-standalone
 pyccl
 camb
+click
