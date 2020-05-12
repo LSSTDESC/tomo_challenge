@@ -7,6 +7,9 @@ import pathlib
 import tempfile
 import yaml
 
+this_directory = pathlib.Path(__file__).resolve().parent
+default_config_path = this_directory.parent / 'tomo_challenge' / 'config.yml'
+
 
 def compute_scores(tomo_bin, z, metrics='all'):
     """Compute a set of score metrics.
@@ -130,13 +133,8 @@ def compute_mean_covariance(tomo_bin, z, what):
     # assumed total over all bins, divided proportionally
     n_eff_total_arcmin2 = 20.0
     # Use this fiducial cosmology, which is what I have for TXPipe
-    cosmo = ccl.Cosmology(
-        Omega_c=0.22,
-        Omega_b=0.0447927,
-        h=0.71,
-        n_s=0.963,
-        sigma8=0.8,
-    )
+    config = yaml.safe_load(open(default_config_path))
+    cosmo = ccl.Cosmology(**config['parameters'])
 
     # ell values we will use.  Computed centrally
     # since we want to avoid mismatches elsewhere.
@@ -305,7 +303,7 @@ def figure_of_merit(sacc_data, what, galaxy_tracer_bias):
     tracer_type = get_tracer_type(nbin, what)
 
     # Load the baseline configuration
-    config = yaml.safe_load(open("./tomo_challenge/config.yml"))
+    config = yaml.safe_load(open(default_config_path))
 
     # Override pieces of the configuration.
     # Start with the tracer list.
