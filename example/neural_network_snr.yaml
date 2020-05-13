@@ -2,15 +2,12 @@ metrics: [SNR_ww, SNR_gg, SNR_3x2, FOM_3x2]
 bands: riz
 training_file: riz/training.hdf5
 validation_file: riz/validation.hdf5
-output_file: example/example_output.txt
+output_file: example/neural_output.txt
 
 run:
-  RandomForest:
-    {% for nbins in [1,2] %}
+  NeuralNetwork:
+    {% for nbins in [2,3,4] %}
     run_{{ nbins}}:
       bins: {{ nbins }}
+      metric: SNR
     {% endfor %}
-
-  IBandOnly:
-    run_3:
-      bins: 3

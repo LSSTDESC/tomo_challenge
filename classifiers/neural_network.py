@@ -94,7 +94,7 @@ class NeuralNetwork:
         self.features_scaler = StandardScaler()
 
     def train (self, training_data, training_z,
-              batch_size=5000, niter=1500):
+              batch_size=2000, niter=1500):
         """Trains the classifier
 
         Parameters:

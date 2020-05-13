@@ -1,5 +1,7 @@
+import numpy as np
+
 class IBandOnly:
-    """Classifier for people who love nothing more than the i-band. 
+    """Classifier for people who love nothing more than the i-band.
        Classifies in uniform bins in the i-band mag. """
 
     valid_options = ['bins']
@@ -9,7 +11,7 @@ class IBandOnly:
         self.opt = options
         if 'bins' not in options:
             self.opt['bins'] = 3
-        
+
     def train (self,training_data, training_z):
         pass
 

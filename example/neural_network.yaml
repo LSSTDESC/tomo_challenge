@@ -6,6 +6,9 @@ output_file: example/neural_output.txt
 
 run:
   NeuralNetwork:
-    run_2:
-      bins: 2
+    {% for nbins in [2,3,4] %}
+    run_{{ nbins}}:
+      bins: {{ nbins }}
       metric: FOM
+    {% endfor %}
+    

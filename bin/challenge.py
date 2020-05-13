@@ -80,8 +80,11 @@ def run_one (id, classifier, bands, set, train_data, train_z, valid_data,
     results = C.apply(valid_data)
     print ("Getting metric...")
     scores = tc.compute_scores(results, valid_z, metrics=metrics)
+    print ("Making some pretty plots...")
+    name = str(classifier.__name__)
+    settings = "".join([str(k)+"_"+str(set[k]) for k in set.keys()])
+    tc.metrics.plot_distributions(valid_z, results, f"plots/{name}_{settings}_{bands}.png")
     return scores
-
 
 if __name__=="__main__":
     main()

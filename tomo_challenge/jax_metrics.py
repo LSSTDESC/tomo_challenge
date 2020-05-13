@@ -5,8 +5,6 @@ from functools import partial
 import jax_cosmo as jc
 import jax
 
-SNR_SCORE_BASELINE = 266.5
-
 def ell_binning():
     # we put this here to make sure it's used consistently
     # plausible limits I guess
@@ -102,7 +100,7 @@ def compute_snr_score(weights, labels):
     ell, delta_ell = ell_binning()
 
     # Compute mean and covariance
-    mu, C = jc.angular_cl.gaussian_cl_covariance(cosmo, ell, probes, f_sky=0.25)
+    mu, C = jc.angular_cl.gaussian_cl_covariance_and_mean(cosmo, ell, probes, f_sky=0.25)
 
     # S/N for correlated data, I assume, from generalizing
     # sqrt(sum(mu**2/sigma**2))
@@ -143,7 +141,7 @@ def compute_fom_score(weights, labels, inds=[0,4]):
 
     # Compute the covariance matrix
     cl_noise = jc.angular_cl.noise_cl(ell, probes)
-    C = jc.angular_cl.gaussian_cl_covariance2(ell, probes, mu, cl_noise)
+    C = jc.angular_cl.gaussian_cl_covariance(ell, probes, mu, cl_noise)
 
     invCov = np.linalg.inv(C)
 
