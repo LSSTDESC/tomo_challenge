@@ -6,7 +6,7 @@ output_file: example/example_output.txt
 
 run:
   RandomForest:
-    {% for nbins in [1,2] %}
+    {% for nbins in [1,2,3,4] %}
     run_{{ nbins}}:
       bins: {{ nbins }}
     {% endfor %}

@@ -2,7 +2,7 @@ metrics: [SNR_ww, SNR_gg, SNR_3x2, FOM_3x2]
 bands: riz
 training_file: riz/training.hdf5
 validation_file: riz/validation.hdf5
-output_file: example/neural_output.txt
+output_file: example/neural_output_fom.txt
 
 run:
   NeuralNetwork:
@@ -11,4 +11,3 @@ run:
       bins: {{ nbins }}
       metric: FOM
     {% endfor %}
-    
