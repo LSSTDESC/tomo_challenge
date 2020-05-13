@@ -8,3 +8,4 @@ run:
   NeuralNetwork:
     run_2:
       bins: 2
+      metric: FOM

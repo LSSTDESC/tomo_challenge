@@ -3,6 +3,7 @@ import jax.random as rand
 from jax import lax, jit, vmap, grad
 from functools import partial
 import jax_cosmo as jc
+import jax
 
 SNR_SCORE_BASELINE = 266.5
 
@@ -18,64 +19,18 @@ def ell_binning():
     return ell, delta_ell
 
 @jit
-def compute_mean_covariance(weights, labels, params=None, kernel_bandwidth=0.01):
+def get_probes(weights, labels, kernel_bandwidth=0.05):
     """
-    JAX compatible version of the tomo challenge function
-
-    By default we are only considering the 3x2pt, because I'm too lazy to
-    handle flags.
-    Compute a mean and covariance for the chosen distribution of objects.
-
-    If params are provided, it's understood to be an array of the following
-    parameters:
-      Omega_c
-      Omega_b
-      h
-      sigma8
-      n_s
-
-    This assumes a cosmology, and the varions parameters affecting the noise
-    and signal: the f_sky, ell choices, sigma_e, and n_eff
+    JAX function that builds the 3x2pt probes, which can
+    then be used within any metri
     """
     what = '3x2'
-    # plausible limits I guess
-    ell_max = 2000
-    n_ell = 100
-
-    # 10,000 sq deg
-    f_sky = 0.25
-
     # pretend there is no evolution in measurement error.
     # because LSST is awesome
     sigma_e = 0.26
 
     # assumed total over all bins, divided proportionally
     n_eff_total_arcmin2 = 20.0
-
-    # Use this fiducial cosmology, which is what I have for TXPipe
-    if params is None:
-        cosmo = jc.Cosmology(
-            Omega_c = 0.27,
-            Omega_b = 0.045,
-            h = 0.67,
-            n_s = 0.96,
-            sigma8 = 0.8404844953840714,
-            Omega_k=0.,
-            w0=-1., wa=0.
-        )
-    else:
-        cosmo = jc.Cosmology(
-            Omega_c = params[0],
-            Omega_b = params[1],
-            h = params[2],
-            n_s =  params[3],
-            sigma8 = params[4],
-            Omega_k=0.,
-            w0=-1., wa=0.
-        )
-
-    # choose ell bins from params  above
-    ell, delta_ell = ell_binning()
 
     # Get the number of galaxiex.
     ngal = len(weights)
@@ -101,25 +56,16 @@ def compute_mean_covariance(weights, labels, params=None, kernel_bandwidth=0.01)
                                     gals_per_arcmin2=n_eff[i], zmax=4.))
 
     probes = []
-
     # start with number counts
     if (what == 'gg' or what == '3x2'):
-      # Define a bias parameterization
-      bias = jc.bias.inverse_growth_linear_bias(cosmo, 1.)
-      probes.append(jc.probes.NumberCounts(nzs, bias))
+        # Define a bias parameterization
+        bias = jc.bias.inverse_growth_linear_bias(1.)
+        probes.append(jc.probes.NumberCounts(nzs, bias))
 
     if (what == 'ww' or what == '3x2'):
-      probes.append(jc.probes.WeakLensing(nzs, sigma_e=sigma_e))
+        probes.append(jc.probes.WeakLensing(nzs, sigma_e=sigma_e))
 
-    # Let's the mean and covariance
-    mu, C = jc.angular_cl.gaussian_cl_covariance(cosmo, ell, probes, f_sky=f_sky)
-
-    # TODO: I'm not too sure about this, should we use cl_obs or cl_sig for S/N?
-    # For now, I'm doing the same thing as the upstream package, so I'm removing
-    # the noise contribution from the signal mu
-    cl_noise = jc.angular_cl.noise_cl(ell, probes)
-    mu = mu - cl_noise.flatten()
-    return mu , C
+    return probes
 
 def compute_snr_score(weights, labels):
     """Compute a score metric based on the total spectrum S/N
@@ -140,9 +86,78 @@ def compute_snr_score(weights, labels):
     score: float
         Metric for this configuration
     """
-    mu, C = compute_mean_covariance(weights, labels)
+    # Retrieve the probes
+    probes = get_probes(weights, labels)
+    # instantiates fiducial cosmology
+    cosmo = jc.Cosmology(
+        Omega_c = 0.27,
+        Omega_b = 0.045,
+        h = 0.67,
+        n_s = 0.96,
+        sigma8 = 0.8404844953840714,
+        Omega_k=0.,
+        w0=-1., wa=0.)
+
+    # choose ell bins from params  above
+    ell, delta_ell = ell_binning()
+
+    # Compute mean and covariance
+    mu, C = jc.angular_cl.gaussian_cl_covariance(cosmo, ell, probes, f_sky=0.25)
+
     # S/N for correlated data, I assume, from generalizing
     # sqrt(sum(mu**2/sigma**2))
     P = np.linalg.inv(C)
-    score = (mu.T @ P @ mu)**0.5 - SNR_SCORE_BASELINE
+    score = (mu.T @ P @ mu)**0.5
     return score
+
+def compute_fom_score(weights, labels, inds=[0,4]):
+    """
+    Computes the omega_c, sigma8 Figure of Merit
+    Actually the score returned is - area, I think it's more stable
+    """
+    # Retrieve the probes
+    probes = get_probes(weights, labels)
+
+    ell, delta_ell = ell_binning()
+
+    # Compute the derivatives of the data vector
+    @jax.jit
+    def mean(params):
+        cosmo = jc.Cosmology(
+            Omega_c = params[0],
+            Omega_b = params[1],
+            h = params[2],
+            n_s =  params[3],
+            sigma8 = params[4],
+            Omega_k=0.,
+            w0=-1., wa=0.
+        )
+        return jc.angular_cl.angular_cl(cosmo, ell, probes)
+
+    # Compute the jacobian of the data vector at fiducial cosmology
+    fid_params = np.array([0.27, 0.045, 0.67, 0.96, 0.840484495])
+    jac_mean = jax.jacfwd(lambda x: mean(x).flatten())
+
+    mu = mean(fid_params)
+    dmu = jac_mean(fid_params)
+
+    # Compute the covariance matrix
+    cl_noise = jc.angular_cl.noise_cl(ell, probes)
+    C = jc.angular_cl.gaussian_cl_covariance2(ell, probes, mu, cl_noise)
+
+    invCov = np.linalg.inv(C)
+
+    # Compute both terms of the Fisher matrix and combine them
+    #t1 = 0.5*np.einsum('nqa,ql,lmb,mn', dc, invCov, dc, invCov)
+    t2 = np.einsum('pa,pq,qb->ab', dmu, invCov, dmu)
+    F = t2 #t1+t2
+
+    # Compute covariance
+    i,j = inds
+    covmat_chunk = np.linalg.inv(F)[:, [i, j]][[i, j], :]
+
+    # And get the FoM, the inverse area of the 2 sigma contour
+    # area.
+    area = 6.17 * np.pi * np.sqrt(np.linalg.det(covmat_chunk))
+    # Actually, maybe we should just return the AREA, which a quantity we want to optimize
+    return - area #np.linalg.det(covmat_chunk)/9.277426e-09

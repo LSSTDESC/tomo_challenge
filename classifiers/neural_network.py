@@ -14,6 +14,8 @@ from flax import nn, optim, serialization
 # And some good old sklearn
 from sklearn.preprocessing import StandardScaler
 
+import tomo_challenge.jax_metrics as metrics
+
 # Conviniently stores the number of features
 n_features = {'riz':6, 'griz':10}
 
@@ -58,7 +60,7 @@ class NeuralNetwork:
     """ Neural Network Classifier """
 
     # valid parameter -- see below
-    valid_options = ['bins']
+    valid_options = ['bins', 'metric']
 
     def __init__ (self, bands, options):
         """Constructor
@@ -111,7 +113,7 @@ class NeuralNetwork:
         # If model is already trained, we just load the weights
         if os.path.exists(self.export_name):
             with open(self.export_name, 'rb') as file:
-            self.model = serialization.from_bytes(self.model, pickle.load(file))
+                self.model = serialization.from_bytes(self.model, pickle.load(file))
             return
 
         # Otherwise we train
@@ -120,10 +122,31 @@ class NeuralNetwork:
         if self.metric == 'SNR':
             lr = 0.001
         optimizer = optim.Momentum(learning_rate=lr, beta=0.9).create(self.model)
-        # Create training fn for specific metric
-        train_step = get_optimizing_step(self.metric)
+
+        @jax.jit
+        def train_step(optimizer, batch):
+            # This is the loss function
+            def loss_fn(model):
+                # Apply classifier to features
+                w = model(batch['features'])
+                # returns - score, because we want to maximize score
+                if self.metric == 'SNR':
+                    return - metrics.compute_snr_score(w, batch['labels'])
+                elif self.metric == 'FOM':
+                    return - metrics.compute_fom_score(w, batch['labels'])
+                else:
+                  raise NotImplementedError
+            # Compute gradients
+            loss, g = jax.value_and_grad(loss_fn)(optimizer.target)
+            # Perform gradient descent
+            optimizer = optimizer.apply_gradient(g)
+            return optimizer, loss
+        #
+        # # Create training fn for specific metric
+        # train_step = get_optimizing_step(self.metric)
 
         # This function provides random batches of data, TODO: convert to JAX
+        print("Size of dataset", len(labels))
         def get_batch():
             inds = onp.random.choice(len(labels), batch_size)
             return {'labels': labels[inds], 'features': features[inds]}

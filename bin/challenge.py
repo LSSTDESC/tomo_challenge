@@ -17,7 +17,7 @@ def main(config_yaml):
     with open(config_yaml, 'r') as fp:
         config_str = jinja2.Template(fp.read()).render()
     config = yaml.load(config_str, Loader=yaml.Loader)
-                
+
     classifiers = find_modules()
     print ("Found classifiers: ",", ".join(classifiers.keys()))
     ## First check if classifiers are there
@@ -28,7 +28,7 @@ def main(config_yaml):
     bands = config['bands']
     print ("Loading data...")
     training_data, training_z = load_data (config['training_file'], bands)
-    validation_data, validation_z = load_data (config['validation_file'], bands) 
+    validation_data, validation_z = load_data (config['validation_file'], bands)
     of = open(config['output_file'],'w')
     for classifier, runs in config['run'].items():
         for run, settings in runs.items():
@@ -38,8 +38,6 @@ def main(config_yaml):
                              config['metrics'])
             of.write (f"{classifier} {run} {settings} {scores} \n")
     of.close()
-    
-    
 
 def find_modules():
     import glob, importlib.util
@@ -51,7 +49,7 @@ def find_modules():
         mod = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(mod)
         for item in dir(mod):
-            obj = getattr(mod,item) 
+            obj = getattr(mod,item)
             if (hasattr(obj,"train") and hasattr(obj,"apply")
                 and hasattr(obj,"valid_options") ):
                 classifiers[item]= obj
@@ -87,5 +85,3 @@ def run_one (id, classifier, bands, set, train_data, train_z, valid_data,
 
 if __name__=="__main__":
     main()
-
-

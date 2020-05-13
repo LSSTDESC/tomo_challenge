@@ -2,7 +2,6 @@ import numpy as np
 import pyccl as ccl
 import sacc
 import firecrown
-import sacc
 import pathlib
 import tempfile
 import yaml
