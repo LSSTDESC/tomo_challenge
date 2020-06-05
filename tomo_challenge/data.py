@@ -107,7 +107,7 @@ def load_magnitudes_and_colors(filename, bands):
 
     # Read the magnitudes into the array
     for i, b in enumerate(bands):
-        data[i] = f['mcal_mag_{}'.format(b)][:]
+        data[i] = f['{}_mag'.format(b)][:]
 
     f.close()
 
