@@ -26,6 +26,7 @@ class MyProgressBar:
 
         if self.pbar is None:
             self.pbar = self.module.ProgressBar(maxval=total_size)
+            self.pbar.start()
 
         downloaded = block_num * block_size
         if downloaded < total_size:
