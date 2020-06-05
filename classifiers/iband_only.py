@@ -1,3 +1,5 @@
+import numpy as np
+
 class IBandOnly:
     """Classifier for people who love nothing more than the i-band. 
        Classifies in uniform bins in the i-band mag. """
