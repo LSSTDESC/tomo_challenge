@@ -9,3 +9,4 @@ cosmosis-standalone
 pyccl
 camb
 click
+progressbar
