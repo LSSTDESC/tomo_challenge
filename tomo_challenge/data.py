@@ -62,7 +62,7 @@ def load_magnitudes_and_colors(filename, bands):
     """
 
     # Open the data file
-    f = h5py.File(filename)
+    f = h5py.File(filename, 'r')
 
     # Get the number of features (mags + colors)
     # and data points
@@ -110,11 +110,33 @@ def load_magnitudes_and_colors(filename, bands):
     # Return the data. sklearn wants it the other way around
     # because data scientists are weird and think of data as
     # lots of rows instead of lots of columns.
-    return data.T
+
+    #data = np.array(data.T, dtype = [('r',np.float32),('i',np.float32),('z',np.float32),
+    #              ('err_r',np.float32),('err_i',np.float32),('err_z',np.float32)])
+                  
+    data = data.T              
+    return data
+
+
+def add_noise_snr_cut (data, z, bands, iband_min_snr=20):
+    Nbands = len(bands)
+    magdata = data[:,:Nbands]
+    magerr = data[:,Nbands:]
+    ## add noise
+    magdata += np.random.normal(0,1,magerr.shape) * magerr
+    #add snr cut
+    iband = bands.find('i')
+    flux = 10**(-0.4*magdata[:,iband])
+    fluxerr = flux*(np.log(10)*0.4*magerr[:,iband])
+    cut  = flux/fluxerr > iband_min_snr
+    data = data[cut,:]
+    z = z[cut]
+    return data, z
+
 
 def load_redshift(filename):
     """Load a redshift column from a training or validation file"""
-    f = h5py.File(filename)
+    f = h5py.File(filename, 'r')
     z = f['redshift_true'][:]
     f.close()
     return z    
