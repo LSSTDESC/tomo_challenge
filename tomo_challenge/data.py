@@ -4,16 +4,40 @@ import warnings
 import h5py
 import numpy as np
 
-nersc_path = '/global/projecta/projectdirs/lsst/groups/WL/users/zuntz/tomo_challenge_data'
+nersc_path = '/global/projecta/projectdirs/lsst/groups/WL/users/zuntz/tomo_challenge_data/ugrizy'
 url_root =  'https://portal.nersc.gov/cfs/lsst/txpipe/tomo_challenge_data/ugrizy'
 # This is not supposed to be needed - I don't understand why in my shifter env the warning
 # is being repeated.
 warned = False
 
+
+class MyProgressBar:
+    def __init__(self):
+        self.pbar = None
+        try:
+            import progressbar
+            self.module = progressbar
+        except ImportError:
+            self.module = None
+
+    def __call__(self, block_num, block_size, total_size):
+        if self.module is None:
+            return
+
+        if self.pbar is None:
+            self.pbar = self.module.ProgressBar(maxval=total_size)
+
+        downloaded = block_num * block_size
+        if downloaded < total_size:
+            self.pbar.update(downloaded)
+        else:
+            self.pbar.finish()
+
+
 def download_data():
     """Download challenge data (about 4GB) to current directory.
 
-    This will create directories ./riz and ./griz with the training
+    This will create a directory ./data with the training
     and validation files in.
 
     If on NERSC this will just generate links to the data.
@@ -31,11 +55,12 @@ def download_data():
         os.symlink(nersc_path, 'data')
     else:
         # Otherwise actually download both data sets
-        os.makedirs('data')
+        os.makedirs('data', exist_ok=True)
         # Download each of the two files for these bands
-        for f in ['training', 'testing']:
+        for f in ['validation', 'training']:
             filename = f'{f}.hdf5'
-            urlretrieve(f'{url_root}/{filename}', f'data/{filename}')
+            progress = MyProgressBar()
+            urlretrieve(f'{url_root}/{filename}', f'data/{filename}', reporthook=progress)
 
 
 def load_magnitudes_and_colors(filename, bands):
