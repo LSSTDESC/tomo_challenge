@@ -1,0 +1,25 @@
+dist: bionic
+
+language: python
+
+python:
+  - "3.6"
+  - "3.7"
+  - "3.8"
+
+before_install:
+  - sudo apt-get update
+  - sudo apt-get -y install gfortran-7 swig libgsl-dev libopenmpi-dev openmpi-bin libopenblas-dev
+  - sudo ln -s `which gfortran-7` /usr/local/bin/gfortran
+
+install:
+  - pip install  -r requirements.txt
+  - mkdir data
+  - wget https://portal.nersc.gov/project/lsst/txpipe/tomo_challenge_data/ugrizy/mini_training.hdf5
+  - wget https://portal.nersc.gov/project/lsst/txpipe/tomo_challenge_data/ugrizy/mini_validation.hdf5
+
+cache: pip
+
+script:
+  - ceci examples/laptop_pipeline.yml
+  - test -f data/example/outputs/shear_xi.png

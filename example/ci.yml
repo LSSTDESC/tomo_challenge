@@ -1,0 +1,17 @@
+metrics: [SNR_ww, SNR_gg, SNR_3x2]
+bands: riz
+training_file: data/mini_training.hdf5
+validation_file: data/mini_validation.hdf5
+output_file: example/ci_output.txt
+
+run:
+  RandomForest:
+    {% for nbins in [1,3] %}
+    run_{{ nbins}}:
+      bins: {{ nbins }}
+    {% endfor %}
+
+  IBandOnly:
+    run_2:
+      bins: 2
+        
