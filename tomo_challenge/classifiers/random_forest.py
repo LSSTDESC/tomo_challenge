@@ -60,6 +60,7 @@ class RandomForest(Tomographer):
         """
 
         n_bin = self.opt['bins']
+        print("Finding bins for training data")
         # Now put the training data into redshift bins.
         # Use zero so that the one object with minimum
         # z in the whole survey will be in the lowest bin
@@ -84,6 +85,7 @@ class RandomForest(Tomographer):
         # Can be replaced with any classifier
         classifier = RandomForestClassifier()
 
+        print("Fitting classifier")
         # Lots of data, so this will take some time
         classifier.fit(training_data, training_bin)
 

@@ -1,18 +1,21 @@
-metrics: [SNR_ww, SNR_gg, SNR_3x2]
+metrics:  [SNR_ww, SNR_3x2, FOM_3x2]
 bands: riz
 training_file: data/training.hdf5
 validation_file: data/validation.hdf5
 output_file: example/example_output.txt
 
 run:
+  # This is a class name which will be looked up
   RandomForest:
     run_3:
+      # This setting is sent to the classifier
       bins: 3
+      # These special settings decide whether the
+      # color and error colums are passed to the classifier
+      # as well as the magnitudes
       colors: True
       errors: False
 
   IBandOnly:
     run_3:
       bins: 3
-      colors: False
-      errors: False
