@@ -108,7 +108,9 @@ def add_colors(data, bands, errors=False):
     # on the choice to set undetected magnitudes to 30.
     for b,c in colors_for_bands(bands):
         data[f'{b}{c}'] = data[f'{b}'] - data[f'{c}']
-        data[f'{b}{c}_err'] = np.sqrt(data[f'{b}_err']**2 + data[f'{c}_err']**2)
+        if errors:
+            data[f'{b}{c}_err'] = np.sqrt(data[f'{b}_err']**2 + data[f'{c}_err']**2)
+
 
 def dict_to_array(data, bands, errors=False, colors=False):
     nobj = data[bands[0]].size
