@@ -1,8 +1,8 @@
-metrics:  [SNR_ww, SNR_3x2, FOM_3x2]
+metrics:  [SNR_3x2, FOM_3x2]
 bands: riz
-training_file: data/training.hdf5
-validation_file: data/validation.hdf5
-output_file: example/example_output.txt
+training_file: data/mini_training.hdf5
+validation_file: data/mini_validation.hdf5
+output_file: example/ci_output.txt
 
 run:
   # This is a class name which will be looked up
@@ -14,7 +14,7 @@ run:
       # color and error colums are passed to the classifier
       # as well as the magnitudes
       colors: True
-      errors: False
+      errors: True
 
   IBandOnly:
     run_3:
