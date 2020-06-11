@@ -12,15 +12,19 @@ Every classifier module needs to:
 See Classifier Documentation below.
 """
 
+from .base import Tomographer
 import numpy as np
 from sklearn.ensemble import RandomForestClassifier
 
 
-class RandomForest:
+class RandomForest(Tomographer):
     """ Random Forest Classifier """
     
     # valid parameter -- see below
     valid_options = ['bins']
+    # this settings means arrays will be sent to train and apply instead
+    # of dictionaries
+    wants_arrays = True
     
     def __init__ (self, bands, options):
         """Constructor
@@ -54,6 +58,7 @@ class RandomForest:
           true redshift for the training sample
 
         """
+
         n_bin = self.opt['bins']
         # Now put the training data into redshift bins.
         # Use zero so that the one object with minimum

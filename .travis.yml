@@ -15,8 +15,8 @@ before_install:
 install:
   - pip install  -r requirements.txt
   - mkdir data
-  - wget https://portal.nersc.gov/project/lsst/txpipe/tomo_challenge_data/ugrizy/mini_training.hdf5
-  - wget https://portal.nersc.gov/project/lsst/txpipe/tomo_challenge_data/ugrizy/mini_validation.hdf5
+  - curl -o data/mini_training.hdf5 https://portal.nersc.gov/project/lsst/txpipe/tomo_challenge_data/ugrizy/mini_training.hdf5
+  - curl -o data/mini_validation.hdf5 https://portal.nersc.gov/project/lsst/txpipe/tomo_challenge_data/ugrizy/mini_validation.hdf5
 
 cache: pip
 
