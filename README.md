@@ -2,7 +2,7 @@
 
 In this challenge you are asked to group galaxies into tomographic bins using only the quantities we generate using the metacalibration method.  These quantities are the only ones for which we can compute a shear bias correction associcated with the division.
 
-We provide training and validation sets of data, and once everyone has added methods, we 
+We provide training and validation sets of data, and once everyone has added methods, we
 
 This test is highly idealised: we have a huge complete training sample, simple noise models, no outliers, and no variation in depth or any other observing conditions.
 
@@ -47,10 +47,10 @@ You can enter the contest by pull request.  Add a python file with your method i
 
 ## Example Method
 
-In `tomo_challenge/random_forest_example.py` you can find an example of using a scikit-learn classified with a simple galaxy split to assign objects.  Run it by doing, e.g.:
+In `classifiers/random_forest.py` you can find an example of using a scikit-learn classified with a simple galaxy split to assign objects.  Run it by doing, e.g.:
 
-```
-python -m tomo_challenge.random_forest_example riz 5
+```bash
+$ python bin/challenge.py example/example.yaml
 ```
 
 This will compute the metric and make a plot for the random forest method using between 1 and 5 bins.

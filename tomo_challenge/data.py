@@ -4,16 +4,41 @@ import warnings
 import h5py
 import numpy as np
 
-nersc_path = '/global/projecta/projectdirs/lsst/groups/WL/users/zuntz/tomo_challenge_data/'
-url_root =  'https://portal.nersc.gov/project/lsst/txpipe/tomo_challenge_data/'
+nersc_path = '/global/projecta/projectdirs/lsst/groups/WL/users/zuntz/tomo_challenge_data/ugrizy'
+url_root =  'https://portal.nersc.gov/cfs/lsst/txpipe/tomo_challenge_data/ugrizy'
 # This is not supposed to be needed - I don't understand why in my shifter env the warning
 # is being repeated.
 warned = False
 
+
+class MyProgressBar:
+    def __init__(self):
+        self.pbar = None
+        try:
+            import progressbar
+            self.module = progressbar
+        except ImportError:
+            self.module = None
+
+    def __call__(self, block_num, block_size, total_size):
+        if self.module is None:
+            return
+
+        if self.pbar is None:
+            self.pbar = self.module.ProgressBar(maxval=total_size)
+            self.pbar.start()
+
+        downloaded = block_num * block_size
+        if downloaded < total_size:
+            self.pbar.update(downloaded)
+        else:
+            self.pbar.finish()
+
+
 def download_data():
     """Download challenge data (about 4GB) to current directory.
 
-    This will create directories ./riz and ./griz with the training
+    This will create a directory ./data with the training
     and validation files in.
 
     If on NERSC this will just generate links to the data.
@@ -28,19 +53,15 @@ def download_data():
     """
     if os.environ.get("NERSC_HOST"):
         # If we are on NERSC just make some links
-        os.symlink(nersc_path + 'riz', 'riz')
-        os.symlink(nersc_path + 'griz', 'griz')
+        os.symlink(nersc_path, 'data')
     else:
         # Otherwise actually download both data sets
-        for bands in ['riz', 'griz']:
-            # These will raise an exception if the directories
-            # already exist, preventing downloading twice
-            os.makedirs(bands)
-            # Download each of the two files for these bands
-            for f in ['training', 'validation']:
-                filename = f'{bands}/{f}.hdf5'
-                urlretrieve(url_root + filename, filename)
-
+        os.makedirs('data', exist_ok=True)
+        # Download each of the two files for these bands
+        for f in ['validation', 'training']:
+            filename = f'{f}.hdf5'
+            progress = MyProgressBar()
+            urlretrieve(f'{url_root}/{filename}', f'data/{filename}', reporthook=progress)
 
 
 def load_magnitudes_and_colors(filename, bands):
@@ -86,9 +107,14 @@ def load_magnitudes_and_colors(filename, bands):
 
     # Read the magnitudes into the array
     for i, b in enumerate(bands):
-        data[i] = f['mcal_mag_{}'.format(b)][:]
+        data[i] = f['{}_mag'.format(b)][:]
 
     f.close()
+
+    # Warn about non-detections being set mag=30.
+    # The system is only supposed to warn once but on
+    # shifter it is warning every time and I don't understand why.
+    # Best guess is one of the libraries we load sets some option.
     global warned
     if not warned:
         warnings.warn("Setting inf (undetected) bands to mag=30")
