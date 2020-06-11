@@ -15,7 +15,7 @@ parameters:
 cosmosis:
   sampler: fisher
   debug: False
-  quiet: False
+  quiet: True
   mpi: False
   fisher:
     step_size: 0.02
