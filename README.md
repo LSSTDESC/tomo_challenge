@@ -47,7 +47,7 @@ You can enter the contest by pull request.  Add a python file with your method i
 
 ## Example Method
 
-In `classifiers/random_forest.py` you can find an example of using a scikit-learn classified with a simple galaxy split to assign objects.  Run it by doing, e.g.:
+In `tomo_challenge/classifiers/random_forest.py` you can find an example of using a scikit-learn classified with a simple galaxy split to assign objects.  Run it by doing, e.g.:
 
 ```bash
 $ python bin/challenge.py example/example.yaml
