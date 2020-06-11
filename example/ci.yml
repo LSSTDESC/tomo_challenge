@@ -1,23 +1,21 @@
-metrics: [SNR_ww, SNR_gg, SNR_3x2]
+metrics:  [SNR_3x2, FOM_3x2]
 bands: riz
 training_file: data/mini_training.hdf5
 validation_file: data/mini_validation.hdf5
 output_file: example/ci_output.txt
 
 run:
+  # This is a class name which will be looked up
   RandomForest:
-    # Baseline run
     run_3:
+      # This setting is sent to the classifier
       bins: 3
-
-    # Also classifying on colours and errors
-    run_3_ce:
-      bins: 3
+      # These special settings decide whether the
+      # color and error colums are passed to the classifier
+      # as well as the magnitudes
       colors: True
       errors: True
 
-  # i-band uniform split
   IBandOnly:
-    run_2:
-      bins: 2
-        
+    run_3:
+      bins: 3
