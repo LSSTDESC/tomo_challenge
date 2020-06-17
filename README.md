@@ -89,3 +89,59 @@ and for riz:
 9  29.1
 10  30.1
 ```
+
+
+## FAQ
+
+#### How do I enter?
+
+Create a pull request that adds a python file to the `tomo_challenge/classifiers` directory containing a class with `train` and `apply` methods, following the random forest example as a template.
+
+#### Can I use a different programming language?
+
+Only if it can be easily called from python.
+
+
+#### What are the metrics?
+
+- The total S/N (including covariance) of all the power spectra of weak lensing made using your bins
+- The inverse area of the w0-wa Fisher matrix (due to [a technical problem](https://github.com/LSSTDESC/CCL/issues/779) the current metric is the sigma8-omega_c Fisher matrix)
+
+
+#### Why is this needed?
+
+The metacal method can correct galaxy shear biases associated with putting galaxies into bins (which arise because noise on magnitudes correlates with noise on shape), but only if the selection is done with quantities measured jointly with the shear.
+
+This only affects shear catalogs - for lens bins we can do what we like.
+
+#### What is the input data?
+
+[CosmoDC2](https://arxiv.org/pdf/1907.06530.pdf) galaxies with mock noise added.
+
+#### How many bins should I use, and what are the target distributions?
+
+As many as you like - it's likely that more bins will add to your score as long as they're well-separated in redshift, so you probably want to push the number upwards.  You can experiment with what edges give you best metrics; historically most approaches have tried to divide into bins with roughly equal numbers, so that may be a good place to start.
+
+#### What do I get out of this?
+
+You can be an author on the paper we write if you submit a working method.  
+
+#### Can non-DESC people enter?
+
+Yes.  It's based on [public simulated data](https://portal.nersc.gov/project/lsst/cosmoDC2/).  If you're not in DESC you may have to fill in an [external collaborator form](https://docs.google.com/document/d/1kfDIi6REFupUQTAz_TfVbLTd6kcsBJ0x91-IYj73FK4/edit#).
+
+#### How realistic is this?
+
+This is the easiest possible challenge - the training set is large and drawn from the same population as the test data, and the data selection is relatively simple.
+
+#### Do I have to use machine learning methods?
+
+No - we call the methods `train` and `apply`, but that's just terminology, you can train however you like.
+
+#### Can I use a simpler metric?
+
+Yes, you can train however you like, including with your own metrics.  The final score will be on a suite of metrics including the two here.  We reserve the right to add more metrics to better understand things.
+
+#### What does the winner get?
+
+Recognition.
