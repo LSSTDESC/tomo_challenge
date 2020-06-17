@@ -31,13 +31,13 @@ Run `python -m tomo_challenge.data` in this directory to download the full set o
 
 ## Metric
 
-The current metric is the S/N on the spectra generated with the method:
+The first metric is the S/N on the spectra generated with the method:
 ```
 score^2 = sqrt(mu^T . C^{-1} . mu) - baseline
 ```
 where mu is the theory spectrum and C the Gaussian covariance.
 
-We plan to add second metric based on Fisher matrices shortly.
+The second is a Fisher-based Figure Of Merit, currently sigma8-omegac, though we will later add w0-wa.
 
 
 ## Entering the contest.
