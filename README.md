@@ -130,7 +130,7 @@ You can be an author on the paper we write if you submit a working method.
 
 #### Can non-DESC people enter?
 
-Yes.  It's based on [public simulated data](https://portal.nersc.gov/project/lsst/cosmoDC2/).  If you're not in DESC you may have to fill in an [external collaborator form](https://docs.google.com/document/d/1kfDIi6REFupUQTAz_TfVbLTd6kcsBJ0x91-IYj73FK4/edit#).
+Yes.  It's based on [public simulated data](https://portal.nersc.gov/project/lsst/cosmoDC2/).  If you're not in DESC you should first fill in an [external collaborator form](https://docs.google.com/document/d/1kfDIi6REFupUQTAz_TfVbLTd6kcsBJ0x91-IYj73FK4/edit#) and send it to Joe Zuntz, who can forward it for you.
 
 #### How realistic is this?
 
