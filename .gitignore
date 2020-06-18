@@ -1,0 +1,5 @@
+data/*
+__pycache__
+example/example_output.txt
+example/ci_output.txt
+.ipynb_checkpoints
