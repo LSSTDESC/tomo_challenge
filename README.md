@@ -109,6 +109,9 @@ Only if it can be easily called from python.
 - The total S/N (including covariance) of all the power spectra of weak lensing made using your bins
 - The inverse area of the w0-wa Fisher matrix (due to [a technical problem](https://github.com/LSSTDESC/CCL/issues/779) the current metric is the sigma8-omega_c Fisher matrix)
 
+Each can be run on ww (lensing-lensing) gg (lss-lss) and 3x2 (both + cross-corr), so the full list is: `SNR_ww, SNR_gg, SNR_3x2, FOM_ww, FOM_gg, FOM_3x2`
+
+
 
 #### Why is this needed?
 
