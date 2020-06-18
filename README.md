@@ -55,7 +55,7 @@ In `tomo_challenge/classifiers/random_forest.py` you can find an example of usin
 $ python bin/challenge.py example/example.yaml
 ```
 
-This will compute the metric and make a plot for the random forest method using between 1 and 5 bins.
+This will compute the metrics and write an output file for some test methods.
 
 You are welcome to adapt any part of that code in your methods.
 
