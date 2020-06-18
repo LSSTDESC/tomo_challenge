@@ -111,6 +111,12 @@ Only if it can be easily called from python.
 
 Each can be run on ww (lensing-lensing) gg (lss-lss) and 3x2 (both + cross-corr), so the full list is: `SNR_ww, SNR_gg, SNR_3x2, FOM_ww, FOM_gg, FOM_3x2`
 
+#### How can I change hyper-parameters or otherwise configure my method?
+
+Add a class variable `valid_options` in your method. Then variables in it are accessible in the dictionary `self.opt`.  See the random forest file for an example.
+
+
+Then you can set the variables for a given run in your yaml file, as in how `bins` is set in the example yaml file.
 
 
 #### Why is this needed?
