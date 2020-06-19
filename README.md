@@ -145,9 +145,15 @@ The publication policy seems not to have considered cases like this, so we've ha
 
 This is the easiest possible challenge - the training set is large and drawn from the same population as the test data, and the data selection is relatively simple.
 
+If you think it's too unrealistic then you should do really really well.
+
 #### Do I have to use machine learning methods?
 
 No - we call the methods `train` and `apply`, but that's just terminology, you can train however you like.
+
+#### Do I have to assign every galaxy to a bin?
+
+No, you can leave out galaxies if you want.  If you leave out too many the decrease in number density will start to hit your score of course.
 
 #### Can I use a simpler metric?
 
