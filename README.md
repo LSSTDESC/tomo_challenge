@@ -95,26 +95,25 @@ and for riz:
 
 ## FAQ
 
-#### How do I enter?
+- **How do I enter?**
 
 Create a pull request that adds a python file to the `tomo_challenge/classifiers` directory containing a class with `train` and `apply` methods, following the random forest example as a template.
 
-#### Can I use a different programming language?
+- **Can I use a different programming language?**
 
 Only if it can be easily called from python.
 
 
-#### What are the metrics?
+- **What are the metrics?**
 
 - The total S/N (including covariance) of all the power spectra of weak lensing made using your bins
 - The inverse area of the w0-wa Fisher matrix (due to [a technical problem](https://github.com/LSSTDESC/CCL/issues/779) the current metric is the sigma8-omega_c Fisher matrix)
 
 Each can be run on ww (lensing-lensing) gg (lss-lss) and 3x2 (both + cross-corr), so the full list is: `SNR_ww, SNR_gg, SNR_3x2, FOM_ww, FOM_gg, FOM_3x2`
 
-#### How can I change hyper-parameters or otherwise configure my method?
+- **How can I change hyper-parameters or otherwise configure my method?**
 
 Add a class variable `valid_options` in your method. Then variables in it are accessible in the dictionary `self.opt`.  See the random forest file for an example.
-
 
 Then you can set the variables for a given run in your yaml file, as in how `bins` is set in the example yaml file.
 
