@@ -99,10 +99,13 @@ and for riz:
 
 Create a pull request that adds a python file to the `tomo_challenge/classifiers` directory containing a class with `train` and `apply` methods, following the random forest example as a template.
 
+---
+
 - **Can I use a different programming language?**
 
 Only if it can be easily called from python.
 
+---
 
 - **What are the metrics?**
 
@@ -111,12 +114,15 @@ Only if it can be easily called from python.
 
 Each can be run on ww (lensing-lensing) gg (lss-lss) and 3x2 (both + cross-corr), so the full list is: `SNR_ww, SNR_gg, SNR_3x2, FOM_ww, FOM_gg, FOM_3x2`
 
+---
+
 - **How can I change hyper-parameters or otherwise configure my method?**
 
 Add a class variable `valid_options` in your method. Then variables in it are accessible in the dictionary `self.opt`.  See the random forest file for an example.
 
 Then you can set the variables for a given run in your yaml file, as in how `bins` is set in the example yaml file.
 
+---
 
 - **Why is this needed?**
 
@@ -124,21 +130,31 @@ The metacal method can correct galaxy shear biases associated with putting galax
 
 This only affects shear catalogs - for lens bins we can do what we like.
 
+---
+
 - **What is the input data?**
 
 [CosmoDC2](https://arxiv.org/pdf/1907.06530.pdf) galaxies with mock noise added.
+
+---
 
 - **How many bins should I use, and what are the target distributions?**
 
 As many as you like - it's likely that more bins will add to your score as long as they're well-separated in redshift, so you probably want to push the number upwards.  You can experiment with what edges give you best metrics; historically most approaches have tried to divide into bins with roughly equal numbers, so that may be a good place to start.
 
+---
+
 - **What do I get out of this?**
 
 You can be an author on the paper we write if you submit a working method.  
 
+---
+
 - **Can non-DESC people enter?**
 
 The publication policy seems not to have considered cases like this, so we've had to ask for an exemption for now.  It's probably best to hold off for a bit - email Joe for updates.  It's based on [public simulated data](https://portal.nersc.gov/project/lsst/cosmoDC2/), so we think it should be okay.
+
+---
 
 - **How realistic is this?**
 
@@ -146,21 +162,31 @@ This is the easiest possible challenge - the training set is large and drawn fro
 
 If you think it's too unrealistic then you should do really really well.
 
+---
+
 - **Do I have to use machine learning methods?**
 
 No - we call the methods `train` and `apply`, but that's just terminology, you can train however you like.
+
+---
 
 - **Do I have to assign every galaxy to a bin?**
 
 No, you can leave out galaxies if you want.  If you leave out too many the decrease in number density will start to hit your score of course.
 
+---
+
 - **Can I use a simpler metric?**
 
 Yes, you can train however you like, including with your own metrics.  The final score will be on a suite of metrics including the two here.  We reserve the right to add more metrics to better understand things.
 
+---
+
 - **When does the challenge close?**
 
 The end of July 2020.
+
+---
 
 - **What does the winner get?**
 
