@@ -119,51 +119,51 @@ Add a class variable `valid_options` in your method. Then variables in it are ac
 Then you can set the variables for a given run in your yaml file, as in how `bins` is set in the example yaml file.
 
 
-#### Why is this needed?
+- **Why is this needed?**
 
 The metacal method can correct galaxy shear biases associated with putting galaxies into bins (which arise because noise on magnitudes correlates with noise on shape), but only if the selection is done with quantities measured jointly with the shear.
 
 This only affects shear catalogs - for lens bins we can do what we like.
 
-#### What is the input data?
+- **What is the input data?**
 
 [CosmoDC2](https://arxiv.org/pdf/1907.06530.pdf) galaxies with mock noise added.
 
-#### How many bins should I use, and what are the target distributions?
+- **How many bins should I use, and what are the target distributions?**
 
 As many as you like - it's likely that more bins will add to your score as long as they're well-separated in redshift, so you probably want to push the number upwards.  You can experiment with what edges give you best metrics; historically most approaches have tried to divide into bins with roughly equal numbers, so that may be a good place to start.
 
-#### What do I get out of this?
+- **What do I get out of this?**
 
 You can be an author on the paper we write if you submit a working method.  
 
-#### Can non-DESC people enter?
+- **Can non-DESC people enter?**
 
 The publication policy seems not to have considered cases like this, so we've had to ask for an exemption for now.  It's probably best to hold off for a bit - email Joe for updates.  It's based on [public simulated data](https://portal.nersc.gov/project/lsst/cosmoDC2/), so we think it should be okay.
 
-#### How realistic is this?
+- **How realistic is this?**
 
 This is the easiest possible challenge - the training set is large and drawn from the same population as the test data, and the data selection is relatively simple.
 
 If you think it's too unrealistic then you should do really really well.
 
-#### Do I have to use machine learning methods?
+- **Do I have to use machine learning methods?**
 
 No - we call the methods `train` and `apply`, but that's just terminology, you can train however you like.
 
-#### Do I have to assign every galaxy to a bin?
+- **Do I have to assign every galaxy to a bin?**
 
 No, you can leave out galaxies if you want.  If you leave out too many the decrease in number density will start to hit your score of course.
 
-#### Can I use a simpler metric?
+- **Can I use a simpler metric?**
 
 Yes, you can train however you like, including with your own metrics.  The final score will be on a suite of metrics including the two here.  We reserve the right to add more metrics to better understand things.
 
-#### When does the challenge close?
+- **When does the challenge close?**
 
 The end of July 2020.
 
-#### What does the winner get?
+- **What does the winner get?**
 
 Recognition.
 
