@@ -1,4 +1,0 @@
-conda install -c conda-forge pyccl
-conda install -c conda-forge firecrown
-conda install -c conda-forge cosmosis-standalone
-
