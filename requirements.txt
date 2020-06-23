@@ -1,12 +1,12 @@
 scikit-learn
 sacc
-#git+https://github.com/LSSTDESC/firecrown/
+git+https://github.com/LSSTDESC/firecrown/
 sacc
 h5py
 matplotlib
 git+https://github.com/cmbant/camb
-#cosmosis-standalone
-#pyccl
+cosmosis-standalone
+pyccl
 camb
 click
 progressbar
