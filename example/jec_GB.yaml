@@ -8,7 +8,7 @@ run:
   # This is a class name which will be looked up
   myGradientBosster:
     run_3:
-      n_estimators: 100
+      n_estimators: 1000
       # This setting is sent to the classifier
       bins: 6
       # These special settings decide whether the

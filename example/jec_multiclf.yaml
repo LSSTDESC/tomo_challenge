@@ -2,13 +2,13 @@ metrics:  [SNR_ww, SNR_3x2, FOM_3x2]
 bands: griz
 training_file: data/training.hdf5
 validation_file: data/validation.hdf5
-output_file: example/jec_MultiClf-GB+RF-StdScaler-6bins-100estim-griz.txt
+output_file: example/jec_MultiClf-GB+RF-StdScaler-6bins-50estim-griz.txt
 
 run:
   # This is a class name which will be looked up
   myCombinedClassifiers:
     run_3:
-      n_estimators: 100
+      n_estimators: 50
       # This setting is sent to the classifier
       bins: 6
       # These special settings decide whether the

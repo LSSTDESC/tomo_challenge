@@ -94,9 +94,7 @@ class myCombinedClassifiers(Tomographer):
         
         estimators = [ ('gd', make_pipeline(StandardScaler(), GradientBoostingClassifier(n_estimators=n_estimators))),
                         ('rf', make_pipeline(StandardScaler(),
-                                             RandomForestClassifier(max_depth=10,
-                                                                    max_features=None,
-                                                                    n_estimators=n_estimators)))  ]
+                                             RandomForestClassifier(n_estimators=n_estimators)))  ]
         classifier = StackingClassifier(estimators=estimators,
                                         final_estimator=LogisticRegression())
 
