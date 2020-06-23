@@ -15,7 +15,7 @@ The challenge is open until the end of July 2020.
 
 ## Installing requirements
 
-In general you can install requirements with `pip install -r requirements.txt`
+In general you can install python requirements with `pip install -r requirements.txt`
 
 On NERSC it's easiest to use shifter (I've had problems with CCL there):
 
@@ -106,6 +106,26 @@ Create a pull request that adds a python file to the `tomo_challenge/classifiers
 Only if it can be easily called from python.
 
 ---
+
+- **What general software requirements are needed?**
+- Relatively recent compilers
+- MPI
+- Lapack
+- Python 3.6+
+- cmake
+- swig
+- if you find others please let us know
+
+On ubuntu 20 you can install these apt/yum packages:
+```
+gfortran
+cmake
+swig
+libopenmpi-dev
+liblapack3
+liblapack64-dev
+libopenblas-dev 
+```
 
 - **What are the metrics?**
 
