@@ -158,6 +158,9 @@ def load_data(filename, bands, colors=False, errors=False, array=True):
     if colors:
         add_colors(data, bands, errors=errors)
 
+    if array:
+        data = dict_to_array(data, bands, errors=errors, colors=colors)
+
     return data
 
 
