@@ -152,7 +152,7 @@ def colors_for_bands(bands):
 
 
 
-def load_data(filename, bands, colors=False, errors=False, array=True):
+def load_data(filename, bands, colors=False, errors=False, array=False):
     data = load_mags(filename, bands, errors=errors)
 
     if colors:
