@@ -172,7 +172,7 @@ You can be an author on the paper we write if you submit a working method.
 
 - **Can non-DESC people enter?**
 
-The publication policy seems not to have considered cases like this, so we've had to ask for an exemption for now.  It's probably best to hold off for a bit - email Joe for updates.  It's based on [public simulated data](https://portal.nersc.gov/project/lsst/cosmoDC2/), so we think it should be okay.
+Yes - we have now been told by the publication board that this is fine, and the results paper can be non-DESC.
 
 ---
 
