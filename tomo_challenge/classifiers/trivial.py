@@ -14,8 +14,9 @@ See Classifier Documentation below.
 
 """
 import numpy as np
+from .base import Tomographer
 
-class Random:
+class Random(Tomographer):
     """Completely random classifier. 
 
     Every object goes into a random bin. 

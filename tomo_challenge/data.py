@@ -4,16 +4,41 @@ import warnings
 import h5py
 import numpy as np
 
-nersc_path = '/global/projecta/projectdirs/lsst/groups/WL/users/zuntz/tomo_challenge_data/'
-url_root =  'https://portal.nersc.gov/project/lsst/txpipe/tomo_challenge_data/'
+nersc_path = '/global/projecta/projectdirs/lsst/groups/WL/users/zuntz/tomo_challenge_data/ugrizy'
+url_root =  'https://portal.nersc.gov/cfs/lsst/txpipe/tomo_challenge_data/ugrizy'
 # This is not supposed to be needed - I don't understand why in my shifter env the warning
 # is being repeated.
 warned = False
 
+
+class MyProgressBar:
+    def __init__(self):
+        self.pbar = None
+        try:
+            import progressbar
+            self.module = progressbar
+        except ImportError:
+            self.module = None
+
+    def __call__(self, block_num, block_size, total_size):
+        if self.module is None:
+            return
+
+        if self.pbar is None:
+            self.pbar = self.module.ProgressBar(maxval=total_size)
+            self.pbar.start()
+
+        downloaded = block_num * block_size
+        if downloaded < total_size:
+            self.pbar.update(downloaded)
+        else:
+            self.pbar.finish()
+
+
 def download_data():
     """Download challenge data (about 4GB) to current directory.
 
-    This will create directories ./riz and ./griz with the training
+    This will create a directory ./data with the training
     and validation files in.
 
     If on NERSC this will just generate links to the data.
@@ -28,111 +53,116 @@ def download_data():
     """
     if os.environ.get("NERSC_HOST"):
         # If we are on NERSC just make some links
-        os.symlink(nersc_path + 'riz', 'riz')
-        os.symlink(nersc_path + 'griz', 'griz')
+        os.symlink(nersc_path, 'data')
     else:
         # Otherwise actually download both data sets
-        for bands in ['riz', 'griz']:
-            # These will raise an exception if the directories
-            # already exist, preventing downloading twice
-            os.makedirs(bands)
-            # Download each of the two files for these bands
-            for f in ['training', 'validation']:
-                filename = f'{bands}/{f}.hdf5'
-                urlretrieve(url_root + filename, filename)
+        os.makedirs('data', exist_ok=True)
+        # Download each of the two files for these bands
+        for f in ['validation', 'training']:
+            filename = f'{f}.hdf5'
+            progress = MyProgressBar()
+            urlretrieve(f'{url_root}/{filename}', f'data/{filename}', reporthook=progress)
 
 
+def load_mags(filename, bands, errors=False):
 
-def load_magnitudes_and_colors(filename, bands):
-    """Load magnitudes, and compute colors from them,
-    from a training or validation file.
 
-    Note that there are other columns available in
-    the files that this function does not load, but are
-    available for your methods (mag errors, size, s/n).
-
-    Parameters
-    ----------
-    filename: str
-        The name of the file to read, e.g. riz/training.hdf5
-
-    bands: str
-        The list of bands to read from the data
-
-    Returns
-    -------
-    data: array
-        Dimension is nfeature x nrow, where nfeature = nband + ncolor
-        and ncolor = nband * (nband - 1) / 2
-    """
-
-    # Open the data file
-    f = h5py.File(filename, 'r')
-
-    # Get the number of features (mags + colors)
-    # and data points
-    ndata = f['ra'].size
-    nband = len(bands)
-    ncolor = (nband * (nband - 1)) // 2
-    nfeature = nband + ncolor
-
-    # np.empty is like np.zeros except it doesn't
-    # bother filling in the data with zeros, just
-    # allocates space.  We can use it because we
-    # are filling it in in a moment.  This gets
-    # transposed before we return it to match
-    # what sklearn expects
-    data = np.empty((nfeature, ndata))
-
-    # Read the magnitudes into the array
-    for i, b in enumerate(bands):
-        data[i] = f['mcal_mag_{}'.format(b)][:]
-
-    f.close()
+    # Warn about non-detections being set mag=30.
+    # The system is only supposed to warn once but on
+    # shifter it is warning every time and I don't understand why.
+    # Best guess is one of the libraries we load sets some option.
     global warned
     if not warned:
         warnings.warn("Setting inf (undetected) bands to mag=30")
         warned = True
-    data[:nband][~np.isfinite(data[:nband])] = 30.0
 
-    # Starting column for the colors
-    n = nband
+    data = {}
+
+    with h5py.File(filename, 'r') as f:
+        # load all bands
+        for b in bands:
+            data[b] = f[f'{b}_mag'][:]
+
+            if errors:
+                data[f'{b}_err'] = f[f'{b}_mag_err'][:]
+
+
+    # Set undetected objects to mag 30 +/- 30
+    for b in bands:
+        bad = ~np.isfinite(data[b])
+        data[b][bad] = 30.0
+
+        if errors:
+            data[f'{b}_err'][bad] = 30.0
+
+    return data
+
+def add_colors(data, bands, errors=False):
+    nband = len(bands)
+    nobj = data[bands[0]].size
+    ncolor = nband * (nband - 1) // 2
 
     # also get colors as data, from all the
     # (non-symmetric) pairs.  Note that we are getting some
     # redundant colors here, and some incorrect colors based
     # on the choice to set undetected magnitudes to 30.
-    for i in range(nband):
-        for j in range(i+1, nband):
-            data[n] = data[i] - data[j]
-            n += 1
+    for b,c in colors_for_bands(bands):
+        data[f'{b}{c}'] = data[f'{b}'] - data[f'{c}']
+        if errors:
+            data[f'{b}{c}_err'] = np.sqrt(data[f'{b}_err']**2 + data[f'{c}_err']**2)
 
-    # Return the data. sklearn wants it the other way around
-    # because data scientists are weird and think of data as
-    # lots of rows instead of lots of columns.
 
-    #data = np.array(data.T, dtype = [('r',np.float32),('i',np.float32),('z',np.float32),
-    #              ('err_r',np.float32),('err_i',np.float32),('err_z',np.float32)])
+def dict_to_array(data, bands, errors=False, colors=False):
+    nobj = data[bands[0]].size
+    nband = len(bands)
+    ncol = nband
+    if colors:
+        ncol += nband * (nband - 1) // 2
+    if errors:
+        ncol *= 2
 
-    data = data.T
+    arr = np.empty((ncol, nobj))
+    i = 0
+    for b in bands:
+        arr[i] = data[b]
+        i += 1
+
+    if colors:
+        for b, c in colors_for_bands(bands):
+            arr[i] = data[f'{b}{c}']
+            i += 1
+
+    if errors:
+        for b in bands:
+            arr[i] = data[f"{b}_err"]
+            i += 1
+
+    if errors and colors:
+        for b, c in colors_for_bands(bands):
+            arr[i] = data[f'{b}{c}_err']
+            i += 1
+
+    return arr.T
+
+
+def colors_for_bands(bands):
+    for i,b in enumerate(bands):
+        for c in bands[i+1:]:
+            yield b, c
+
+
+
+def load_data(filename, bands, colors=False, errors=False, array=False):
+    data = load_mags(filename, bands, errors=errors)
+
+    if colors:
+        add_colors(data, bands, errors=errors)
+
+    if array:
+        data = dict_to_array(data, bands, errors=errors, colors=colors)
+
     return data
 
-def add_noise_snr_cut (data, z, bands, iband_min_snr=20, iband_mag_cut=24.5):
-    Nbands = len(bands)
-    magdata = data[:,:Nbands]
-    magerr = data[:,Nbands:]
-    ## add noise
-    #magdata += np.random.normal(0,1,magerr.shape) * magerr
-    #add snr cut
-    iband = bands.find('i')
-    # flux = 10**(-0.4*magdata[:,iband])
-    # fluxerr = flux*(np.log(10)*0.4*magerr[:,iband])
-    # cut  = flux/fluxerr > iband_min_snr
-    # add imag cut instead
-    cut = magdata[:,iband] < iband_mag_cut
-    data = data[cut,:]
-    z = z[cut]
-    return data, z
 
 
 def load_redshift(filename):

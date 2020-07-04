@@ -9,6 +9,7 @@ cosmosis-standalone
 pyccl
 camb
 click
+progressbar
 jax_cosmo==0.1rc3
 jax
 jaxlib

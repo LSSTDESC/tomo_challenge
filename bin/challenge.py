@@ -5,81 +5,95 @@ import click
 import yaml
 import jinja2
 
-## get root dir, one dir below this script
+## get root dir, one dir above this script
 root_dir=os.path.join(os.path.split(sys.argv[0])[0],"..")
 sys.path.append(root_dir)
 import tomo_challenge as tc
 
 @click.command()
 @click.argument('config_yaml', type=str)
-
 def main(config_yaml):
     with open(config_yaml, 'r') as fp:
         config_str = jinja2.Template(fp.read()).render()
     config = yaml.load(config_str, Loader=yaml.Loader)
 
-    classifiers = find_modules()
-    print ("Found classifiers: ",", ".join(classifiers.keys()))
-    ## First check if classifiers are there
-    for item in config['run']:
-        if item not in classifiers:
-            print (f'Classifier {item} not found.')
-            raise NotImplementedError
+    # Get the classes associated with each
+    for name in config['run']:
+        try:
+            config['cls'] = tc.Tomographer._find_subclass(name)
+        except KeyError:
+            raise ValueError(f"Tomographer {name} is not defined")
+
+    # Decide if anyone needs the colors calculating and/or errors loading
+    anyone_wants_colors = False
+    anyone_wants_errors = False
+    for run in config['run'].values():
+        for version in run.values():
+            if version.get('errors'):
+                anyone_wants_errors = True
+            if version.get('colors'):
+                anyone_wants_colors = True
+
+
     bands = config['bands']
-    print ("Loading data...")
-    training_data, training_z = load_data (config['training_file'], bands)
-    validation_data, validation_z = load_data (config['validation_file'], bands)
-    of = open(config['output_file'],'w')
-    for classifier, runs in config['run'].items():
-        for run, settings in runs.items():
-            print ("Executing: ", classifier, bands, settings)
-            scores = run_one(classifier, classifiers[classifier], bands, settings,
-                             training_data, training_z, validation_data, validation_z,
-                             config['metrics'])
-            of.write (f"{classifier} {run} {settings} {scores} \n")
-    of.close()
 
-def find_modules():
-    import glob, importlib.util
-    classifiers = {}
-    # Find every class in every module in the classifiers subdirectory that has a
-    # method called train and another called apply.
-    for file in glob.glob(os.path.join(root_dir,"classifiers","*.py")):
-        spec = importlib.util.spec_from_file_location("", file)
-        mod = importlib.util.module_from_spec(spec)
-        spec.loader.exec_module(mod)
-        for item in dir(mod):
-            obj = getattr(mod,item)
-            if (hasattr(obj,"train") and hasattr(obj,"apply")
-                and hasattr(obj,"valid_options") ):
-                classifiers[item]= obj
-    return classifiers
+    training_data = tc.load_data(
+        config['training_file'],
+        bands,
+        errors=anyone_wants_errors,
+        colors=anyone_wants_colors
+    )
 
-def load_data(fname, bands):
-    data = tc.load_magnitudes_and_colors(fname, bands)
-    Nbands = len(bands)
-    print ('max mag before:',data[:,:Nbands].max(axis=0), 'nobj:',data.shape[0])
-    z = tc.load_redshift(fname)
-    data, z = tc.add_noise_snr_cut(data, z,  bands)
-    print ('max mag after:',data[:,:Nbands].max(axis=0), 'nobj:',data.shape[0])
+    validation_data = tc.load_data(
+        config['validation_file'],
+        bands,
+        errors=anyone_wants_errors,
+        colors=anyone_wants_colors
+    )
 
-    return data,z
+    training_z = tc.load_redshift(config['training_file'])
+    validation_z = tc.load_redshift(config['validation_file'])
 
-def run_one (id, classifier, bands, set, train_data, train_z, valid_data,
+    with open(config['output_file'],'w') as output_file:
+        for classifier_name, runs in config['run'].items():
+            for run, settings in runs.items():
+                scores = run_one(classifier_name, bands, settings,
+                                 training_data, training_z, validation_data, validation_z,
+                                 config['metrics'])
+
+                output_file.write (f"{classifier_name} {run} {settings} {scores} \n")
+
+
+
+def run_one(classifier_name, bands, settings, train_data, train_z, valid_data,
              valid_z, metrics):
+    classifier = tc.Tomographer._find_subclass(classifier_name)
+
+    if classifier.wants_arrays:
+        errors = settings.get('errors')
+        colors = settings.get('colors')
+        train_data = tc.dict_to_array(train_data, bands, errors=errors, colors=colors)
+        valid_data = tc.dict_to_array(valid_data, bands, errors=errors, colors=colors)
+
+    print ("Executing: ", classifier_name, bands, settings)
+
     ## first check if options are valid
-    for key in set.keys():
-        if key not in classifier.valid_options:
-            print ("Key %s is not recognized by classifier %s."%(key,id))
-            raise NotImplementedError
+    for key in settings.keys():
+        if key not in classifier.valid_options and key not in ['errors', 'colors']:
+            raise ValueError(f"Key {key} is not recognized by classifier {name}")
+
     print ("Initializing classifier...")
-    C=classifier(bands, set)
+    C=classifier(bands, settings)
+
     print ("Training...")
     C.train(train_data,train_z)
+
     print ("Applying...")
     results = C.apply(valid_data)
+
     print ("Getting metric...")
     scores = tc.compute_scores(results, valid_z, metrics=metrics)
+
     print ("Making some pretty plots...")
     name = str(classifier.__name__)
     settings = "".join([str(k)+"_"+str(set[k]) for k in set.keys()])
