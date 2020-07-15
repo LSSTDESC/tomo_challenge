@@ -78,7 +78,6 @@ def run_one(classifier_name, bands, settings, train_data, train_z, valid_data,
     print ("Executing: ", classifier_name, bands, settings)
 
     ## first check if options are valid
-    print (settings, classifier.valid_options)
     for key in settings.keys():
         if key not in classifier.valid_options and key not in ['errors', 'colors']:
             raise ValueError(f"Key {key} is not recognized by classifier {classifier_name}")

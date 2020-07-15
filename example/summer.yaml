@@ -10,4 +10,7 @@ run:
       colors: False
       errors: False
       n_slashes: 3
-      pop_size: 2
+      pop_size: 4
+      children: 12
+      outroot: testrun
+      letdie: True

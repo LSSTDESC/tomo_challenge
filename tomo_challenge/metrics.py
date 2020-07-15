@@ -9,6 +9,9 @@ import yaml
 
 this_directory = pathlib.Path(__file__).resolve().parent
 default_config_path = this_directory.parent / 'tomo_challenge' / 'config.yml'
+# Use this fiducial cosmology, which is what I have for TXPipe
+config = yaml.safe_load(open(default_config_path))
+cosmo = ccl.Cosmology(**config['parameters'])
 
 
 def compute_scores(tomo_bin, z, metrics='all'):
@@ -132,9 +135,6 @@ def compute_mean_covariance(tomo_bin, z, what):
     sigma_e = 0.26
     # assumed total over all bins, divided proportionally
     n_eff_total_arcmin2 = 20.0
-    # Use this fiducial cosmology, which is what I have for TXPipe
-    config = yaml.safe_load(open(default_config_path))
-    cosmo = ccl.Cosmology(**config['parameters'])
 
     # ell values we will use.  Computed centrally
     # since we want to avoid mismatches elsewhere.
