@@ -46,7 +46,7 @@ class SummerSlasher(Tomographer):
 
         """
         self.opt = { 'seed':123,'n_slashes':3, 'pop_size':100, 'children':100,
-                     'target_metric':'gg','outroot':'slasher', 'letdie':False}
+                     'target_metric':'gg','outroot':'slasher', 'letdie':False,
                      'downsample':2}
         self.opt.update(options)
         self.bands = bands
