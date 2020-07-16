@@ -26,7 +26,7 @@ class SummerSlasher(Tomographer):
     """
 
     ## see constructor below
-    valid_options = ['n_slashes','seed', 'pop_size', 'children','target_metric','outroot',
+    valid_options = ['n_cuts','seed', 'pop_size', 'children','target_metric','outroot',
                      'letdie', 'downsample']
     
     def __init__ (self, bands, options):
@@ -47,13 +47,13 @@ class SummerSlasher(Tomographer):
             'seed' - random number seed (passed to numpy.random) 
 
         """
-        self.opt = { 'seed':123,'n_slashes':3, 'pop_size':100, 'children':100,
-                     'target_metric':'gg','outroot':'slasher', 'letdie':False,
+        self.opt = { 'seed':123,'n_cuts':3, 'pop_size':100, 'children':100,
+                     'target_metric':'gg','outroot':'cuter', 'letdie':False,
                      'downsample':2}
         self.opt.update(options)
         self.bands = bands
-        self.n_slashes=self.opt['n_slashes']
-        self.nbins = 2**self.n_slashes
+        self.n_cuts=self.opt['n_cuts']
+        self.nbins = 2**self.n_cuts
         self.Nd = len(bands)
         
         
@@ -75,10 +75,10 @@ class SummerSlasher(Tomographer):
         data=data[::downsample,:]
         training_z = training_z[::downsample]
         print ("initializing")
-        self.pop = [Slasher(self.opt['n_slashes'],data, id=i) for i in range(self.opt['pop_size'])]
+        self.pop = [Astronomer(self.opt['n_cuts'],data, id=i) for i in range(self.opt['pop_size'])]
         print ("getting initial scores")
-        for slasher in self.pop:
-            slasher.get_score(training_z,self.opt['target_metric'])
+        for cuter in self.pop:
+            cuter.get_score(training_z,self.opt['target_metric'])
         self.pop.sort(key = lambda x:x.score, reverse=True)
         self.sof = open (self.opt['outroot']+'_scores.txt','w')
         self.som = open (self.opt['outroot']+'_mut.txt','w')
@@ -89,12 +89,12 @@ class SummerSlasher(Tomographer):
             children=[]
             for nc in range(self.opt['children']):
                 i,j=np.random.randint(0,NP,2)
-                children.append (Slasher(self.opt['n_slashes'],data,
+                children.append (Astronomer(self.opt['n_cuts'],data,
                                          mate = [self.pop[i],
                                                  self.pop[j]]))
             ## we will parallelize this later
-            for slasher in children:
-                slasher.get_score(training_z,self.opt['target_metric'])
+            for cuter in children:
+                cuter.get_score(training_z,self.opt['target_metric'])
 
 
 
@@ -169,7 +169,7 @@ class SummerSlasher(Tomographer):
         return tomo_bin
 
 
-class Slash:
+class Cut:
     def __init__ (self, train_data):
         Ns = train_data.shape[1]
         self.w = np.random.uniform(-1,1,Ns)
@@ -183,31 +183,31 @@ class Slash:
         self.w *=np.random.normal(1,0.01,len(self.w))
         self.C *=np.random.normal(1,0.01)
         
-class Slasher:
-    def __init__ (self, n_slashes, train_data, mate = None, id = None):
+class Astronomer:
+    def __init__ (self, n_cuts, train_data, mate = None, id = None):
         self.data = train_data
-        self.Nm = 2**n_slashes
-        self.n_slashes = n_slashes
+        self.Nm = 2**n_cuts
+        self.n_cuts = n_cuts
         if mate:
             self.rompy_pompy(*mate)
         else:
-            self.slashes = [Slash(self.data) for i in range(n_slashes)]
+            self.cuts = [Cut(self.data) for i in range(n_cuts)]
             self.Pmutate = np.random.normal(0.3,0.1)
             self.id = set([id])
             
     def rompy_pompy(self, parentA, parentB):
         self.Pmutate=np.sqrt(parentA.Pmutate*parentB.Pmutate)*np.random.normal(1.0,0.05)
         ## we make a copy of genes!
-        self.slashes=deepcopy(choices(parentA.slashes+parentB.slashes,k=self.n_slashes))
-        for i in np.where(np.random.uniform(0,1,self.n_slashes)<self.Pmutate)[0]:
-            self.slashes[i].mutate()
+        self.cuts=deepcopy(choices(parentA.cuts+parentB.cuts,k=self.n_cuts))
+        for i in np.where(np.random.uniform(0,1,self.n_cuts)<self.Pmutate)[0]:
+            self.cuts[i].mutate()
         self.id = parentA.id.union(parentB.id)
          
     def get_selections(self):
         i=1
         sel = np.zeros(self.data.shape[0],int)
-        for slash in self.slashes:
-            sel+=slash.apply(self.data)*i
+        for cut in self.cuts:
+            sel+=cut.apply(self.data)*i
             i*=2
         ### now see if any bin is empty and fix this.
         bc=np.bincount(sel)

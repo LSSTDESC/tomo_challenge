@@ -9,7 +9,7 @@ run:
     run_3:
       colors: False
       errors: False
-      n_slashes: 3
+      n_cuts: 3
       pop_size: 4
       children: 12
       outroot: testrun
