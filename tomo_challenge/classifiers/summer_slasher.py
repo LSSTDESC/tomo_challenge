@@ -14,6 +14,8 @@ See Classifier Documentation below.
 
 """
 import numpy as np
+from copy import deepcopy
+from random import choices
 import pyccl
 from .base import Tomographer
 from tomo_challenge import compute_scores, compute_mean_covariance
@@ -105,7 +107,7 @@ class SummerSlasher(Tomographer):
             self.pop.sort(key = lambda x:x.score, reverse=True)
             print ("Scores:")
             for s in self.pop:
-                print ("    %f : %s "%(s.score,s.id))
+                print ("    %f : %i, %s "%(s.score,s.actual_bins,s.id))
             self.pop = self.pop[:NP]
             self.write_status()
 
@@ -185,26 +187,21 @@ class Slasher:
     def __init__ (self, n_slashes, train_data, mate = None, id = None):
         self.data = train_data
         self.Nm = 2**n_slashes
+        self.n_slashes = n_slashes
         if mate:
             self.rompy_pompy(*mate)
         else:
             self.slashes = [Slash(self.data) for i in range(n_slashes)]
             self.Pmutate = np.random.normal(0.3,0.1)
-            self.id = str(id)
+            self.id = set([id])
             
     def rompy_pompy(self, parentA, parentB):
         self.Pmutate=np.sqrt(parentA.Pmutate*parentB.Pmutate)*np.random.normal(1.0,0.05)
-        self.slashes=[]
-        for slashA,slashB in zip(parentA.slashes, parentB.slashes):
-            slash = slashA if  np.random.randint(2) else slashB
-            if np.random.uniform(0,1)<self.Pmutate:
-                #print ('---------A')
-                #print (np.sum(slash.apply(self.data))/len(self.data))
-                slash.mutate()
-                #print(np.sum(slash.apply(self.data))/len(self.data))
-                #print ('---------B')
-            self.slashes.append(slash)
-        self.id = "(%s,%s)"%(parentA.id, parentB.id)
+        ## we make a copy of genes!
+        self.slashes=deepcopy(choices(parentA.slashes+parentB.slashes,k=self.n_slashes))
+        for i in np.where(np.random.uniform(0,1,self.n_slashes)<self.Pmutate)[0]:
+            self.slashes[i].mutate()
+        self.id = parentA.id.union(parentB.id)
          
     def get_selections(self):
         i=1
@@ -220,7 +217,7 @@ class Slasher:
                 sel[sel>j]-=1
             else:
                 j+=1
-        
+        self.actual_bins = j+1
         return sel
 
     def get_score(self,training_z, target_metric):
@@ -230,8 +227,10 @@ class Slasher:
             mu, C, galaxy_galaxy_tracer_bias = compute_mean_covariance(
                 sels, training_z, target_metric )
         except pyccl.errors.CCLError:
-            #print ("BARF^^")
+            print (np.bincount(sels),'<<<<<<<<')
+            print ("BARF^^")
             self.score=-1
+            stop()
             return
         
         P = np.linalg.inv(C)
