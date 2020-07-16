@@ -24,7 +24,8 @@ class SummerSlasher(Tomographer):
     """
 
     ## see constructor below
-    valid_options = ['n_slashes','seed', 'pop_size', 'children','target_metric','outroot', 'letdie']
+    valid_options = ['n_slashes','seed', 'pop_size', 'children','target_metric','outroot',
+                     'letdie', 'downsample']
     
     def __init__ (self, bands, options):
         """Constructor
@@ -46,6 +47,7 @@ class SummerSlasher(Tomographer):
         """
         self.opt = { 'seed':123,'n_slashes':3, 'pop_size':100, 'children':100,
                      'target_metric':'gg','outroot':'slasher', 'letdie':False}
+                     'downsample':2}
         self.opt.update(options)
         self.bands = bands
         self.n_slashes=self.opt['n_slashes']
@@ -67,8 +69,11 @@ class SummerSlasher(Tomographer):
         """
         ## first let's get train data into a nice array
         data = np.vstack([training_data[band] for band in self.bands]).T
+        downsample = self.opt['downsample']
+        data=data[::downsample,:]
+        training_z = training_z[::downsample]
         print ("initializing")
-        self.pop = [Slasher(self.opt['n_slashes'],data) for i in range(self.opt['pop_size'])]
+        self.pop = [Slasher(self.opt['n_slashes'],data, id=i) for i in range(self.opt['pop_size'])]
         print ("getting initial scores")
         for slasher in self.pop:
             slasher.get_score(training_z,self.opt['target_metric'])
@@ -81,9 +86,10 @@ class SummerSlasher(Tomographer):
         while True:
             children=[]
             for nc in range(self.opt['children']):
+                i,j=np.random.randint(0,NP,2)
                 children.append (Slasher(self.opt['n_slashes'],data,
-                                         mate = [self.pop[np.random.randint(NP)],
-                                                 self.pop[np.random.randint(NP)]]))
+                                         mate = [self.pop[i],
+                                                 self.pop[j]]))
             ## we will parallelize this later
             for slasher in children:
                 slasher.get_score(training_z,self.opt['target_metric'])
@@ -97,7 +103,9 @@ class SummerSlasher(Tomographer):
                 self.pop += children
             ### sort by score and take top 
             self.pop.sort(key = lambda x:x.score, reverse=True)
-            print ('Scores:',[s.score for s in self.pop])
+            print ("Scores:")
+            for s in self.pop:
+                print ("    %f : %s "%(s.score,s.id))
             self.pop = self.pop[:NP]
             self.write_status()
 
@@ -174,14 +182,16 @@ class Slash:
         self.C *=np.random.normal(1,0.01)
         
 class Slasher:
-    def __init__ (self, n_slashes, train_data, mate = None):
+    def __init__ (self, n_slashes, train_data, mate = None, id = None):
         self.data = train_data
+        self.Nm = 2**n_slashes
         if mate:
             self.rompy_pompy(*mate)
         else:
             self.slashes = [Slash(self.data) for i in range(n_slashes)]
             self.Pmutate = np.random.normal(0.3,0.1)
-
+            self.id = str(id)
+            
     def rompy_pompy(self, parentA, parentB):
         self.Pmutate=np.sqrt(parentA.Pmutate*parentB.Pmutate)*np.random.normal(1.0,0.05)
         self.slashes=[]
@@ -194,7 +204,7 @@ class Slasher:
                 #print(np.sum(slash.apply(self.data))/len(self.data))
                 #print ('---------B')
             self.slashes.append(slash)
-        
+        self.id = "(%s,%s)"%(parentA.id, parentB.id)
          
     def get_selections(self):
         i=1
@@ -202,6 +212,15 @@ class Slasher:
         for slash in self.slashes:
             sel+=slash.apply(self.data)*i
             i*=2
+        ### now see if any bin is empty and fix this.
+        bc=np.bincount(sel)
+        j=0
+        for i, v in enumerate(bc):
+            if v==0:
+                sel[sel>j]-=1
+            else:
+                j+=1
+        
         return sel
 
     def get_score(self,training_z, target_metric):
