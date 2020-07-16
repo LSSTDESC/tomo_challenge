@@ -230,7 +230,7 @@ class Slasher:
             print (np.bincount(sels),'<<<<<<<<')
             print ("BARF^^")
             self.score=-1
-            stop()
+            #stop()
             return
         
         P = np.linalg.inv(C)
