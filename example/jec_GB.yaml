@@ -2,13 +2,15 @@ metrics:  [SNR_ww, SNR_3x2, FOM_3x2]
 bands: griz
 training_file: data/training.hdf5
 validation_file: data/validation.hdf5
-output_file: example/my_BG_output-6bins-100estim-griz.txt
+output_file: example/my_GB_output-6bins-50estim-griz-testDump.txt
 
 run:
   # This is a class name which will be looked up
   myGradientBosster:
     run_3:
-      n_estimators: 1000
+      # to save file
+      savefile: /Users/campagne/Travail/Software/tomo_challenge-orig/data/jec_GB-6bins-50estim-griz-testDump.joblib
+      n_estimators: 50
       # This setting is sent to the classifier
       bins: 6
       # These special settings decide whether the
