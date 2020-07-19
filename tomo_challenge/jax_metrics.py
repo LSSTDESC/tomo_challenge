@@ -84,27 +84,30 @@ def compute_snr_score(weights, labels, what='3x2'):
     """
     # Retrieve the probes
     probes = get_probes(weights, labels, what=what)
-    # instantiates fiducial cosmology
-    cosmo = jc.Cosmology(
-        Omega_c = 0.27,
-        Omega_b = 0.045,
-        h = 0.67,
-        n_s = 0.96,
-        sigma8 = 0.8404844953840714,
-        Omega_k=0.,
-        w0=-1., wa=0.)
-
-    # choose ell bins from params  above
     ell, delta_ell = ell_binning()
 
-    # Compute mean and covariance
-    mu, C = jc.angular_cl.gaussian_cl_covariance_and_mean(cosmo, ell, probes, f_sky=0.25)
+    @jax.jit
+    def snr_fn(probes, ell):
+        # instantiates fiducial cosmology
+        cosmo = jc.Cosmology(
+            Omega_c = 0.27,
+            Omega_b = 0.045,
+            h = 0.67,
+            n_s = 0.96,
+            sigma8 = 0.8404844953840714,
+            Omega_k=0.,
+            w0=-1., wa=0.)
 
-    # S/N for correlated data, I assume, from generalizing
-    # sqrt(sum(mu**2/sigma**2))
-    P = np.linalg.inv(C)
-    score = (mu.T @ P @ mu)**0.5
-    return score
+        # Compute mean and covariance
+        mu, C = jc.angular_cl.gaussian_cl_covariance_and_mean(cosmo, ell, probes, f_sky=0.25)
+
+        # S/N for correlated data, I assume, from generalizing
+        # sqrt(sum(mu**2/sigma**2))
+        P = np.linalg.inv(C)
+        score = (mu.T @ P @ mu)**0.5
+        return score
+
+    return snr_fn(probes, ell)
 
 def compute_fom(weights, labels, inds=[0,4], what='3x2'):
     """
@@ -113,49 +116,50 @@ def compute_fom(weights, labels, inds=[0,4], what='3x2'):
     """
     # Retrieve the probes
     probes = get_probes(weights, labels, what=what)
-
     ell, delta_ell = ell_binning()
 
-    # Compute the derivatives of the data vector
     @jax.jit
-    def mean(params):
-        cosmo = jc.Cosmology(
-            Omega_c = params[0],
-            Omega_b = params[1],
-            h = params[2],
-            n_s =  params[3],
-            sigma8 = params[4],
-            Omega_k=0.,
-            w0=-1., wa=0.
-        )
-        return jc.angular_cl.angular_cl(cosmo, ell, probes)
+    def fom_fn(probes, ell):
+        # Compute the derivatives of the data vector
+        def mean(params):
+            cosmo = jc.Cosmology(
+                Omega_c = params[0],
+                Omega_b = params[1],
+                h = params[2],
+                n_s =  params[3],
+                sigma8 = params[4],
+                Omega_k=0.,
+                w0=-1., wa=0.
+            )
+            return jc.angular_cl.angular_cl(cosmo, ell, probes)
 
-    # Compute the jacobian of the data vector at fiducial cosmology
-    fid_params = np.array([0.27, 0.045, 0.67, 0.96, 0.840484495])
-    jac_mean = jax.jacfwd(lambda x: mean(x).flatten())
+        # Compute the jacobian of the data vector at fiducial cosmology
+        fid_params = np.array([0.27, 0.045, 0.67, 0.96, 0.840484495])
+        jac_mean = jax.jacfwd(lambda x: mean(x).flatten())
 
-    mu = mean(fid_params)
-    dmu = jac_mean(fid_params)
+        mu = mean(fid_params)
+        dmu = jac_mean(fid_params)
 
-    # Compute the covariance matrix
-    cl_noise = jc.angular_cl.noise_cl(ell, probes)
-    C = jc.angular_cl.gaussian_cl_covariance(ell, probes, mu, cl_noise)
+        # Compute the covariance matrix
+        cl_noise = jc.angular_cl.noise_cl(ell, probes)
+        C = jc.angular_cl.gaussian_cl_covariance(ell, probes, mu, cl_noise)
 
-    invCov = np.linalg.inv(C)
+        invCov = np.linalg.inv(C)
 
-    # Compute Fisher matrix for constant covariance
-    #t1 = 0.5*np.einsum('nqa,ql,lmb,mn', dc, invCov, dc, invCov)
-    t2 = np.einsum('pa,pq,qb->ab', dmu, invCov, dmu)
-    F = t2 #t1+t2
+        # Compute Fisher matrix for constant covariance
+        F = np.einsum('pa,pq,qb->ab', dmu, invCov, dmu)
 
-    # Compute covariance
-    i,j = inds
-    covmat_chunk = np.linalg.inv(F)[:, [i, j]][[i, j], :]
+        # Compute covariance
+        i,j = inds
+        covmat_chunk = np.linalg.inv(F)[:, [i, j]][[i, j], :]
 
-    # And get the FoM, the inverse area of the 2 sigma contour
-    # area.
-    area = 6.17 * np.pi * np.sqrt(np.linalg.det(covmat_chunk))
-    return 1. / area
+        # And get the FoM, the inverse area of the 2 sigma contour
+        # area.
+        area = 6.17 * np.pi * np.sqrt(np.linalg.det(covmat_chunk))
+
+        return 1. / area
+
+    return fom_fn(probes, ell)
 
 def compute_scores(tomo_bin, z, metrics='all'):
     """Compute a set of score metrics.
@@ -203,7 +207,7 @@ def compute_scores(tomo_bin, z, metrics='all'):
         metrics = ["SNR_ww", "SNR_gg", "SNR_3x2", "FOM_ww", "FOM_gg", "FOM_3x2"]
     for what in ["ww", "gg", "3x2"]:
         if ("SNR_"+what in metrics) or ("FOM_"+what in metrics):
-            scores['SNR_'+what] =  compute_snr_score(tomo_bin, z, what)
+            scores['SNR_'+what] =  compute_snr_score(tomo_bin, z, what=what)
             if "FOM_"+what in metrics:
                 scores['FOM_'+what] = compute_fom(tomo_bin, z, what=what)
     return scores

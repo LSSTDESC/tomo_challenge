@@ -3,6 +3,8 @@ bands: riz
 training_file: data/training.hdf5
 validation_file: data/validation.hdf5
 output_file: example/example_output.txt
+# Backend implementing the metrics, either: "firecrown" (default), "jax-cosmo"
+metrics_impl: firecrown
 
 run:
   # This is a class name which will be looked up
