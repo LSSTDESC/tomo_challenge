@@ -99,7 +99,8 @@ def compute_snr_score(weights, labels, what='3x2'):
             w0=-1., wa=0.)
 
         # Compute mean and covariance
-        mu, C = jc.angular_cl.gaussian_cl_covariance_and_mean(cosmo, ell, probes, f_sky=0.25)
+        mu, C = jc.angular_cl.gaussian_cl_covariance_and_mean(cosmo, ell, probes,
+                                                              f_sky=0.25, nonlinear_fn=jc.power.halofit)
 
         # S/N for correlated data, I assume, from generalizing
         # sqrt(sum(mu**2/sigma**2))
@@ -131,7 +132,7 @@ def compute_fom(weights, labels, inds=[0,4], what='3x2'):
                 Omega_k=0.,
                 w0=-1., wa=0.
             )
-            return jc.angular_cl.angular_cl(cosmo, ell, probes)
+            return jc.angular_cl.angular_cl(cosmo, ell, probes, nonlinear_fn=jc.power.halofit)
 
         # Compute the jacobian of the data vector at fiducial cosmology
         fid_params = np.array([0.27, 0.045, 0.67, 0.96, 0.840484495])
