@@ -130,12 +130,12 @@ def compute_fom(weights, labels, inds=[0,4], what='3x2'):
                 n_s =  params[3],
                 sigma8 = params[4],
                 Omega_k=0.,
-                w0=-1., wa=0.
+                w0=params[5], wa=params[6]
             )
             return jc.angular_cl.angular_cl(cosmo, ell, probes, nonlinear_fn=jc.power.halofit)
 
         # Compute the jacobian of the data vector at fiducial cosmology
-        fid_params = np.array([0.27, 0.045, 0.67, 0.96, 0.840484495])
+        fid_params = np.array([0.27, 0.045, 0.67, 0.96, 0.840484495, -1.0, 0.0])
         jac_mean = jax.jacfwd(lambda x: mean(x).flatten())
 
         mu = mean(fid_params)
@@ -205,10 +205,15 @@ def compute_scores(tomo_bin, z, metrics='all'):
     tomo_bin = jax.nn.one_hot(tomo_bin, tomo_bin.max() + 1)
     scores = {}
     if metrics == 'all':
-        metrics = ["SNR_ww", "SNR_gg", "SNR_3x2", "FOM_ww", "FOM_gg", "FOM_3x2"]
+        metrics = ["SNR_ww", "SNR_gg", "SNR_3x2",
+                   "FOM_ww", "FOM_gg", "FOM_3x2",
+                   "FOM_DETF_ww", "FOM_DETF_gg", "FOM_DETF_3x2"]
     for what in ["ww", "gg", "3x2"]:
         if ("SNR_"+what in metrics) or ("FOM_"+what in metrics):
-            scores['SNR_'+what] =  compute_snr_score(tomo_bin, z, what=what)
+            scores['SNR_'+what] = float(compute_snr_score(tomo_bin, z, what=what))
             if "FOM_"+what in metrics:
-                scores['FOM_'+what] = compute_fom(tomo_bin, z, what=what)
+                scores['FOM_'+what] = float(compute_fom(tomo_bin, z, what=what))
+            if "FOM_DETF_"+what in metrics:
+                scores['FOM__DETF_'+what] = float(compute_fom(tomo_bin, z, inds=[5,6],
+                                                        what=what))
     return scores
