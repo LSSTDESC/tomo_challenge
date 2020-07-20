@@ -158,6 +158,12 @@ This only affects shear catalogs - for lens bins we can do what we like.
 
 ---
 
+- **What is the mcal_T column?**
+
+This is a measurement of the squared radius of the galaxy.  It is the trace of the moments matrix: `T = Q_xx + Q_yy` where `Q_xx = int I(x, y) (x - x0)**2 dx dy`, and similar for `Q_yy`, where `I(x, y)` is the flux in pixel at location `x,y` and `(x0,y0)` is the centroid.
+
+---
+
 - **How many bins should I use, and what are the target distributions?**
 
 As many as you like - it's likely that more bins will add to your score as long as they're well-separated in redshift, so you probably want to push the number upwards.  You can experiment with what edges give you best metrics; historically most approaches have tried to divide into bins with roughly equal numbers, so that may be a good place to start.
