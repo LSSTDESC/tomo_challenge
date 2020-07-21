@@ -84,7 +84,7 @@ class NeuralNetwork(Tomographer):
         self.features_scaler = RobustScaler()
 
     def train (self, training_data, training_z,
-              batch_size=2000, niter=1500):
+              batch_size=2000, niter=1000):
         """Trains the classifier
 
         Parameters:
@@ -171,7 +171,7 @@ class NeuralNetwork(Tomographer):
         features = np.clip(features,-4,4)
 
         # Retrieves the classification data as bin probabilities, by batch
-        bs = 5000
+        bs = 10000
         s = len(features)
         weights = np.concatenate([self.model(features[bs*i:min((bs*(i+1)), s)]) for i
                                   in range(s//bs + 1)])
