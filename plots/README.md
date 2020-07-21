@@ -1,1 +1,1 @@
-# This directory contains plots
+# Folder for plots

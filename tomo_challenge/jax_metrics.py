@@ -1,10 +1,11 @@
 import jax.numpy as np
 import jax.random as rand
+import numpy as onp
 from jax import lax, jit, vmap, grad
 from functools import partial
-import numpy as onp
 import jax_cosmo as jc
 import jax
+
 
 def ell_binning():
     # we put this here to make sure it's used consistently
@@ -17,8 +18,7 @@ def ell_binning():
     delta_ell =(ell_edges[1:]-ell_edges[:-1])
     return ell, delta_ell
 
-def get_probes(weights, labels, kernel_bandwidth=0.05, what='3x2',
-               binned_nz=False):
+def get_probes(weights, labels, kernel_bandwidth=0.05, what='3x2', binned_nz=False):
     """
     JAX function that builds the 3x2pt probes, which can
     then be used within any metric
@@ -50,16 +50,15 @@ def get_probes(weights, labels, kernel_bandwidth=0.05, what='3x2',
     # Create redshift bins
     nzs = []
     for i in range(nbins):
-      if binned_nz:
-          # In this case, we use a histogram instead of a KDE
-          h, he = onp.histogram(labels, bins=128, range=[0,4], weights=weights[:,i], density=True)
-          he = 0.5*(he[1:]+he[:-1])
-          nz = jc.redshift.kde_nz(he, h, bw=4./128, gals_per_arcmin2=n_eff[i], zmax=4.)
-      else:
-          nz = jc.redshift.kde_nz(labels, weights[:,i], bw=kernel_bandwidth,
-                                    gals_per_arcmin2=n_eff[i], zmax=4.)
-      nzs.append(nz)
-
+        if binned_nz:
+            # In this case, we use a histogram instead of a KDE, to make things a lot faster
+            h, he = onp.histogram(labels, bins=512, range=[0,4], weights=weights[:,i], density=True)
+            he = 0.5*(he[1:]+he[:-1])
+            nz = jc.redshift.kde_nz(he, h, bw=4./512, gals_per_arcmin2=n_eff[i], zmax=4.)
+        else:
+            nz = jc.redshift.kde_nz(labels, weights[:,i], bw=kernel_bandwidth,
+                                      gals_per_arcmin2=n_eff[i], zmax=4.)
+        nzs.append(nz)
     probes = []
     # start with number counts
     if (what == 'gg' or what == '3x2'):
@@ -93,27 +92,31 @@ def compute_snr_score(weights, labels, what='3x2', binned_nz=False):
     """
     # Retrieve the probes
     probes = get_probes(weights, labels, what=what, binned_nz=binned_nz)
-    # instantiates fiducial cosmology
-    cosmo = jc.Cosmology(
-        Omega_c = 0.27,
-        Omega_b = 0.045,
-        h = 0.67,
-        n_s = 0.96,
-        sigma8 = 0.8404844953840714,
-        Omega_k=0.,
-        w0=-1., wa=0.)
-
-    # choose ell bins from params  above
     ell, delta_ell = ell_binning()
 
-    # Compute mean and covariance
-    mu, C = jc.angular_cl.gaussian_cl_covariance_and_mean(cosmo, ell, probes, f_sky=0.25)
+    @jax.jit
+    def snr_fn(probes, ell):
+        # instantiates fiducial cosmology
+        cosmo = jc.Cosmology(
+            Omega_c = 0.27,
+            Omega_b = 0.045,
+            h = 0.67,
+            n_s = 0.96,
+            sigma8 = 0.8404844953840714,
+            Omega_k=0.,
+            w0=-1., wa=0.)
 
-    # S/N for correlated data, I assume, from generalizing
-    # sqrt(sum(mu**2/sigma**2))
-    P = np.linalg.inv(C)
-    score = (mu.T @ P @ mu)**0.5
-    return score
+        # Compute mean and covariance
+        mu, C = jc.angular_cl.gaussian_cl_covariance_and_mean(cosmo, ell, probes,
+                                                              f_sky=0.25, nonlinear_fn=jc.power.halofit)
+
+        # S/N for correlated data, I assume, from generalizing
+        # sqrt(sum(mu**2/sigma**2))
+        P = np.linalg.inv(C)
+        score = (mu.T @ P @ mu)**0.5
+        return score
+
+    return snr_fn(probes, ell)
 
 def compute_fom(weights, labels, inds=[0,4], what='3x2', binned_nz=False):
     """
@@ -122,41 +125,41 @@ def compute_fom(weights, labels, inds=[0,4], what='3x2', binned_nz=False):
     """
     # Retrieve the probes
     probes = get_probes(weights, labels, what=what, binned_nz=binned_nz)
-
     ell, delta_ell = ell_binning()
 
-    # Compute the derivatives of the data vector
     @jax.jit
-    def mean(params):
-        cosmo = jc.Cosmology(
-            Omega_c = params[0],
-            Omega_b = params[1],
-            h = params[2],
-            n_s =  params[3],
-            sigma8 = params[4],
-            Omega_k=0.,
-            w0=-1., wa=0.
-        )
-        return jc.angular_cl.angular_cl(cosmo, ell, probes)
+    def fisher_fn(probes, ell):
+        # Compute the derivatives of the data vector
+        def mean(params):
+            cosmo = jc.Cosmology(
+                Omega_c = params[0],
+                Omega_b = params[1],
+                h = params[2],
+                n_s =  params[3],
+                sigma8 = params[4],
+                Omega_k=0.,
+                w0=params[5], wa=params[6]
+            )
+            return jc.angular_cl.angular_cl(cosmo, ell, probes, nonlinear_fn=jc.power.halofit)
 
-    # Compute the jacobian of the data vector at fiducial cosmology
-    fid_params = np.array([0.27, 0.045, 0.67, 0.96, 0.840484495])
-    jac_mean = jax.jacfwd(lambda x: mean(x).flatten())
+        # Compute the jacobian of the data vector at fiducial cosmology
+        fid_params = np.array([0.27, 0.045, 0.67, 0.96, 0.840484495, -1.0, 0.0])
+        jac_mean = jax.jacfwd(lambda x: mean(x).flatten())
 
-    mu = mean(fid_params)
-    dmu = jac_mean(fid_params)
+        mu = mean(fid_params)
+        dmu = jac_mean(fid_params)
 
-    # Compute the covariance matrix
-    cl_noise = jc.angular_cl.noise_cl(ell, probes)
-    C = jc.angular_cl.gaussian_cl_covariance(ell, probes, mu, cl_noise)
+        # Compute the covariance matrix
+        cl_noise = jc.angular_cl.noise_cl(ell, probes)
+        C = jc.angular_cl.gaussian_cl_covariance(ell, probes, mu, cl_noise)
 
-    invCov = np.linalg.inv(C)
+        invCov = np.linalg.inv(C)
 
-    # Compute Fisher matrix for constant covariance
-    #t1 = 0.5*np.einsum('nqa,ql,lmb,mn', dc, invCov, dc, invCov)
-    t2 = np.einsum('pa,pq,qb->ab', dmu, invCov, dmu)
-    F = t2 #t1+t2
+        # Compute Fisher matrix for constant covariance
+        F = np.einsum('pa,pq,qb->ab', dmu, invCov, dmu)
+        return F
 
+    F = fisher_fn(probes, ell)
     # Compute covariance
     i,j = inds
     covmat_chunk = np.linalg.inv(F)[:, [i, j]][[i, j], :]
@@ -164,6 +167,7 @@ def compute_fom(weights, labels, inds=[0,4], what='3x2', binned_nz=False):
     # And get the FoM, the inverse area of the 2 sigma contour
     # area.
     area = 6.17 * np.pi * np.sqrt(np.linalg.det(covmat_chunk))
+
     return 1. / area
 
 def compute_scores(tomo_bin, z, metrics='all'):
@@ -209,10 +213,15 @@ def compute_scores(tomo_bin, z, metrics='all'):
     tomo_bin = jax.nn.one_hot(tomo_bin, tomo_bin.max() + 1)
     scores = {}
     if metrics == 'all':
-        metrics = ["SNR_ww", "SNR_gg", "SNR_3x2", "FOM_ww", "FOM_gg", "FOM_3x2"]
+        metrics = ["SNR_ww", "SNR_gg", "SNR_3x2",
+                   "FOM_ww", "FOM_gg", "FOM_3x2",
+                   "FOM_DETF_ww", "FOM_DETF_gg", "FOM_DETF_3x2"]
     for what in ["ww", "gg", "3x2"]:
         if ("SNR_"+what in metrics) or ("FOM_"+what in metrics):
-            scores['SNR_'+what] =  compute_snr_score(tomo_bin, z, what)
+            scores['SNR_'+what] = float(compute_snr_score(tomo_bin, z, what=what, binned_nz=True))
             if "FOM_"+what in metrics:
-                scores['FOM_'+what] = compute_fom(tomo_bin, z, what=what)
+                scores['FOM_'+what] = float(compute_fom(tomo_bin, z, what=what, binned_nz=True))
+            if "FOM_DETF_"+what in metrics:
+                scores['FOM_DETF_'+what] = float(compute_fom(tomo_bin, z, inds=[5,6],
+                                                        what=what, binned_nz=True))
     return scores

@@ -10,7 +10,7 @@ pyccl
 camb
 click
 progressbar
-jax_cosmo==0.1rc3
+jax-cosmo=0.1rc5
 jax
 jaxlib
 flax

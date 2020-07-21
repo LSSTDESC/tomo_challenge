@@ -54,19 +54,24 @@ def main(config_yaml):
     training_z = tc.load_redshift(config['training_file'])
     validation_z = tc.load_redshift(config['validation_file'])
 
+    if config['metrics_impl'] == 'jax-cosmo':
+        metrics_fn = tc.jc_compute_scores
+    else:
+        metrics_fn = tc.compute_scores
+
     with open(config['output_file'],'w') as output_file:
         for classifier_name, runs in config['run'].items():
             for run, settings in runs.items():
                 scores = run_one(classifier_name, bands, settings,
                                  training_data, training_z, validation_data, validation_z,
-                                 config['metrics'])
+                                 config['metrics'], metrics_fn)
 
                 output_file.write (f"{classifier_name} {run} {settings} {scores} \n")
 
 
 
 def run_one(classifier_name, bands, settings, train_data, train_z, valid_data,
-             valid_z, metrics):
+             valid_z, metrics, metrics_fn):
     classifier = tc.Tomographer._find_subclass(classifier_name)
 
     if classifier.wants_arrays:
@@ -78,9 +83,10 @@ def run_one(classifier_name, bands, settings, train_data, train_z, valid_data,
     print ("Executing: ", classifier_name, bands, settings)
 
     ## first check if options are valid
+    print (settings, classifier.valid_options)
     for key in settings.keys():
         if key not in classifier.valid_options and key not in ['errors', 'colors']:
-            raise ValueError(f"Key {key} is not recognized by classifier {name}")
+            raise ValueError(f"Key {key} is not recognized by classifier {classifier_name}")
 
     print ("Initializing classifier...")
     C=classifier(bands, settings)
@@ -92,7 +98,11 @@ def run_one(classifier_name, bands, settings, train_data, train_z, valid_data,
     results = C.apply(valid_data)
 
     print ("Getting metric...")
-    scores = tc.compute_scores(results, valid_z, metrics=metrics)
+    scores = metrics_fn(results, valid_z, metrics=metrics)
+
+    print ("Making some pretty plots...")
+    name = str(classifier.__name__)
+    tc.metrics.plot_distributions(valid_z, results, f"plots/{name}_{settings}_{bands}.png")
 
     print ("Making some pretty plots...")
     name = str(classifier.__name__)
