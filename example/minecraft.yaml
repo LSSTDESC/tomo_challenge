@@ -1,0 +1,11 @@
+metrics:  [SNR_gg]
+bands: gri
+training_file: data/training.hdf5
+validation_file: data/validation.hdf5
+output_file: example/example_minecrat.txt
+
+run:
+  MineCraft:
+    run_3:
+      colors: False
+      errors: False
