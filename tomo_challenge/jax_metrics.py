@@ -2,6 +2,7 @@ import jax.numpy as np
 import jax.random as rand
 from jax import lax, jit, vmap, grad
 from functools import partial
+import numpy as onp
 import jax_cosmo as jc
 import jax
 
@@ -16,13 +17,12 @@ def ell_binning():
     delta_ell =(ell_edges[1:]-ell_edges[:-1])
     return ell, delta_ell
 
-@jit
-def get_probes(weights, labels, kernel_bandwidth=0.05):
+def get_probes(weights, labels, kernel_bandwidth=0.05, what='3x2',
+               binned_nz=False):
     """
     JAX function that builds the 3x2pt probes, which can
-    then be used within any metri
+    then be used within any metric
     """
-    what = '3x2'
     # pretend there is no evolution in measurement error.
     # because LSST is awesome
     sigma_e = 0.26
@@ -50,8 +50,15 @@ def get_probes(weights, labels, kernel_bandwidth=0.05):
     # Create redshift bins
     nzs = []
     for i in range(nbins):
-      nzs.append(jc.redshift.kde_nz(labels, weights[:,i], bw=kernel_bandwidth,
-                                    gals_per_arcmin2=n_eff[i], zmax=4.))
+      if binned_nz:
+          # In this case, we use a histogram instead of a KDE
+          h, he = onp.histogram(labels, bins=128, range=[0,4], weights=weights[:,i], density=True)
+          he = 0.5*(he[1:]+he[:-1])
+          nz = jc.redshift.kde_nz(he, h, bw=4./128, gals_per_arcmin2=n_eff[i], zmax=4.)
+      else:
+          nz = jc.redshift.kde_nz(labels, weights[:,i], bw=kernel_bandwidth,
+                                    gals_per_arcmin2=n_eff[i], zmax=4.)
+      nzs.append(nz)
 
     probes = []
     # start with number counts
@@ -65,7 +72,7 @@ def get_probes(weights, labels, kernel_bandwidth=0.05):
 
     return probes
 
-def compute_snr_score(weights, labels):
+def compute_snr_score(weights, labels, what='3x2', binned_nz=False):
     """Compute a score metric based on the total spectrum S/N
 
     This is given by sqrt(mu^T . C^{-1} . mu) - baseline
@@ -85,7 +92,7 @@ def compute_snr_score(weights, labels):
         Metric for this configuration
     """
     # Retrieve the probes
-    probes = get_probes(weights, labels)
+    probes = get_probes(weights, labels, what=what, binned_nz=binned_nz)
     # instantiates fiducial cosmology
     cosmo = jc.Cosmology(
         Omega_c = 0.27,
@@ -108,13 +115,13 @@ def compute_snr_score(weights, labels):
     score = (mu.T @ P @ mu)**0.5
     return score
 
-def compute_fom_score(weights, labels, inds=[0,4]):
+def compute_fom(weights, labels, inds=[0,4], what='3x2', binned_nz=False):
     """
     Computes the omega_c, sigma8 Figure of Merit
     Actually the score returned is - area, I think it's more stable
     """
     # Retrieve the probes
-    probes = get_probes(weights, labels)
+    probes = get_probes(weights, labels, what=what, binned_nz=binned_nz)
 
     ell, delta_ell = ell_binning()
 
@@ -145,7 +152,7 @@ def compute_fom_score(weights, labels, inds=[0,4]):
 
     invCov = np.linalg.inv(C)
 
-    # Compute both terms of the Fisher matrix and combine them
+    # Compute Fisher matrix for constant covariance
     #t1 = 0.5*np.einsum('nqa,ql,lmb,mn', dc, invCov, dc, invCov)
     t2 = np.einsum('pa,pq,qb->ab', dmu, invCov, dmu)
     F = t2 #t1+t2
@@ -157,5 +164,55 @@ def compute_fom_score(weights, labels, inds=[0,4]):
     # And get the FoM, the inverse area of the 2 sigma contour
     # area.
     area = 6.17 * np.pi * np.sqrt(np.linalg.det(covmat_chunk))
-    # Actually, maybe we should just return the AREA, which a quantity we want to optimize
-    return - area #np.linalg.det(covmat_chunk)/9.277426e-09
+    return 1. / area
+
+def compute_scores(tomo_bin, z, metrics='all'):
+    """Compute a set of score metrics.
+
+    Metric 1
+    ========
+    Score metric based on the total spectrum S/N
+
+    This is given by sqrt(mu^T . C^{-1} . mu) - baseline
+    where mu is the theory prediction and C the Gaussian covariance
+    for this set of bins. The baseline is the score for no tomographic binning.
+
+    Metric 2
+    ========
+    WL FoM in (currently) Omega_c - sigma_8.
+
+    Generated using a Fisher matrix calculation
+
+    Parameters
+    ----------
+    tomo_bin: array
+        Tomographic bin choice (0 .. bin_max) for each object in the survey
+    z: array
+        True redshift for each object
+
+    metrics: str or list of str
+        Which metrics to compute. If all it will return all metrics,
+        otherwise just those required (see below)
+
+    Returns
+    -------
+    scores: dict
+         A dictionary of scores. The following dict keys are present
+
+        "SNR_ww", "SNR_gg", "SNR_3x2": float
+        SNR scores for shear-shear, galaxy clustering and full 3x2pt
+
+        "FOM_ww", "FOM_gg", "FOM_3x2": float
+        FOM metric derived from SNR above
+
+    """
+    tomo_bin = jax.nn.one_hot(tomo_bin, tomo_bin.max() + 1)
+    scores = {}
+    if metrics == 'all':
+        metrics = ["SNR_ww", "SNR_gg", "SNR_3x2", "FOM_ww", "FOM_gg", "FOM_3x2"]
+    for what in ["ww", "gg", "3x2"]:
+        if ("SNR_"+what in metrics) or ("FOM_"+what in metrics):
+            scores['SNR_'+what] =  compute_snr_score(tomo_bin, z, what)
+            if "FOM_"+what in metrics:
+                scores['FOM_'+what] = compute_fom(tomo_bin, z, what=what)
+    return scores

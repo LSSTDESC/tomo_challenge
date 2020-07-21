@@ -81,10 +81,10 @@ def load_mags(filename, bands, errors=False):
     with h5py.File(filename, 'r') as f:
         # load all bands
         for b in bands:
-            data[b] = f[f'{b}_mag'][:]
+            data[b] = f[f'{b}_mag'][:].astype('float32')
 
             if errors:
-                data[f'{b}_err'] = f[f'{b}_mag_err'][:]
+                data[f'{b}_err'] = f[f'{b}_mag_err'][:].astype('float32')
 
 
     # Set undetected objects to mag 30 +/- 30
@@ -121,7 +121,7 @@ def dict_to_array(data, bands, errors=False, colors=False):
     if errors:
         ncol *= 2
 
-    arr = np.empty((ncol, nobj))
+    arr = np.empty((ncol, nobj), dtype='float32')
     i = 0
     for b in bands:
         arr[i] = data[b]
@@ -168,7 +168,7 @@ def load_data(filename, bands, colors=False, errors=False, array=False):
 def load_redshift(filename):
     """Load a redshift column from a training or validation file"""
     f = h5py.File(filename, 'r')
-    z = f['redshift_true'][:]
+    z = f['redshift_true'][:].astype('float32')
     f.close()
     return z
 
