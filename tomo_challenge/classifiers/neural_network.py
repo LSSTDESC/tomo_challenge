@@ -3,6 +3,7 @@ import numpy as onp
 import os.path
 import pickle
 
+
 # Some JAX imports
 import jax
 import jax.numpy as np
@@ -107,11 +108,6 @@ class NeuralNetwork(Tomographer):
                 self.model = serialization.from_bytes(self.model, pickle.load(file))
             return
 
-        # Otherwise we train
-        # if self.metric == 'FOM':
-        #     lr = 0.001
-        # if self.metric == 'SNR':
-        #     lr = 0.001
         lr = 0.001
         optimizer = optim.Adam(learning_rate=lr).create(self.model)
 
@@ -125,8 +121,11 @@ class NeuralNetwork(Tomographer):
                 if self.metric == 'SNR':
                     return - metrics.compute_snr_score(w, batch['labels'])
                 elif self.metric == 'FOM':
-                    # Minimizing the Area, with an arbitrary prefactor
-                    return 1000. / metrics.compute_fom(w, batch['labels'])
+                    # Minimizing the Area
+                    return 1. / metrics.compute_fom(w, batch['labels'])
+                elif self.metric == 'FOM_DETF':
+                    # Minimizing the Area
+                    return 1. / metrics.compute_fom(w, batch['labels'], inds=[5,6])
                 else:
                   raise NotImplementedError
             # Compute gradients
