@@ -16,7 +16,7 @@ def ell_binning():
     delta_ell =(ell_edges[1:]-ell_edges[:-1])
     return ell, delta_ell
 
-def get_probes(weights, labels, kernel_bandwidth=0.05, what='3x2'):
+def get_probes(weights, labels, kernel_bandwidth=0.05, what='3x2', binned_nz=False):
     """
     JAX function that builds the 3x2pt probes, which can
     then be used within any metric
@@ -48,9 +48,15 @@ def get_probes(weights, labels, kernel_bandwidth=0.05, what='3x2'):
     # Create redshift bins
     nzs = []
     for i in range(nbins):
-      nzs.append(jc.redshift.kde_nz(labels, weights[:,i], bw=kernel_bandwidth,
-                                    gals_per_arcmin2=n_eff[i], zmax=4.))
-
+        if binned_nz:
+            # In this case, we use a histogram instead of a KDE, to make things a lot faster
+            h, he = np.histogram(labels, bins=512, range=[0,4], weights=weights[:,i], density=True)
+            he = 0.5*(he[1:]+he[:-1])
+            nz = jc.redshift.kde_nz(he, h, bw=4./512, gals_per_arcmin2=n_eff[i], zmax=4.)
+        else:
+            nz = jc.redshift.kde_nz(labels, weights[:,i], bw=kernel_bandwidth,
+                                      gals_per_arcmin2=n_eff[i], zmax=4.)
+        nzs.append(nz)
     probes = []
     # start with number counts
     if (what == 'gg' or what == '3x2'):
@@ -63,7 +69,7 @@ def get_probes(weights, labels, kernel_bandwidth=0.05, what='3x2'):
 
     return probes
 
-def compute_snr_score(weights, labels, what='3x2'):
+def compute_snr_score(weights, labels, what='3x2', binned_nz=False):
     """Compute a score metric based on the total spectrum S/N
 
     This is given by sqrt(mu^T . C^{-1} . mu) - baseline
@@ -83,7 +89,7 @@ def compute_snr_score(weights, labels, what='3x2'):
         Metric for this configuration
     """
     # Retrieve the probes
-    probes = get_probes(weights, labels, what=what)
+    probes = get_probes(weights, labels, what=what, binned_nz=binned_nz)
     ell, delta_ell = ell_binning()
 
     @jax.jit
@@ -110,17 +116,17 @@ def compute_snr_score(weights, labels, what='3x2'):
 
     return snr_fn(probes, ell)
 
-def compute_fom(weights, labels, inds=[0,4], what='3x2'):
+def compute_fom(weights, labels, inds=[0,4], what='3x2', binned_nz=False):
     """
     Computes the omega_c, sigma8 Figure of Merit
     Actually the score returned is - area, I think it's more stable
     """
     # Retrieve the probes
-    probes = get_probes(weights, labels, what=what)
+    probes = get_probes(weights, labels, what=what, binned_nz=binned_nz)
     ell, delta_ell = ell_binning()
 
     @jax.jit
-    def fom_fn(probes, ell):
+    def fisher_fn(probes, ell):
         # Compute the derivatives of the data vector
         def mean(params):
             cosmo = jc.Cosmology(
@@ -149,18 +155,18 @@ def compute_fom(weights, labels, inds=[0,4], what='3x2'):
 
         # Compute Fisher matrix for constant covariance
         F = np.einsum('pa,pq,qb->ab', dmu, invCov, dmu)
+        return F
 
-        # Compute covariance
-        i,j = inds
-        covmat_chunk = np.linalg.inv(F)[:, [i, j]][[i, j], :]
+    F = fisher_fn(probes, ell)
+    # Compute covariance
+    i,j = inds
+    covmat_chunk = np.linalg.inv(F)[:, [i, j]][[i, j], :]
 
-        # And get the FoM, the inverse area of the 2 sigma contour
-        # area.
-        area = 6.17 * np.pi * np.sqrt(np.linalg.det(covmat_chunk))
+    # And get the FoM, the inverse area of the 2 sigma contour
+    # area.
+    area = 6.17 * np.pi * np.sqrt(np.linalg.det(covmat_chunk))
 
-        return 1. / area
-
-    return fom_fn(probes, ell)
+    return 1. / area
 
 def compute_scores(tomo_bin, z, metrics='all'):
     """Compute a set of score metrics.
@@ -210,10 +216,10 @@ def compute_scores(tomo_bin, z, metrics='all'):
                    "FOM_DETF_ww", "FOM_DETF_gg", "FOM_DETF_3x2"]
     for what in ["ww", "gg", "3x2"]:
         if ("SNR_"+what in metrics) or ("FOM_"+what in metrics):
-            scores['SNR_'+what] = float(compute_snr_score(tomo_bin, z, what=what))
+            scores['SNR_'+what] = float(compute_snr_score(tomo_bin, z, what=what, binned_nz=True))
             if "FOM_"+what in metrics:
-                scores['FOM_'+what] = float(compute_fom(tomo_bin, z, what=what))
+                scores['FOM_'+what] = float(compute_fom(tomo_bin, z, what=what, binned_nz=True))
             if "FOM_DETF_"+what in metrics:
                 scores['FOM__DETF_'+what] = float(compute_fom(tomo_bin, z, inds=[5,6],
-                                                        what=what))
+                                                        what=what, binned_nz=True))
     return scores
