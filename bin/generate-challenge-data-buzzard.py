@@ -62,9 +62,14 @@ for s,f in zip(selections, files):
 
 # Cols we need from each file
 shear_cols = ['ra', 'dec', 'mcal_T', 'mcal_s2n']
-photo_cols = (['redshift_true'] 
+photo_cols_in = (['redshift_true'] 
             + [f'mag_{b}' for b in bands] 
             + [f'mag_{b}_err' for b in bands])
+
+photo_cols_out = (['redshift_true'] 
+            + [f'{b}_mag' for b in bands] 
+            + [f'{b}_mag_err' for b in bands])
+
 
 for col in shear_cols:
     print(f"Saving {col}")
@@ -72,11 +77,11 @@ for col in shear_cols:
     for s, f in zip(selections, files):
         f.create_dataset(col, data=d[sel][s])
 
-for col in photo_cols:
-    print(f"Saving {col}")
-    d = photo_file[f'photometry/{col}'][:]
+for col_in, col_out in zip(photo_cols_in, photo_cols_out):
+    print(f"Saving {col_in}")
+    d = photo_file[f'photometry/{col_in}'][:]
     for s, f in zip(selections, files):
-        f.create_dataset(col, data=d[sel][s])
+        f.create_dataset(col_out, data=d[sel][s])
 
 
 for f in files:
