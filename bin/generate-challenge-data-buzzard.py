@@ -3,7 +3,7 @@ import numpy as np
 
 
 # input files
-indir = "/global/projecta/projectdirs/lsst/groups/WL/users/flanusse/buzzard-inputs/"
+indir = "/global/projecta/projectdirs/lsst/groups/WL/users/flanusse/buzzard-inputs_4pixels/"
 
 mcal_file = h5py.File(indir + "shear_catalog.hdf5", 'r')
 mcal_group = mcal_file['shear']
@@ -12,7 +12,7 @@ photo_file = h5py.File(indir + 'photometry_catalog.hdf5', 'r')
 z = photo_file['photometry/redshift_true'][:]
 
 # use all bands available
-bands = 'griz'
+bands = 'ugrizy'
 
 # do basic shear cuts on s/n, flag, and size / psf size
 sel = mcal_group['mcal_s2n'][:] > 10
