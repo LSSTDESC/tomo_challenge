@@ -29,7 +29,11 @@ This will put you in a shell with all requirements.
 
 ## Getting training data
 
-Run `python -m tomo_challenge.data` in this directory to download the full set of challenge data, about 6.GB.  You can also get the individual files from here if you prefer:  https://portal.nersc.gov/project/lsst/txpipe/tomo_challenge_data/
+Run  the following from the challenge directory:
+```python
+python -m tomo_challenge.data
+```
+This will download the full set of challenge data, about 6.GB.  You can also get the individual files from here if you prefer:  https://portal.nersc.gov/project/lsst/txpipe/tomo_challenge_data/
 
 You will get two datasets, based on two different simulations, which will allow us to test different assumptions about galaxy SEDs.
 The first dataset, which can be found under `data` after download is based on the CosmoDC2 simulation. The second dataset, found under
