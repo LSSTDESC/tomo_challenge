@@ -1,0 +1,1 @@
+myCombinedClassifiers run_3 {'savefile': '/sps/lsst/users/campagne/tomo_challenge/data/jec__MultiClf-GB+RFNoDepthLimit-StdScaler-10bins-50estim-griz-JAX-Opt9_BEST_DETF.joblib', 'n_estimators': 50, 'bins': 10, 'colors': True, 'errors': False} {'SNR_3x2': 1770.5667724609375, 'FOM_3x2': 11953.8701171875, 'FOM__DETF_3x2': 176.66757202148438} 
