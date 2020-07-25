@@ -29,7 +29,11 @@ This will put you in a shell with all requirements.
 
 ## Getting training data
 
-Run `python -m tomo_challenge.data` in this directory to download the full set of challenge data, about 4.5GB.  You can also get the individual files from here if you prefer:  https://portal.nersc.gov/project/lsst/txpipe/tomo_challenge_data/
+Run `python -m tomo_challenge.data` in this directory to download the full set of challenge data, about 6.GB.  You can also get the individual files from here if you prefer:  https://portal.nersc.gov/project/lsst/txpipe/tomo_challenge_data/
+
+You will get two datasets, based on two different simulations, which will allow us to test different assumptions about galaxy SEDs.
+The first dataset, which can be found under `data` after download is based on the CosmoDC2 simulation. The second dataset, found under
+`data_buzzard` is based on the Buzzard simulations.
 
 
 ## Metric
@@ -125,7 +129,7 @@ swig
 libopenmpi-dev
 liblapack3
 liblapack64-dev
-libopenblas-dev 
+libopenblas-dev
 ```
 
 - **What are the metrics?**
@@ -155,7 +159,8 @@ This only affects shear catalogs - for lens bins we can do what we like.
 
 - **What is the input data?**
 
-[CosmoDC2](https://arxiv.org/pdf/1907.06530.pdf) galaxies with mock noise added.
+  - [CosmoDC2](https://arxiv.org/pdf/1907.06530.pdf) galaxies with mock noise added.
+  - Buzzard galaxies with mock noise added.  
 
 ---
 
@@ -218,4 +223,3 @@ The end of August 2020. (We have updated this from July 2020 since we felt it wa
 - **What does the winner get?**
 
 Recognition.
-
