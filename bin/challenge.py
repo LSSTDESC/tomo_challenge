@@ -10,6 +10,8 @@ root_dir=os.path.join(os.path.split(sys.argv[0])[0],"..")
 sys.path.append(root_dir)
 import tomo_challenge as tc
 
+from tomo_challenge.jax_metrics import compute_scores as jc_compute_scores
+
 @click.command()
 @click.argument('config_yaml', type=str)
 def main(config_yaml):
@@ -62,7 +64,7 @@ def main(config_yaml):
                                  config['metrics'])
 
                 output_file.write (f"{classifier_name} {run} {settings} {scores} \n")
-
+                print("scores= ",scores)
 
 
 def run_one(classifier_name, bands, settings, train_data, train_z, valid_data,
@@ -74,6 +76,16 @@ def run_one(classifier_name, bands, settings, train_data, train_z, valid_data,
         colors = settings.get('colors')
         train_data = tc.dict_to_array(train_data, bands, errors=errors, colors=colors)
         valid_data = tc.dict_to_array(valid_data, bands, errors=errors, colors=colors)
+
+
+        #JEC 23/7/2020 restrict  data
+        train_data=train_data[:1000000,:]
+        valid_data=valid_data[:50000,:]
+
+        
+    #JEC 23/7/2020 restrict  data
+    train_z = train_z[:1000000]
+    valid_z = valid_z[:50000]
 
     print ("Executing: ", classifier_name, bands, settings)
 
@@ -93,7 +105,9 @@ def run_one(classifier_name, bands, settings, train_data, train_z, valid_data,
     results = C.apply(valid_data)
 
     print ("Getting metric...")
-    scores = tc.compute_scores(results, valid_z, metrics=metrics)
+    #    scores = tc.compute_scores(results, valid_z, metrics=metrics)
+    #Use JAX code 23/7/2020
+    scores = jc_compute_scores(results, valid_z, metrics="SNR_3x2,FOM_3x2,FOM_DETF_3x2")
 
     return scores
 
