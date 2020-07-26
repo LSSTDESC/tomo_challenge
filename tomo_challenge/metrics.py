@@ -295,7 +295,7 @@ def make_sacc(tomo_bin, z, what, mu, C):
     return S
 
 
-def figure_of_merit(sacc_data, what, galaxy_tracer_bias):firecr
+def figure_of_merit(sacc_data, what, galaxy_tracer_bias):
     import firecrown
 
     ntot = len(sacc_data.tracers)
