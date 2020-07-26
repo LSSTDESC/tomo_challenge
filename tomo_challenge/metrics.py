@@ -1,8 +1,4 @@
 import numpy as np
-import pyccl as ccl
-import sacc
-import firecrown
-import sacc
 import pathlib
 import tempfile
 import yaml
@@ -36,7 +32,7 @@ def compute_scores(tomo_bin, z, metrics='all'):
         True redshift for each object
 
     metrics: str or list of str
-        Which metrics to compute. If all it will return all metrics, 
+        Which metrics to compute. If all it will return all metrics,
         otherwise just those required (see below)
 
     Returns
@@ -119,12 +115,13 @@ def get_tracer_type(nbin, what):
 def compute_mean_covariance(tomo_bin, z, what):
     """Compute a mean and covariance for the chosen distribution of objects.
 
-    value can be 'ww' for shear-shear only, 'gg' for galaxy clustering and 
+    value can be 'ww' for shear-shear only, 'gg' for galaxy clustering and
     '3x2' for full '3x2pt'
     This assumes a cosmology, and the varions parameters affecting the noise
     and signal: the f_sky, ell choices, sigma_e, and n_eff
 
     """
+    import pyccl as ccl
     # 10,000 sq deg
     f_sky = 0.25
     # pretend there is no evolution in measurement error.
@@ -248,6 +245,7 @@ def plot_distributions(z, tomo_bin, filename, nominal_edges=None):
 
 
 def make_sacc(tomo_bin, z, what, mu, C):
+    import sacc
     # Basic numbers
     nbin = int(tomo_bin.max()) + 1
     tracer_type = get_tracer_type(nbin, what)
@@ -297,7 +295,9 @@ def make_sacc(tomo_bin, z, what, mu, C):
     return S
 
 
-def figure_of_merit(sacc_data, what, galaxy_tracer_bias):
+def figure_of_merit(sacc_data, what, galaxy_tracer_bias):firecr
+    import firecrown
+
     ntot = len(sacc_data.tracers)
     nbin = ntot//2 if what == "3x2" else ntot
     tracer_type = get_tracer_type(nbin, what)
