@@ -1,11 +1,15 @@
-import jax.numpy as np
-import jax.random as rand
+import warnings
 import numpy as onp
-from jax import lax, jit, vmap, grad
 from functools import partial
-import jax_cosmo as jc
-import jax
 
+try:
+    import jax.numpy as jnp
+    from jax import lax, jit, vmap, grad
+    import jax_cosmo as jc
+    import jax
+except ImportError:
+    warnings.warn("Couldn't import JAX or jax-cosmo, some metrics may be unavailable,",
+                  ImportWarning)
 
 def ell_binning():
     # we put this here to make sure it's used consistently
