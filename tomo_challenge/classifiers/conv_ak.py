@@ -1,14 +1,18 @@
 """
-Bidirectional LSTM Classifier
+Conv1D Classifier
 
-This is an example tomographic bin generator using a convolutional bidirectional LSTM neural network.
+This is an example tomographic bin generator using a convolutional 1d neural network.
+The initial model was optimized using AutoKeras
 
 This solution was developed by the Brazilian Center for Physics Research AI 4 Astrophysics team.
 
 Authors: Clecio R. Bom, Bernardo M. Fraga, Gabriel Teixeira and Elizabeth Gonzalez.
 contact: debom |at |cbpf| dot| br
 
-In our preliminary tests we found a SNR 3X2 of  ~1930 for n=10 bins and ~2240 for 14 bins.
+In our preliminary tests we found a SNR 3X2 of  ~1910 for n=10 bins and ~2200 for 14 bins.
+
+This is an example tomographic bin generator using a convolutional bidirectional LSTM neural network.
+
 
 Every classifier module needs to:
  - have construction of the type 
@@ -18,15 +22,14 @@ Every classifier module needs to:
         apply (self, data).
  - define valid_options class varible.
 """
-
 from .base import Tomographer
 import numpy as np
 import tensorflow as tf
 from tensorflow import keras
 from sklearn.preprocessing import MinMaxScaler
 
-class LSTM(Tomographer):
-    """ Bidirectional LSTM deep classifier """
+class CNN(Tomographer):
+    """ Convolutional deep classifier """
     
     # valid parameter -- see below
     valid_options = ['bins']
@@ -85,24 +88,21 @@ class LSTM(Tomographer):
             z_high = z_edges[i + 1]
             training_bin[(training_z > z_low) & (training_z < z_high)] = i
         #cut = np.random.uniform(0, 1, training_z.size) < 0.05
-        #training_data = training_data[cut]
         #training_bin = training_bin[cut]
+        #training_data = training_data[cut]
         
-        lstm_out = np.int(486*2)
         inp = keras.layers.Input(shape=(training_data.shape[1], 1))
     
-        x = keras.layers.Conv1D(64, 3, padding='same')(inp)
-        x = keras.layers.Activation('tanh')(x)
-        x = keras.layers.MaxPooling1D(2, padding='same')(x)
+        x = keras.layers.Conv1D(256, 7, padding='same', activation='relu')(inp)
+        x = keras.layers.Conv1D(512, 7, padding='same', activation='relu')(x)
+        x = keras.layers.MaxPooling1D(6, padding='same')(x)
+        x = keras.layers.Dropout(0.25)(x)
     
-        x = keras.layers.Conv1D(128, 3, padding='same')(x)
-        x = keras.layers.Activation('tanh')(x)
-        x = keras.layers.MaxPooling1D(2, padding='same')(x)
-    
-        x = keras.layers.Bidirectional(keras.layers.LSTM(lstm_out, return_sequences=False), merge_mode='concat')(x)
-    
-        x = keras.layers.Dense(lstm_out // 2, activation='tanh')(x)
-        x = keras.layers.Dense(lstm_out // 2, activation='tanh')(x)
+        x = keras.layers.Conv1D(128, 7, padding='same', activation='relu')(x)
+        x = keras.layers.Conv1D(256, 7, padding='same', activation='relu')(x)
+        x = keras.layers.MaxPooling1D(6, padding='same')(x)
+        x = keras.layers.Dropout(0.25)(x)
+        x = keras.layers.GlobalAveragePooling1D()(x)
     
         x = keras.layers.Dense(n_bin, activation='softmax')(x)
     
@@ -113,10 +113,10 @@ class LSTM(Tomographer):
         # Can be replaced with any classifier
         scaler = MinMaxScaler()
         x_train = scaler.fit_transform(training_data)
-        x_train = np.expand_dims(x_train, axis=-1)
-        y_train = np.expand_dims(training_bin, axis=-1)
         print("Fitting classifier")
         # Lots of data, so this will take some time
+        x_train = np.expand_dims(x_train, axis=-1)
+        y_train = np.expand_dims(training_bin, axis=-1)
         model.fit(x_train, y_train, epochs=15, verbose=0)
 
         self.classifier = model
