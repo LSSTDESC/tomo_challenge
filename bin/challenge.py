@@ -16,14 +16,14 @@ def main(config_yaml):
     with open(config_yaml, 'r') as fp:
         config_str = jinja2.Template(fp.read()).render()
     config = yaml.load(config_str, Loader=yaml.Loader)
-    
+
     # Get the classes associated with each
     for name in config['run']:
         try:
             config['cls'] = tc.Tomographer._find_subclass(name)
         except KeyError:
             raise ValueError(f"Tomographer {name} is not defined")
-    
+
     # Decide if anyone needs the colors calculating and/or errors loading
     anyone_wants_colors = False
     anyone_wants_errors = False
@@ -54,19 +54,24 @@ def main(config_yaml):
     training_z = tc.load_redshift(config['training_file'])
     validation_z = tc.load_redshift(config['validation_file'])
 
+    if config['metrics_impl'] == 'jax-cosmo':
+        metrics_fn = tc.jc_compute_scores
+    else:
+        metrics_fn = tc.compute_scores
+
     with open(config['output_file'],'w') as output_file:
         for classifier_name, runs in config['run'].items():
             for run, settings in runs.items():
                 scores = run_one(classifier_name, bands, settings,
                                  training_data, training_z, validation_data, validation_z,
-                                 config['metrics'])
+                                 config['metrics'], metrics_fn)
 
                 output_file.write (f"{classifier_name} {run} {settings} {scores} \n")
 
 
 
 def run_one(classifier_name, bands, settings, train_data, train_z, valid_data,
-             valid_z, metrics):
+             valid_z, metrics, metrics_fn):
     classifier = tc.Tomographer._find_subclass(classifier_name)
 
     if classifier.wants_arrays:
@@ -93,12 +98,14 @@ def run_one(classifier_name, bands, settings, train_data, train_z, valid_data,
     results = C.apply(valid_data)
 
     print ("Getting metric...")
-    scores = tc.compute_scores(results, valid_z, metrics=metrics)
+    scores = metrics_fn(results, valid_z, metrics=metrics)
+
+    print ("Making some pretty plots...")
+    name = str(classifier.__name__)
+    tc.metrics.plot_distributions(valid_z, results, f"plots/{name}_{settings}_{bands}.png")
 
     return scores
 
 
 if __name__=="__main__":
     main()
-
-
