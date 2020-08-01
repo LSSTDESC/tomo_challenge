@@ -3,7 +3,7 @@ import numpy as onp
 from functools import partial
 
 try:
-    import jax.numpy as jnp
+    import jax.numpy as np
     from jax import lax, jit, vmap, grad
     import jax_cosmo as jc
     import jax
