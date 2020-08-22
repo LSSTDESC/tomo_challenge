@@ -5,7 +5,7 @@ from scipy.optimize import minimize
 
 
 # Let's start with a "large" set of 12 samples
-n_bins = 12
+n_bins = 100
 z_cent = np.linspace(0.2, 1.4, n_bins+1)+0.5/n_bins
 sigma_z = 0.05 * (1+z_cent)
 z_arr = np.linspace(0, 2, 1024)
@@ -30,20 +30,31 @@ plt.xlabel(r'$z$', fontsize=16)
 plt.ylabel(r'$N(z)$', fontsize=16)
 
 # Now initialize a S/N calculator for these initial groups.
-c = SnCalc(z_arr, nzs)
+c_wl = SnCalc(z_arr, nzs, use_clustering=False)
+c_gc = SnCalc(z_arr, nzs, use_clustering=True)
+print("Initializing WL")
+c_wl.get_cl_matrix(fname_save='wl_nb%d.npz' % n_bins)
+print("Initializing GC")
+c_gc.get_cl_matrix(fname_save='gc_nb%d.npz' % n_bins)
 
+# Let's focus on WL for now.
 # OK, let's brute-force explore the total S/N as a function
 # of the bin edge for a 2-bin scenario.
+print("Exploring 2-bins")
 zs = np.linspace(0.01, 1.5, 128)
-sns = np.array([c.get_sn_from_edges(np.array([z])) for z in zs])
+sns_wl = np.array([c_wl.get_sn_from_edges(np.array([z])) for z in zs])
+sns_gc = np.array([c_gc.get_sn_from_edges(np.array([z])) for z in zs])
 plt.figure()
-plt.plot(zs, sns)
+plt.plot(zs, sns_wl/np.amax(sns_wl), 'r-', label='Lensing')
+plt.plot(zs, sns_gc/np.amax(sns_gc), 'k-', label='Clustering')
 plt.xlabel('$z$')
-plt.ylabel('$S/N$')
+plt.ylabel(r'$(S/N)/(S/N)_{\rm max}$')
+plt.legend(loc='upper left', frameon=False)
 
 # Now let's do a 3-bin case (more coarsely-grained so we can do it quickly)
+print("Exploring 3-bins")
 zs = np.linspace(0.01, 1.5, 32)
-sns = np.array([[c.get_sn_from_edges(np.array([z1, z2])) for z1 in zs]
+sns = np.array([[c_wl.get_sn_from_edges(np.array([z1, z2])) for z1 in zs]
                 for z2 in zs])
 
 plt.figure()
@@ -60,15 +71,16 @@ def minus_sn(edges, calc):
     return -calc.get_sn_from_edges(edges)
 
 
+print("Optimizing WL")
 edges_0 = np.array([0.3, 0.6, 0.9])
-res = minimize(minus_sn, edges_0, method='Powell', args=(c,))
+res = minimize(minus_sn, edges_0, method='Powell', args=(c_wl,))
 print("WL final edges: ", res.x)
-print("Maximum S/N: ", c.get_sn_from_edges(res.x))
-
+print("Maximum S/N: ", c_wl.get_sn_from_edges(res.x))
+print(" ")
 
 # That was for weak lensing. Let's do the same thing for clustering.
-c = SnCalc(z_arr, nzs, use_clustering=True)
-res = minimize(minus_sn, edges_0, method='Powell', args=(c,))
+print("Optimizing GC")
+res = minimize(minus_sn, edges_0, method='Powell', args=(c_gc,))
 print("GC final edges: ", res.x)
-print("Maximum S/N: ", c.get_sn_from_edges(res.x))
+print("Maximum S/N: ", c_gc.get_sn_from_edges(res.x))
 plt.show()
