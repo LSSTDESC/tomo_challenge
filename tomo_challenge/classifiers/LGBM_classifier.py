@@ -4,7 +4,7 @@ This is an example tomographic bin generator using a Light Gradient Boosted Mach
 This solution was developed by the Brazilian Center for Physics Research AI 4 Astrophysics team.
 Authors: Clecio R. Bom, Gabriel Teixeira, Bernardo M. Fraga, Eduardo Cypriano.
 contact: debom |at |cbpf| dot| br
-In our preliminary tests we found a SNR 3X2 of  ~1930 for n=10 bins.
+In our preliminary tests we found a SNR 3X2 of  ~1926 for n=10 bins.
 Every classifier module needs to:
  - have construction of the type
        __init__ (self, bands, options) (see examples below)
