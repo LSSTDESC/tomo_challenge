@@ -19,7 +19,7 @@ See Classifier Documentation below.
 ## Options:
 # bins - number of bins
 # edge_strictness - how close to the edges of the redshift bins relative to the uncertainty on the redshift permitted (higher is stricter)
-# extrapolate_threshold - how much extrapolation is permitted (lower is stricter)
+# extrapolate_threshold - how much extrapolation is permitted (lower is stricter). This is probably not hugely valuable here, but might be if the test and training data were different.
 
 from .base import Tomographer
 import numpy as np
