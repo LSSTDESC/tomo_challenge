@@ -1,6 +1,4 @@
-""" THIS IS BEING UPDATED AS A GPZ BASED CLASSIFIER
-
-This is an example tomographic bin generator using a random forest.
+""" This is an example tomographic bin generator using the code GPz
 
 Every classifier module needs to:
  - have construction of the type 
@@ -13,16 +11,27 @@ Every classifier module needs to:
 See Classifier Documentation below.
 """
 
+# The only extra code it needs is GPz, which can be accessed at
+#pip3 install --upgrade 'git+https://github.com/OxfordML/GPz#egg=GPz' 
+# This is unfortunately only in python2.7 at the moment...
+# It also calls two python2 scripts (GPz is in python2), classifier_train_GPz.py and classifier_predict_GPz.py
+
+## Options:
+# bins - number of bins
+# edge_strictness - how close to the edges of the redshift bins relative to the uncertainty on the redshift permitted (higher is stricter)
+# extrapolate_threshold - how much extrapolation is permitted (lower is stricter)
+
 from .base import Tomographer
 import numpy as np
-from sklearn.ensemble import RandomForestClassifier
+
+import subprocess
 
 
-class RandomForest(Tomographer):
-    """ Random Forest Classifier """
+class GPzBinning(Tomographer):
+    """ GPz Classifier """
     
     # valid parameter -- see below
-    valid_options = ['bins']
+    valid_options = ['bins','edge_strictness','extrapolate_threshold']
     # this settings means arrays will be sent to train and apply instead
     # of dictionaries
     wants_arrays = True
@@ -47,19 +56,20 @@ class RandomForest(Tomographer):
         self.bands = bands
         self.opt = options
 
-    def train (self, training_data, training_z):
-        """Trains the classifier
+    def train (self, training_data, training_z,file_prefix):
+
         
-        Parameters:
-        -----------
-        training_data: numpy array, size Ngalaxes x Nbands
-          training data, each row is a galaxy, each column is a band as per
-          band defined above
-        training_z: numpy array, size Ngalaxies
-          true redshift for the training sample
+        X_train = training_data
+        n_train,d = X_train.shape
+        
+        np.savetxt('train_data.csv',training_data)
+        np.savetxt('training_z.csv',training_z)
+        
+        subprocess.run(["python2", file_prefix+"classifier_train_GPz.py"])
+        
 
-        """
 
+        # Sort out bin edges
         n_bin = self.opt['bins']
         print("Finding bins for training data")
         # Now put the training data into redshift bins.
@@ -83,18 +93,12 @@ class RandomForest(Tomographer):
         training_bin = training_bin[cut]
         training_data = training_data[cut]
 
-        # Can be replaced with any classifier
-        classifier = RandomForestClassifier()
 
-        print("Fitting classifier")
-        # Lots of data, so this will take some time
-        classifier.fit(training_data, training_bin)
-
-        self.classifier = classifier
+        #self.photoz_predictor = model
         self.z_edges = z_edges
 
 
-    def apply (self, data):
+    def apply (self, testing_data,file_prefix):
         """Applies training to the data.
         
         Parameters:
@@ -108,6 +112,44 @@ class RandomForest(Tomographer):
           tomographic selection for galaxies return as bin number for 
           each galaxy.
         """
-        tomo_bin = self.classifier.predict(data)
+        
+        # Save data
+        np.savetxt('test_data.csv',testing_data)
+
+        # Run GPz for predictions
+        subprocess.run(["python2", file_prefix+"classifier_predict_GPz.py"])
+
+        
+
+        data= np.genfromtxt('prediction_data.csv')
+        mu=data[:,0]
+        sigma=data[:,1]
+        modelV=data[:,2]
+        noiseV=data[:,3]
+        
+        z_edges=self.z_edges
+        n_bin = self.opt['bins']
+        
+        edge_strictness=self.opt['edge_strictness']
+        extrapolate_threshold=self.opt['extrapolate_threshold']
+        
+        tomo_bin = 0*mu
+        
+        for i in range(len(mu)):
+            
+            tomo_bin[i]=-1
+            
+            for j in range(n_bin):
+                
+                if mu[i]-edge_strictness*sigma[i]**0.5>z_edges[j] and mu[i]+edge_strictness*sigma[i]**0.5<z_edges[j+1]:
+                    tomo_bin[i]=j
+                    
+                if modelV[i]>extrapolate_threshold*sigma[i]:
+                    tomo_bin[i]=-1
+                    
+            
+        
+        
+
         return tomo_bin
 
