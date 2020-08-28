@@ -12,6 +12,7 @@ Every classifier module needs to:
 See Classifier Documentation below.
 """
 
+import os 
 from .base import Tomographer
 import numpy as np
 import rpy2
@@ -40,12 +41,12 @@ if len(names_to_install) > 0:
     utils.install_packages(StrVector(names_to_install))
 base.Sys_setenv(TAR=base.system("which tar",intern=True))
 devtools=ro.packages.importr("devtools")
-devtools.install_github("AngusWright/helpRfuncs")
-devtools.install_github("AngusWright/kohonen/kohonen")
+#devtools.install_github("AngusWright/helpRfuncs")
+#devtools.install_github("AngusWright/kohonen/kohonen")
 kohonen=ro.packages.importr("kohonen")
 
 class ComplexSOM(Tomographer):
-    """ Simplistic SOM Classifier """
+    """ Complex SOM Classifier with SNR Optimisation """
     
     # valid parameter -- see below
     valid_options = ['bins','som_dim','num_groups','num_threads',
@@ -258,16 +259,23 @@ class ComplexSOM(Tomographer):
         #Get the group assignments for the training data 
         train_group = np.array(train_som.rx2['clust.classif'])
         tab=base.table(FactorVector(train_som.rx2['clust.classif'],levels=base.seq(num_groups)))
+        print(tab)
+        print(np.arange(num_groups)[np.array(tab)==0])
         #Construct the Nz z-axis
-        z_arr = np.linspace(0, 2, 1024)
+        z_arr = np.linspace(0, 2, 124)
         z_cen = z_arr[0:-1]+(z_arr[1]-z_arr[0])/2. 
         #Construct the per-group Nz
         nzs = [(np.histogram(training_z[train_group == group+1],z_arr)[0]) for group in np.arange(num_groups)[np.array(tab)!=0]]
+        #Update the fsky 
+        n_gal = np.sum(np.array(tab)) # Total number of galaxies you have, change appropriately
+        n_eff = 20. # Target density in arcmin^-2
+        fsky = n_gal / (4*np.pi*(180 * 60 / np.pi)**2 * n_eff)
         # Now initialize a S/N calculator for these initial groups.
+        os.system('rm wl_nb%d.npz' % n_bin)
         if metric == 'SNR_ww': 
-            c_wl = SnCalc(z_cen, nzs, use_clustering=False)
+            c_wl = SnCalc(z_cen, nzs, use_clustering=False,fsky=fsky)
         else:
-            c_wl = SnCalc(z_cen, nzs, use_clustering=True)
+            c_wl = SnCalc(z_cen, nzs, use_clustering=True,fsky=fsky)
         print("Initializing WL")
         c_wl.get_cl_matrix(fname_save='wl_nb%d.npz' % n_bin)
         # Finally, let's write the function to minimize and optimize for a 4-bin case.
@@ -278,8 +286,9 @@ class ComplexSOM(Tomographer):
         edges_0 = np.linspace(0, 2, n_bin-1)
         res = minimize(minus_sn, edges_0, method='Powell', args=(c_wl,))
         print("WL final edges: ", res.x)
-        print("Maximum S/N: ", c_wl.get_sn_from_edges(res.x))
+        print("Maximum S/N: ", c_wl.get_sn_from_edges(res.x)*np.sqrt(0.25/fsky))
         print(" ")
+        print(res)
 
 
 
