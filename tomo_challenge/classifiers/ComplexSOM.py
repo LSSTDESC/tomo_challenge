@@ -266,6 +266,9 @@ class ComplexSOM(Tomographer):
         z_cen = z_arr[0:-1]+(z_arr[1]-z_arr[0])/2. 
         #Construct the per-group Nz
         nzs = [(np.histogram(training_z[train_group == group+1],z_arr)[0]) for group in np.arange(num_groups)[np.array(tab)!=0]]
+       
+                # np.save('nzs.npy', nzs)
+       
         #Update the fsky 
         n_gal = np.sum(np.array(tab)) # Total number of galaxies you have, change appropriately
         n_eff = 20. # Target density in arcmin^-2
@@ -290,15 +293,20 @@ class ComplexSOM(Tomographer):
         print(" ")
         print(res)
 
-
+        groups_in_tomo, tomo_bins = c_wl.assign_from_edges(res.x, return_bins=True)
+        group_bins = np.zeros(num_groups)
+        for i, bin_no in enumerate(tomo_bins):
+            print(i)
+            print(bin_no)
+            group_bins[groups_in_tomo[i]] = bin_no
+        print(group_bins)
 
         #Construct the per-group Nz
         print("Outputting trained SOM and redshift ordering of SOM groups")
 
         print("Finished")
         self.train_som = train_som
-        self.group_z = group_z
-        self.z_order = z_order
+        self.group_bins = group_bins
 
     def apply (self, data):
         """Applies training to the data.
@@ -333,26 +341,12 @@ class ComplexSOM(Tomographer):
             expression="nrow(data)",expr_label="N",
             n_cluster_bins=self.opt['num_groups'],n_cores=self.opt['num_threads'])
 
-        #Calculate the cumulative count 
-        print("Generate cumulative source counts a.f.o. group mean z")
-        zcumsum=base.cumsum(group_prop.rx2('property').rx(self.z_order))
-
-        # Find the edges that split the redshifts into n_z bins of
-        # equal number counts in each
-        print("Assign the groups to tomographic bins")
-        p = np.linspace(0, 100, n_bin + 1)
-        n_edges = np.percentile(zcumsum, p)
-
-        # Now put the groups into redshift bins.
-        group_bins = FloatVector(base.cut(FloatVector(zcumsum),FloatVector(n_edges),
-            include=True)).rx(base.order(self.z_order))
-
         #extract the validation som (just for convenience)
         valid_som = group_prop.rx2('som')
 
         #Assign the sources, by group, to tomographic bins
         print("Output source tomographic bin assignments")
-        valid_bin = base.unsplit(group_bins,FactorVector(valid_som.rx2['clust.classif'],
+        valid_bin = base.unsplit(self.group_bins,FactorVector(valid_som.rx2['clust.classif'],
             levels=base.seq(self.opt['num_groups'])),drop=False)
         #valid_bin = valid_som.rx2['clust.classif']
         valid_bin = np.array(valid_bin)-1

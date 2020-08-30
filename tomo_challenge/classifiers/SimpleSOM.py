@@ -37,8 +37,8 @@ if len(names_to_install) > 0:
     utils.install_packages(StrVector(names_to_install))
 base.Sys_setenv(TAR=base.system("which tar",intern=True))
 devtools=ro.packages.importr("devtools")
-devtools.install_github("AngusWright/helpRfuncs")
-devtools.install_github("AngusWright/kohonen/kohonen")
+#devtools.install_github("AngusWright/helpRfuncs")
+#devtools.install_github("AngusWright/kohonen/kohonen")
 kohonen=ro.packages.importr("kohonen")
 
 class SimpleSOM(Tomographer):
