@@ -269,10 +269,16 @@ class ComplexSOM(Tomographer):
        
                 # np.save('nzs.npy', nzs)
        
-        #Update the fsky 
-        n_gal = np.sum(np.array(tab)) # Total number of galaxies you have, change appropriately
-        n_eff = 20. # Target density in arcmin^-2
-        fsky = n_gal / (4*np.pi*(180 * 60 / np.pi)**2 * n_eff)
+        #Update the fsky
+        # Renormalize to use the same sample definitions as the
+        # official metric calculators.
+        fsky = 0.25
+        ndens_arcmin = 20.
+        area_arcmin = (180*60/np.pi)**2*4*np.pi*fsky
+        ng_tot_goal = ndens_arcmin * area_arcmin
+        ng_tot_curr = np.sum(np.array(tab))
+        nzs = [nz * ng_tot_goal / ng_tot_curr for nz in nzs]
+    
         # Now initialize a S/N calculator for these initial groups.
         os.system('rm wl_nb%d.npz' % n_bin)
         if metric == 'SNR_ww': 
@@ -295,10 +301,9 @@ class ComplexSOM(Tomographer):
 
         groups_in_tomo = c_wl.assign_from_edges(res.x, get_ids=True)
         group_bins = np.zeros(num_groups)
-        for bin_no, groups in enumerate(groups_in_tomo):
-            print(bin_no)
+        for bin_no, groups in groups_in_tomo:
+            print(bin_no, groups)
             group_bins[groups] = bin_no
-        print(group_bins)
 
         #Construct the per-group Nz
         print("Outputting trained SOM and redshift ordering of SOM groups")
