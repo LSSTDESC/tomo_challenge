@@ -293,12 +293,11 @@ class ComplexSOM(Tomographer):
         print(" ")
         print(res)
 
-        groups_in_tomo, tomo_bins = c_wl.assign_from_edges(res.x, return_bins=True)
+        groups_in_tomo = c_wl.assign_from_edges(res.x, get_ids=True)
         group_bins = np.zeros(num_groups)
-        for i, bin_no in enumerate(tomo_bins):
-            print(i)
+        for bin_no, groups in enumerate(groups_in_tomo):
             print(bin_no)
-            group_bins[groups_in_tomo[i]] = bin_no
+            group_bins[groups] = bin_no
         print(group_bins)
 
         #Construct the per-group Nz

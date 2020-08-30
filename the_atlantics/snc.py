@@ -17,7 +17,7 @@ class SnCalc(object):
             s_gamma=0.28, use_clustering=False):
         """ S/N calculator
         Args:
-                        z_arr (array_like): array of redshifts at which all the N(z)s are
+            z_arr (array_like): array of redshifts at which all the N(z)s are
                 sampled. They should be linearly spaced.
             nz_list (list): list of arrays containing the redshift
                 distributions of all the initial groups (each array in the
@@ -43,10 +43,10 @@ class SnCalc(object):
         self.z_arr = z_arr
         self.nz_list = nz_list
         self.n_gals = np.array([simps(nz, x=self.z_arr)
-            for nz in self.nz_list])
+                                for nz in self.nz_list])
         self.pz_list = self.nz_list / self.n_gals[:, None]
         self.z_means = np.array([simps(self.z_arr*nz, x=self.z_arr)
-            for nz in self.nz_list]) / self.n_gals
+                                 for nz in self.nz_list]) / self.n_gals
         self.n_dens = self.n_gals / (4*np.pi*self.fsky)
         self.cls = None
         self.use_clustering = use_clustering
@@ -102,7 +102,7 @@ class SnCalc(object):
         """ Transform an assignment list into a weight matrix and the
         corresponding number densities.
         Args:
-                        assign (list): list of arrays. Each element of the list should
+            assign (list): list of arrays. Each element of the list should
                 be a numpy array of integers, corresponding to the indices
                 of the initial groups that are now resampled into a larger
                 group.
@@ -192,14 +192,24 @@ class SnCalc(object):
                 np.any(edges > self.edges_large) or \
                 np.any(np.diff(edges) < 0)
 
-    def assign_from_edges(self, edges, assign_params=assign_params_default, return_bins=False):
+    def get_nzs_from_edges(self, edges, assign_params=assign_params_default):
+        assign = self.assign_from_edges(edges, assign_params=assign_params)
+        nzs = np.array([np.sum(self.nz_list[a, :], axis=0)
+                        for a in assign])
+        return nzs
+
+    def assign_from_edges(self, edges, assign_params=assign_params_default,
+                          get_ids=False):
         """ Get assignment list from edges and assign parameters.
         Args:
-                        edges (array_like): array of bin edges.
+            edges (array_like): array of bin edges.
             assign_params (dict): dictionary of assignment parameters
                 (see `assign_params_default`).
+            get_ids (bool): if `True`, output assignment arrays will
+                be accompanied by the associated bin id (with -1 for the
+                trash bin).
         Returns:
-                        List of assignment arrays ready to be used in e.g. `get_sn`.
+            List of assignment arrays ready to be used in e.g. `get_sn`.
         """
         nbins = len(edges) + 1
         # Bin IDs based on mean z
@@ -211,17 +221,20 @@ class SnCalc(object):
             if assign_params['use_p_outbin']:
                 # Matrix of probabilities in each bin
                 pzs = np.array([[simps(pz[m], x=self.z_arr[m])
-                    for m in masks]
-                    for pz in self.pz_list])
+                                 for m in masks]
+                                for pz in self.pz_list])
                 pzd = np.array([pzs[j, ids[j]]
-                    for j in range(self.n_samples)])
+                                for j in range(self.n_samples)])
             else:
                 # Overlaps in own bin
-                pzd = np.array([simps(pz[masks[i]],
-                    x=self.z_arr[masks[i]])
-                    for pz, i in zip(self.pz_list, ids)])
-
-                # Throw away based on in-bin probability
+                def integrate_safe(p, z, m):
+                    if np.sum(m) == 0:
+                        return 0
+                    else:
+                        return simps(p[m], x=z[m])
+                pzd = np.array([integrate_safe(pz, self.z_arr, masks[i])
+                                for pz, i in zip(self.pz_list, ids)])
+            # Throw away based on in-bin probability
             if assign_params['use_p_inbin']:
                 ids[pzd < assign_params['p_inbin_thr']] = -1
             # Throw away based on off-bin probability
@@ -229,13 +242,13 @@ class SnCalc(object):
                 ids[np.array([np.sum(p > assign_params['p_outbin_thr']) > 1
                     for p in pzs])] = -1
                 # Assignment list
-        if return_bins:
-            return [np.where(ids == i)[0] for i in np.unique(ids)], np.unique(ids)
+        if get_ids:
+            return [(i, np.where(ids == i)[0]) for i in np.unique(ids)]
         else:
             return [np.where(ids == i)[0] for i in np.unique(ids)]
 
     def get_sn_from_edges(self, edges, full_output=False,
-            assign_params=assign_params_default):
+                          assign_params=assign_params_default):
         """ Compute signal-to-noise ratio from a set of edges and assignment
         parameters.
         Args:
