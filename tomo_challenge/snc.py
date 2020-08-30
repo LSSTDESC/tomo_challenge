@@ -14,7 +14,7 @@ class SnCalc(object):
     edges_large = 100.
 
     def __init__(self, z_arr, nz_list, fsky=0.4, lmax=2000, d_ell=10,
-            s_gamma=0.28, use_clustering=False):
+            s_gamma=0.26, use_clustering=False):
         """ S/N calculator
         Args:
             z_arr (array_like): array of redshifts at which all the N(z)s are

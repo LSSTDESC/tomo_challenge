@@ -29,7 +29,7 @@ zz = (z_arr[1:]+z_arr[:-1])*0.5
 # Renormalize to use the same sample definitions as the
 # official metric calculators.
 fsky = 0.25
-ndens_arcmin = 25.
+ndens_arcmin = 20.
 area_arcmin = (180*60/np.pi)**2*4*np.pi*fsky
 ng_tot = ndens_arcmin * area_arcmin
 ng_each_small = simps(nzs, x=zz)
