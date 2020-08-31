@@ -1,0 +1,86 @@
+/global/cscratch1/sd/abault/tomo_challenge/bin/..
+Found classifier RandomForest_log
+Found classifier IBandOnly
+Found classifier RandomForestNormal
+Found classifier RandomForestUniform
+Found classifier RandomForest
+Found classifier Random
+file successfully created
+first loop successfully entered
+second loop successfully entered
+Executing:  RandomForest_log riz {'bins': 4, 'colors': True, 'errors': True}
+{'bins': 4, 'colors': True, 'errors': True} ['bins']
+Initializing classifier...
+Training...
+Finding bins for training data
+the bins are in logspace
+cut percent: 0.05
+Fitting classifier
+Applying...
+Getting metric...
+Running in serial mode (one process).
+
+Parameter Priors
+----------------
+params--omega_k  ~ delta(0.0)
+params--omega_c  ~ U(0.25, 0.32)
+params--omega_b  ~ U(0.04, 0.05)
+params--h        ~ U(0.5, 0.9)
+params--n_s      ~ U(0.9, 1.02)
+params--sigma8   ~ U(0.74, 0.94)
+params--w0       ~ delta(-1.0)
+params--wa       ~ delta(0.0)
+
+
+****************************
+* Running sampler 1/1: fisher
+* Saving output -> /tmp/tmps010x8ar/chain.txt
+****************************
+Calculating derivatives using 20 total models
+Running in serial mode (one process).
+
+Parameter Priors
+----------------
+params--omega_k  ~ delta(0.0)
+params--omega_c  ~ U(0.25, 0.32)
+params--omega_b  ~ U(0.04, 0.05)
+params--h        ~ U(0.5, 0.9)
+params--n_s      ~ U(0.9, 1.02)
+params--sigma8   ~ U(0.74, 0.94)
+params--w0       ~ delta(-1.0)
+params--wa       ~ delta(0.0)
+params--bias_0   ~ delta(1.1501039624489349)
+params--bias_1   ~ delta(1.2125371578497253)
+params--bias_2   ~ delta(1.2973669314394134)
+params--bias_3   ~ delta(1.6922830217318134)
+
+
+****************************
+* Running sampler 1/1: fisher
+* Saving output -> /tmp/tmpt4dul75j/chain.txt
+****************************
+Calculating derivatives using 20 total models
+Running in serial mode (one process).
+
+Parameter Priors
+----------------
+params--omega_k  ~ delta(0.0)
+params--omega_c  ~ U(0.25, 0.32)
+params--omega_b  ~ U(0.04, 0.05)
+params--h        ~ U(0.5, 0.9)
+params--n_s      ~ U(0.9, 1.02)
+params--sigma8   ~ U(0.74, 0.94)
+params--w0       ~ delta(-1.0)
+params--wa       ~ delta(0.0)
+params--bias_0   ~ delta(1.1501039624489349)
+params--bias_1   ~ delta(1.2125371578497253)
+params--bias_2   ~ delta(1.2973669314394134)
+params--bias_3   ~ delta(1.6922830217318134)
+
+
+****************************
+* Running sampler 1/1: fisher
+* Saving output -> /tmp/tmp8twbx9vp/chain.txt
+****************************
+Calculating derivatives using 20 total models
+Making some pretty plots...

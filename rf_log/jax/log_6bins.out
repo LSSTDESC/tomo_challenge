@@ -1,0 +1,20 @@
+/global/cscratch1/sd/abault/tomo_challenge/bin/..
+Found classifier RandomForest_log
+Found classifier IBandOnly
+Found classifier RandomForestUniform
+Found classifier RF_Log_CombineBins
+Found classifier RandomForest
+Found classifier RandomForestCombineBins
+Found classifier RF_Uniform_CombineBins
+Found classifier Random
+Executing:  RandomForest_log riz {'bins': 6, 'colors': True, 'errors': True}
+{'bins': 6, 'colors': True, 'errors': True} ['bins']
+Initializing classifier...
+Training...
+Finding bins for training data
+the bins are in logspace
+cut percent: 0.05
+Fitting classifier
+Applying...
+Getting metric...
+Making some pretty plots...
