@@ -38,3 +38,4 @@ tensorflow==2.2.0
 tensorflow-addons==0.10.0
 tensorflow-estimator==2.2.0
 tensorflow-probability==0.10.0
+keras_contrib # installed using pip3 install git+https://www.github.com/keras-team/keras-contrib.git
