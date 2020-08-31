@@ -142,9 +142,9 @@ def compute_mean_covariance(tomo_bin, z, what):
     # work out the number density per steradian
     steradian_to_arcmin2 =  (180*60/np.pi)**2
     n_eff_total = n_eff_total_arcmin2 * steradian_to_arcmin2
-
+    
     nbin = int(tomo_bin.max()) + 1
-
+    
     z_mid, n_of_z = get_n_of_z(tomo_bin, z)
     bz = 1/ccl.growth_factor(cosmo, 1/(1+z_mid))
     bofz = (z_mid, bz)
@@ -233,13 +233,14 @@ def plot_distributions(z, tomo_bin, filename, nominal_edges=None):
     nbin = int(tomo_bin.max()) + 1
     for i in range(nbin):
         w = np.where(tomo_bin == i)
-        plt.hist(z[w], bins=50, histtype='step')
+        plt.hist(z[w], bins=50, histtype='step', label = f'bin {i}')
 
     # Plot verticals at nominal edges, if given
     if nominal_edges is not None:
         for x in nominal_edges:
             plt.axvline(x, color='k', linestyle=':')
-
+    
+    plt.legend()
     plt.savefig(filename)
     plt.close()
 
