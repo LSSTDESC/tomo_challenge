@@ -2,13 +2,15 @@
 Bidirectional LSTM Classifier
 
 This is an example tomographic bin generator using a convolutional bidirectional LSTM neural network.
-
+We also added a custom data loader we tested.
 This solution was developed by the Brazilian Center for Physics Research AI 4 Astrophysics team.
 
 Authors: Clecio R. Bom, Bernardo M. Fraga, Gabriel Teixeira and Elizabeth Gonzalez.
+
 contact: debom |at |cbpf| dot| br
 
-In our preliminary tests we found a SNR 3X2 of  ~1930 for n=10 bins and ~2240 for 14 bins.
+
+
 
 Every classifier module needs to:
  - have construction of the type 
@@ -17,6 +19,8 @@ Every classifier module needs to:
         train (self, training_data,training_z)
         apply (self, data).
  - define valid_options class varible.
+
+See Classifier Documentation below.
 """
 
 from .base import Tomographer
@@ -24,6 +28,8 @@ import numpy as np
 import tensorflow as tf
 from tensorflow import keras
 from sklearn.preprocessing import MinMaxScaler
+import h5py
+
 
 class LSTM(Tomographer):
     """ Bidirectional LSTM deep classifier """
@@ -53,6 +59,45 @@ class LSTM(Tomographer):
         """
         self.bands = bands
         self.opt = options
+
+    def load_data(fname, take_colors=True, cutoff=0.0):
+        n_bins = self.opt['bins']
+        data = h5py.File(fname, 'r')
+        r_mag = data['r_mag']
+        g_mag = data['g_mag']
+        i_mag = data['i_mag']
+        z_mag = data['z_mag']
+        redshift = data['redshift_true']
+        all_mags = np.vstack([g_mag, r_mag, i_mag, z_mag])
+        all_mags = all_mags.T
+        mask = (all_mags != np.inf).all(axis=1)
+        all_mags = all_mags[mask,:]
+        redshift = redshift[mask]
+        gr_color = all_mags[:,0] - all_mags[:,1]
+        ri_color = all_mags[:,1] - all_mags[:,2]
+        iz_color = all_mags[:,2] - all_mags[:,3]
+        all_colors = np.vstack([gr_color, ri_color, iz_color])
+        all_colors = all_colors.T
+        p = np.linspace(0, 100, n_bins+1)
+        z_edges = np.percentile(redshift, p)
+        train_bin = np.zeros(all_mags.shape[0])
+        for i in range(n_bins):
+            z_low = z_edges[i]
+            z_high = z_edges[i+1]
+            train_bin[(redshift > z_low) & (redshift <= z_high)] = i
+        if cutoff != 0.0:
+            cut = np.random.uniform(0, 1, all_mags.shape[0]) < cutoff
+            train_bin = train_bin[cut].reshape(-1,1)
+            all_mags = all_mags[cut]
+            all_colors = all_colors[cut]
+            redshift = redshift[cut]
+        else:
+            train_bin = train_bin.reshape(-1,1)
+        if take_colors:
+            return np.hstack([all_mags, all_colors]), redshift, train_bin.astype(int), z_edges
+        else:
+            return mags, redshift, train_bin.astype(int), z_edges
+
 
     def train (self, training_data, training_z):
         """Trains the classifier
