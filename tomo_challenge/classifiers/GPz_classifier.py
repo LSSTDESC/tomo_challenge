@@ -15,6 +15,7 @@ See Classifier Documentation below.
 #pip3 install --upgrade 'git+https://github.com/OxfordML/GPz#egg=GPz' 
 # This is unfortunately only in python2.7 at the moment...
 # It also calls two python2 scripts (GPz is in python2), classifier_train_GPz.py and classifier_predict_GPz.py
+# Train requires file_prefix to tell it where you put these files
 
 ## Options:
 # bins - number of bins
@@ -51,6 +52,8 @@ class GPzBinning(Tomographer):
         -----
         Valiad options are:
             'bins' - number of tomographic bins
+            'edge_strictness [default=0.0] Essentially how big error bars can be compared to the bin edges
+            'extrapolate_threshold' [default=1.0] Essentially how much extrapolation should be allowed
 
         """
         self.bands = bands
