@@ -55,6 +55,8 @@ def main(config_yaml):
     training_z = tc.load_redshift(config['training_file'])
     validation_z = tc.load_redshift(config['validation_file'])
 
+    newbins = config['newbins']
+    
     if config['metrics_impl'] == 'jax-cosmo':
         metrics_fn = tc.jc_compute_scores
     else:
@@ -65,14 +67,14 @@ def main(config_yaml):
             for run, settings in runs.items():
                 scores = run_one(classifier_name, bands, settings,
                                  training_data, training_z, validation_data, validation_z,
-                                 config['metrics'], metrics_fn)
+                                 config['metrics'], metrics_fn, newbins)
 
                 output_file.write(f"{classifier_name} {run} {settings} {scores} \n")
 
 
 
 def run_one(classifier_name, bands, settings, train_data, train_z, valid_data,
-             valid_z, metrics, metrics_fn):
+             valid_z, metrics, metrics_fn, newbins):
     classifier = tc.Tomographer._find_subclass(classifier_name)
 
     if classifier.wants_arrays:
@@ -90,7 +92,7 @@ def run_one(classifier_name, bands, settings, train_data, train_z, valid_data,
             raise ValueError(f"Key {key} is not recognized by classifier {classifier_name}")
 
     print ("Initializing classifier...")
-    C=classifier(bands, settings)
+    C=classifier(bands, settings, newbins)
 
     print ("Training...")
     C.train(train_data,train_z)
@@ -104,7 +106,7 @@ def run_one(classifier_name, bands, settings, train_data, train_z, valid_data,
 
     print ("Making some pretty plots...")
     name = str(classifier.__name__)
-    tc.metrics.plot_distributions(valid_z, results, f"/global/cscratch1/sd/abault/tomo_challenge/plots/{name}_{settings}_{bands}.png")
+    tc.metrics.plot_distributions(valid_z, results, f"/global/cscratch1/sd/abault/tomo_challenge/plots/{name}_{settings}_{bands}_{newbins}.png")
 
     return scores
 
