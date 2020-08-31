@@ -6,12 +6,11 @@ import numpy as np
 
 import h5py
 
-#execfile('/Users/hatfield/Documents/myve_python3/scripts/GPz_tomo_data.py')
 
 ########### Model options ###############
 
 method = 'VC'               # select method, options = GL, VL, GD, VD, GC and VC [required]
-m = 25                      # number of basis functions to use [required]
+m = 100                      # number of basis functions to use [required]
 joint = True                # jointly learn a prior linear mean function [default=true]
 heteroscedastic = True      # learn a heteroscedastic noise process, set to false interested only in point estimates
 csl_method = 'normal'       # cost-sensitive learning option: [default='normal']
