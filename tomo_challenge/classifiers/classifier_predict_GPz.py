@@ -1,9 +1,3 @@
-file_prefix='/Users/hatfield/Documents/myve_python3/scripts/'
-data_prefix='/Users/hatfield/Documents/myve_python3/tomo_challenge/data/'
-
-import sys
-sys.path.insert(0, file_prefix)
-
 import GPz
 from numpy import *
 import matplotlib.pyplot as plt
@@ -12,7 +6,6 @@ import numpy as np
 
 import h5py
 
-#execfile('/Users/hatfield/Documents/myve_python3/scripts/classifier_predict_GPz.py')
 
 ########### Model options ###############
 
