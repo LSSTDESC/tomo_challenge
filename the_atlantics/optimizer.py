@@ -101,11 +101,17 @@ for (i, a), n in zip(assign, nz_best):
     n_here = simps(n, x=zz)
     f = n_here / n_tot
     frac = "%.1lf" % (100 * f)
+    if i == -1:
+        bin_name = 'Trash bin'
+    else:
+        bin_name = f'Bin {i}'
     plt.plot(zz, n/n_here,
-             label=f'Bin {i} ({frac} %)')
+             label=bin_name + f' ({frac} %)')
 plt.legend()
 plt.xlabel(r'$z$', fontsize=15)
 plt.ylabel(r'$p(z)$', fontsize=15)
-plt.show()
+plt.savefig(o.prefix_out + '_nz_summary.png',
+            bbox_inches='tight')
 
 np.savez(o.prefix_out + '_bin_info.npz', **d_out)
+plt.show()

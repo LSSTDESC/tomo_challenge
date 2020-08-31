@@ -14,7 +14,7 @@ class SnCalc(object):
     edges_large = 100.
 
     def __init__(self, z_arr, nz_list, fsky=0.4, lmax=2000, d_ell=10,
-            s_gamma=0.26, use_clustering=False):
+                 s_gamma=0.26, use_clustering=False, integrator='spline'):
         """ S/N calculator
         Args:
             z_arr (array_like): array of redshifts at which all the N(z)s are
@@ -32,7 +32,10 @@ class SnCalc(object):
                 `use_clustering=False`).
             use_clustering (bool): if `True`, SNR will be computed for
                 clustering instead of lensing.
+            integrator (string): CCL integration method. Either 'qag_quad'
+                or 'spline'.
         """
+        self.integrator = integrator
         self.s_gamma = s_gamma
         self.fsky = fsky
         self.lmax = lmax
@@ -90,7 +93,8 @@ class SnCalc(object):
         self.cls = np.zeros([self.n_ell, self.n_samples, self.n_samples])
         for i in range(self.n_samples):
             for j in range(i, self.n_samples):
-                cl = ccl.angular_cl(cosmo, trs[i], trs[j], self.larr)
+                cl = ccl.angular_cl(cosmo, trs[i], trs[j], self.larr,
+                                    limber_integration_method=self.integrator)
                 self.cls[:, i, j] = cl
                 if j != i:
                     self.cls[:, j, i] = cl
