@@ -120,9 +120,9 @@ class ComplexSOM(Tomographer):
             group_type = 'redshift'
 
         #Define the redshift summary statistics (used for making groups in the 'redshift' case
-        property_labels = ("mean_z_true","med_z_true","sd_z_true","mad_z_true","N","iqr_z_true")
+        property_labels = ("mean_z_true","med_z_true","sd_z_true","mad_z_true","iqr_z_true")
         property_expressions = ("mean(data$redshift_true)","median(data$redshift_true)","sd(data$redshift_true)",
-                                "mad(data$redshift_true)","nrow(data)",
+                                "mad(data$redshift_true)",
                                 "diff(quantile(data$redshift_true,probs=pnorm(c(-2,2))))")
         #Define the SOM variables
         if self.bands == 'riz':
@@ -203,7 +203,10 @@ class ComplexSOM(Tomographer):
                         expression=StrVector(property_expressions),expr_label=StrVector(property_labels))
             print("Constructing redshift-based hierarchical cluster tree")
             #Cluster the SOM cells into num_groups groups
-            hclust=stats.hclust(stats.dist(cell_prop.rx2['property']))
+            props = cell_prop.rx2['property']
+            props.rx[base.which(base.is_na(props))] = -1
+            print(base.summary(props))
+            hclust=stats.hclust(stats.dist(props))
             cell_group=stats.cutree(hclust,k=num_groups)
 
             #Assign the cell groups to the SOM structure
@@ -222,6 +225,7 @@ class ComplexSOM(Tomographer):
         if plots == True: 
             #Make the diagnostic plots
             props = group_prop.rx2('property')
+            cprops = cell_prop.rx2('property')
             print(base.colnames(props))
             print("Constructing SOM diagnostic figures")
             #Initialise the plot device
@@ -240,6 +244,15 @@ class ComplexSOM(Tomographer):
              
             #Paint by the redshift diagnostics:
             #mean redshift
+            gr.plot(train_som,property=cprops.rx(True,base.which(cprops.colnames.ro=='mean_z_true')),ncolors=1e3,zlog=False,
+                    type='property',shape='straight',heatkeywidth=som_dim[0]/20,main='Cell mean redshift',zlim=FloatVector([0,1.8]))
+            #redshift std
+            gr.plot(train_som,property=cprops.rx(True,base.which(cprops.colnames.ro=='sd_z_true')),ncolors=1e3,zlog=False,
+                    type='property',shape='straight',heatkeywidth=som_dim[0]/20,main='Cell redshift stdev',zlim=FloatVector([0,0.2]))
+            #2sigma redshift IQR
+            gr.plot(train_som,property=cprops.rx(True,base.which(cprops.colnames.ro=='iqr_z_true')),ncolors=1e3,zlog=False,
+                    type='property',shape='straight',heatkeywidth=som_dim[0]/20,main='Cell 2sigma IQR',zlim=FloatVector([0,0.4]))
+            #mean redshift
             gr.plot(train_som,property=props.rx(True,base.which(props.colnames.ro=='mean_z_true')),ncolors=1e3,zlog=False,
                     type='property',shape='straight',heatkeywidth=som_dim[0]/20,main='Group mean redshift',zlim=FloatVector([0,1.8]))
             #redshift std
@@ -247,10 +260,10 @@ class ComplexSOM(Tomographer):
                     type='property',shape='straight',heatkeywidth=som_dim[0]/20,main='Group redshift stdev',zlim=FloatVector([0,0.2]))
             #2sigma redshift IQR
             gr.plot(train_som,property=props.rx(True,base.which(props.colnames.ro=='iqr_z_true')),ncolors=1e3,zlog=False,
-                    type='property',shape='straight',heatkeywidth=som_dim[0]/20,main='group 2sigma IQR',zlim=FloatVector([0,0.4]))
-            #N group
-            gr.plot(train_som,property=props.rx(True,base.which(props.colnames.ro=='N')),ncolors=1e3,zlog=False,
-                    type='property',shape='straight',heatkeywidth=som_dim[0]/20,main='N group')
+                    type='property',shape='straight',heatkeywidth=som_dim[0]/20,main='Group 2sigma IQR',zlim=FloatVector([0,0.4]))
+            ##N group
+            #gr.plot(train_som,property=props.rx(True,base.which(props.colnames.ro=='N')),ncolors=1e3,zlog=False,
+            #        type='property',shape='straight',heatkeywidth=som_dim[0]/20,main='N group')
 
             #Close the plot device 
             dev.dev_off()
@@ -267,12 +280,22 @@ class ComplexSOM(Tomographer):
         #Construct the per-group Nz
         nzs = [(np.histogram(training_z[train_group == group+1],z_arr)[0]) for group in np.arange(num_groups)[np.array(tab)!=0]]
        
-                # np.save('nzs.npy', nzs)
+        #np.save('plots/nzs.npy', nzs)
        
-        #Update the fsky 
-        n_gal = np.sum(np.array(tab)) # Total number of galaxies you have, change appropriately
-        n_eff = 20. # Target density in arcmin^-2
-        fsky = n_gal / (4*np.pi*(180 * 60 / np.pi)**2 * n_eff)
+        #Update the fsky
+        # Renormalize to use the same sample definitions as the
+        # official metric calculators.
+        fsky = 0.25
+        ndens_arcmin = 20.
+        area_arcmin = (180*60/np.pi)**2*4*np.pi*fsky
+        ng_tot_goal = ndens_arcmin * area_arcmin
+        ng_tot_curr = np.sum(np.array(tab))
+        nzs = [nz * ng_tot_goal / ng_tot_curr for nz in nzs]
+
+        #np.save('plots/nzs_norm.npy', nzs)
+       
+        #print(nzs)
+    
         # Now initialize a S/N calculator for these initial groups.
         os.system('rm wl_nb%d.npz' % n_bin)
         if metric == 'SNR_ww': 
@@ -293,15 +316,13 @@ class ComplexSOM(Tomographer):
         print(" ")
         print(res)
 
-        groups_in_tomo = c_wl.assign_from_edges(res.x, get_ids=True)
-        group_bins = np.zeros(num_groups)
-        for bin_no, groups in enumerate(groups_in_tomo):
-            print(bin_no)
-            group_bins[groups] = bin_no
-        print(group_bins)
-
         #Construct the per-group Nz
         print("Outputting trained SOM and redshift ordering of SOM groups")
+        groups_in_tomo = c_wl.assign_from_edges(res.x, get_ids=True)
+        group_bins = np.zeros(num_groups)
+        for bin_no, groups in groups_in_tomo:
+            print(bin_no, groups)
+            group_bins[groups] = bin_no
 
         print("Finished")
         self.train_som = train_som
@@ -324,6 +345,8 @@ class ComplexSOM(Tomographer):
         
         #Number of tomographic bins 
         n_bin = self.opt['bins']
+        #Number of discrete SOM groups
+        num_groups = self.opt['num_groups'] 
 
         print("Preparing the data")
         data = pd.DataFrame.from_dict(data)
@@ -331,24 +354,22 @@ class ComplexSOM(Tomographer):
         #Construct the validation data frame (just a python-to-R data conversion)
         print("Converting the data to R format")
         with localconverter(ro.default_converter + pandas2ri.converter):
-              #train_df = ro.conversion.py2rpy(train[['u_mag','g_mag','r_mag','i_mag','z_mag','y_mag']])
               data_df = ro.conversion.py2rpy(data)
 
         print("Parsing the validation data into the SOM groupings")
         #Generate the validation associations/groups
         group_prop=kohonen.generate_kohgroup_property(som=self.train_som,data=data_df,
             expression="nrow(data)",expr_label="N",
-            n_cluster_bins=self.opt['num_groups'],n_cores=self.opt['num_threads'])
+            n_cluster_bins=num_groups,n_cores=self.opt['num_threads'])
 
         #extract the validation som (just for convenience)
         valid_som = group_prop.rx2('som')
 
         #Assign the sources, by group, to tomographic bins
         print("Output source tomographic bin assignments")
-        valid_bin = base.unsplit(self.group_bins,FactorVector(valid_som.rx2['clust.classif'],
-            levels=base.seq(self.opt['num_groups'])),drop=False)
-        #valid_bin = valid_som.rx2['clust.classif']
-        valid_bin = np.array(valid_bin)-1
+        valid_bin = base.unsplit(IntVector(self.group_bins),FactorVector(valid_som.rx2['clust.classif'],
+            levels=base.seq(num_groups)),drop=False)
+        valid_bin = np.array(valid_bin)
 
         return valid_bin
 

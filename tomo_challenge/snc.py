@@ -11,7 +11,7 @@ assign_params_default = {'p_inbin_thr': 0.5,
 
 
 class SnCalc(object):
-    edges_large = 100.
+    edges_large = 3.
 
     def __init__(self, z_arr, nz_list, fsky=0.4, lmax=2000, d_ell=10,
                  s_gamma=0.26, use_clustering=False, integrator='spline'):
