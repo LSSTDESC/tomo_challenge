@@ -1,0 +1,20 @@
+metrics:  all
+bands: riz
+training_file: /global/cscratch1/sd/abault/tomo_challenge/data/training.hdf5
+validation_file: /global/cscratch1/sd/abault/tomo_challenge/data/validation.hdf5
+output_file: /global/cscratch1/sd/abault/tomo_challenge/rf_comb_bins/riz_rf_u_5bins0_2.txt
+newbins: [0,2]
+# Backend implementing the metrics, either: "firecrown" (default), "jax-cosmo"
+metrics_impl: firecrown
+
+run:
+  # This is a class name which will be looked up
+  RF_Uniform_CombineBins:
+    run_5:
+      # This setting is sent to the classifier
+      bins: 5
+      # These special settings decide whether the
+      # color and error colums are passed to the classifier
+      # as well as the magnitudes
+      colors: True
+      errors: True
