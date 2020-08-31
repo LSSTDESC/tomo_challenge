@@ -13,13 +13,13 @@ class Classifier_NNE:
     def create_classifier(self, model_name, input_shape, nb_classes, output_directory, verbose=False,
                           build=True, load_weights=False):
         if model_name == 'fcn':
-            from tomo_challenge.classifiers import fcn
+            from tomo_challenge.classifiers import de_fcn as fcn
             return fcn.Classifier_FCN(output_directory, input_shape, nb_classes, verbose, build=build)
         if model_name == 'autolstm':
-            from tomo_challenge.classifiers import autolstm
+            from tomo_challenge.classifiers import de_autolstm as autolstm 
             return autolstm.Classifier_LSTM(output_directory, input_shape, nb_classes, verbose, build=build)
         if model_name == 'resnet':
-            from tomo_challenge.classifiers import resnet
+            from tomo_challenge.classifiers import de_resnet as resnet
             return resnet.Classifier_RESNET(output_directory, input_shape, nb_classes, verbose,
                                             build=build, load_weights=load_weights)
 
