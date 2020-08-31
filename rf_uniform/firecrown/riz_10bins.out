@@ -1,0 +1,99 @@
+/global/cscratch1/sd/abault/tomo_challenge/bin/..
+Found classifier RandomForest_log
+Found classifier RandomForest_log_comb_bins_0_1
+Found classifier RandomForest_comb_bins_0_1
+Found classifier IBandOnly
+Found classifier RandomForestNormal
+Found classifier RF_Uniform_comb_bins_0_1
+Found classifier RF_Normal_comb_bins_0_1
+Found classifier RandomForestUniform
+Found classifier RandomForest
+Found classifier Random
+Executing:  RandomForestUniform riz {'bins': 10, 'colors': True, 'errors': True}
+{'bins': 10, 'colors': True, 'errors': True} ['bins']
+Initializing classifier...
+Training...
+Finding bins for training data
+[0.02450252 0.68055436 0.858418   1.26931938 1.4427957  1.65394431
+ 2.05448922 2.08940756 2.15840691 2.9422926  3.03609133]
+Fitting classifier
+Applying...
+Getting metric...
+Running in serial mode (one process).
+
+Parameter Priors
+----------------
+params--omega_k  ~ delta(0.0)
+params--omega_c  ~ U(0.25, 0.32)
+params--omega_b  ~ U(0.04, 0.05)
+params--h        ~ U(0.5, 0.9)
+params--n_s      ~ U(0.9, 1.02)
+params--sigma8   ~ U(0.74, 0.94)
+params--w0       ~ delta(-1.0)
+params--wa       ~ delta(0.0)
+
+
+****************************
+* Running sampler 1/1: fisher
+* Saving output -> /tmp/tmp_wyq1su4/chain.txt
+****************************
+Calculating derivatives using 20 total models
+Running in serial mode (one process).
+
+Parameter Priors
+----------------
+params--omega_k  ~ delta(0.0)
+params--omega_c  ~ U(0.25, 0.32)
+params--omega_b  ~ U(0.04, 0.05)
+params--h        ~ U(0.5, 0.9)
+params--n_s      ~ U(0.9, 1.02)
+params--sigma8   ~ U(0.74, 0.94)
+params--w0       ~ delta(-1.0)
+params--wa       ~ delta(0.0)
+params--bias_0   ~ delta(1.3129771819046112)
+params--bias_1   ~ delta(1.4802418423775587)
+params--bias_2   ~ delta(1.688167164042944)
+params--bias_3   ~ delta(1.9143202136126234)
+params--bias_4   ~ delta(1.9135796211211558)
+params--bias_5   ~ delta(2.17790148913288)
+params--bias_6   ~ delta(2.43662933258849)
+params--bias_7   ~ delta(2.429499096047649)
+params--bias_8   ~ delta(2.6129443035996056)
+params--bias_9   ~ delta(2.574852039673552)
+
+
+****************************
+* Running sampler 1/1: fisher
+* Saving output -> /tmp/tmp8kqkuv5j/chain.txt
+****************************
+Calculating derivatives using 20 total models
+Running in serial mode (one process).
+
+Parameter Priors
+----------------
+params--omega_k  ~ delta(0.0)
+params--omega_c  ~ U(0.25, 0.32)
+params--omega_b  ~ U(0.04, 0.05)
+params--h        ~ U(0.5, 0.9)
+params--n_s      ~ U(0.9, 1.02)
+params--sigma8   ~ U(0.74, 0.94)
+params--w0       ~ delta(-1.0)
+params--wa       ~ delta(0.0)
+params--bias_0   ~ delta(1.3129771819046112)
+params--bias_1   ~ delta(1.4802418423775587)
+params--bias_2   ~ delta(1.688167164042944)
+params--bias_3   ~ delta(1.9143202136126234)
+params--bias_4   ~ delta(1.9135796211211558)
+params--bias_5   ~ delta(2.17790148913288)
+params--bias_6   ~ delta(2.43662933258849)
+params--bias_7   ~ delta(2.429499096047649)
+params--bias_8   ~ delta(2.6129443035996056)
+params--bias_9   ~ delta(2.574852039673552)
+
+
+****************************
+* Running sampler 1/1: fisher
+* Saving output -> /tmp/tmpb92kwb5q/chain.txt
+****************************
+Calculating derivatives using 20 total models
+Making some pretty plots...

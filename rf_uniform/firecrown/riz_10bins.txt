@@ -1,0 +1,1 @@
+RandomForestUniform run_10 {'bins': 10, 'colors': True, 'errors': True} {'SNR_ww': 354.9197295938117, 'FOM_ww': 152.37715773462213, 'SNR_gg': 1308.84532609303, 'FOM_gg': 21171.68195209693, 'SNR_3x2': 1311.9719252996663, 'FOM_3x2': 47065.21003389874} 
