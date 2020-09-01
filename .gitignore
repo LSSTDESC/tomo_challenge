@@ -1,2 +1,4 @@
+data/*
 plots/*
-
+wl_*.npz
+*.pkl
