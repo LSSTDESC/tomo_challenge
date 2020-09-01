@@ -1,6 +1,6 @@
 """
 This is a binning method using principal component analysis
-and the b-a-g algorithm outlined in binning_as_clustering.ipynb
+and the BAG algorithm outlined in binning_as_clustering.ipynb
 
 Every classifier module needs to:
  - have construction of the type 
@@ -48,7 +48,7 @@ class PCACluster(Tomographer):
         -----
         Valiad options are:
             "bins" - number of tomographic bins
-            "metric" - the metric to optimize for, one of {"SNR", "FOM"}
+            "metric" - the metric to optimize for, one of {"SNR", "FOM", "FOM_DETF"}
             "verbose" - Whether to print verbosely. This prints continual training updates. 
 
         """
@@ -64,7 +64,7 @@ class PCACluster(Tomographer):
         
         Parameters:
         -----------
-        training_data: numpy array, size Ngalaxes x Nbands
+        training_data: dict, size Ngalaxes x Nbands
           training data, each row is a galaxy, each column is a band as per
           band defined above
         training_z: numpy array, size Ngalaxies
@@ -93,6 +93,7 @@ class PCACluster(Tomographer):
         
         # Make the mean zeroish by subtracting weighted mean then find the covariance matrix
         # divde by len-1 because sample and not population covariance
+        # Not that at this size this is going to matter though.
         color_shifted = color_data - np.average(color_data[:,0].reshape(-1, 1), weights=weights)
         cov = color_shifted.T @ color_shifted / (color_shifted.shape[0] - 1)
         
