@@ -224,6 +224,8 @@ class ComplexSOM(Tomographer):
             #Construct the Nz properties per SOM cell
             cell_prop=kohonen.generate_kohgroup_property(som=som,data=train_df,
                         expression=StrVector(property_expressions),expr_label=StrVector(property_labels))
+            som=cell_prop.rx2('som')
+            som.rx2['clust.classif']=FloatVector([])
             print("Constructing redshift-based hierarchical cluster tree")
             #Cluster the SOM cells into num_groups groups
             props = kohonen.kohwhiten(cell_prop.rx2['property'],train_expr=base.colnames(cell_prop.rx2['property']),
