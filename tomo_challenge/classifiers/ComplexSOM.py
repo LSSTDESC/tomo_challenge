@@ -25,6 +25,7 @@ from rpy2.robjects.conversion import localconverter
 from ..snc import SnCalc 
 from scipy.optimize import minimize
 from scipy.integrate import simps 
+import pickle
 
 #Check that all the needed packages are installed
 # R package nameo
@@ -50,7 +51,8 @@ class ComplexSOM(Tomographer):
     
     # valid parameter -- see below
     valid_options = ['bins','som_dim','num_groups','num_threads',
-            'group_type','data_threshold','sparse_frac','plots','plot_dir','metric']
+            'group_type','data_threshold','sparse_frac','plots',
+            'plot_dir','metric','use_inbin','use_outbin']
     # this settings means arrays will be sent to train and apply instead
     # of dictionaries
     wants_arrays = False
@@ -109,6 +111,10 @@ class ComplexSOM(Tomographer):
         data_threshold = self.opt['data_threshold']
         #Metric
         metric = self.opt['metric']
+        #Flag bad bins with inbin probability
+        use_inbin = self.opt['use_inbin']
+        #Flag bad bins with outbin probability
+        use_outbin = self.opt['use_outbin']
         #Plots
         plots = self.opt['plots']
         #Plot Output Directory
@@ -118,6 +124,11 @@ class ComplexSOM(Tomographer):
         #Check that the group type is a valid choice
         if group_type != 'colour' and group_type != 'redshift':
             group_type = 'redshift'
+        #Define the assign_params variable, used in bin optimisation 
+        assign_params = {'p_inbin_thr': 0.5,
+                'p_outbin_thr': 0.2,
+                'use_p_inbin': use_inbin,
+                'use_p_outbin': use_outbin}
 
         #Define the redshift summary statistics (used for making groups in the 'redshift' case
         property_labels = ("mean_z_true","med_z_true","sd_z_true","mad_z_true","iqr_z_true")
@@ -190,10 +201,22 @@ class ComplexSOM(Tomographer):
               #train_df = ro.conversion.py2rpy(train[['u_mag','g_mag','r_mag','i_mag','z_mag','y_mag']])
               train_df = ro.conversion.py2rpy(training_data)
 
-        print("Training the SOM using R kohtrain")
-        #Train the SOM using R kohtrain
-        som=kohonen.kohtrain(data=train_df,som_dim=IntVector(som_dim),max_na_frac=0,data_threshold=FloatVector(data_threshold),
-                    n_cores=num_threads,train_expr=StrVector(expressions),train_sparse=False,sparse_frac=sparse_frac)
+        #Construct or Load the SOM 
+        som_outname = f"SOM_{som_dim}_{self.bands}.pkl"
+        if not os.path.exists(som_outname):
+            print("Training the SOM using R kohtrain")
+            #Train the SOM using R kohtrain
+            som=kohonen.kohtrain(data=train_df,som_dim=IntVector(som_dim),max_na_frac=0,data_threshold=FloatVector(data_threshold),
+                        n_cores=num_threads,train_expr=StrVector(expressions),train_sparse=False,sparse_frac=sparse_frac)
+            #Output the SOM 
+            #base.save(som,file=som_outname)
+            with open(som_outname, 'wb') as f:
+                pickle.dump(som, f)
+        else:
+            print("Loading the pretrained SOM")
+            with open(som_outname, 'rb') as f:
+                som = pickle.load(f)
+            som.rx2['unit.classif']=FloatVector([])
 
         #If grouping by redshift, construct the cell redshift statistics
         if group_type == 'redshift' or plots == True:
@@ -203,7 +226,9 @@ class ComplexSOM(Tomographer):
                         expression=StrVector(property_expressions),expr_label=StrVector(property_labels))
             print("Constructing redshift-based hierarchical cluster tree")
             #Cluster the SOM cells into num_groups groups
-            props = cell_prop.rx2['property']
+            props = kohonen.kohwhiten(cell_prop.rx2['property'],train_expr=base.colnames(cell_prop.rx2['property']),
+                    data_missing='NA',data_threshold=FloatVector([0,12]))
+            props = props.rx2("data.white")
             props.rx[base.which(base.is_na(props))] = -1
             print(base.summary(props))
             hclust=stats.hclust(stats.dist(props))
@@ -306,13 +331,13 @@ class ComplexSOM(Tomographer):
         c_wl.get_cl_matrix(fname_save='wl_nb%d.npz' % n_bin)
         # Finally, let's write the function to minimize and optimize for a 4-bin case.
         def minus_sn(edges, calc):
-            return -calc.get_sn_from_edges(edges)
+            return -calc.get_sn_from_edges(edges,assign_params=assign_params)
 
         print("Optimizing WL")
         edges_0 = np.linspace(0, 2, n_bin-1)
         res = minimize(minus_sn, edges_0, method='Powell', args=(c_wl,))
         print("WL final edges: ", res.x)
-        print("Maximum S/N: ", c_wl.get_sn_from_edges(res.x)*np.sqrt(0.25/fsky))
+        print("Maximum S/N: ", c_wl.get_sn_from_edges(res.x)*np.sqrt(0.25/fsky),assign_params=assign_params)
         print(" ")
         print(res)
 
