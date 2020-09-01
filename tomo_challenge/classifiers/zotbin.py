@@ -2,7 +2,7 @@ from .base import Tomographer
 import numpy as np
 
 try:
-    from zotbin.group import groupbins
+    from zotbin.group import groupbins, load_groups, save_groups, fdigitize
     from zotbin.binned import get_zedges_chi
 except ImportError:
     print('You need to install the zotbin package:\n  pip install git+https://github.com/dkirkby/zotbin.git')
@@ -41,7 +41,8 @@ class ZotBin(Tomographer):
             self.zedges, self.fedges, self.grpid, _, _ = load_groups(self.opt['loadgroups'])
 
     def prepare(self, data, band='i'):
-        # Use colors and i-band magnitude as the training features.
+        # Use colors and one magnitude as the training features.
+        # No further preprocessing is required since we only care about rank order.
         colors = np.diff(data, axis=1)
         i = self.bands.index(band)
         return np.concatenate((colors, data[:, i:i + 1]), axis=1)
@@ -70,7 +71,10 @@ class ZotBin(Tomographer):
         self.fedges, self.grpid, zhist, zsim = groupbins(
             X, z, self.zedges, npct, min_groups=ngrp, weighted=weighted)
         if self.opt['savegroups'] is not None:
-            save_groups(self.opt['groupfile'], self.zedges, self.fedges, self.grpid, zhist, zsim)
+            save_groups(self.opt['groupfile'], self.zedges, self.fedges, self.grpid, self.zhist, zsim)
+        if self.opt['saveplot'] is not None:
+            plotzgrp(self.zhist)
+            plt.savefig(self.opt['saveplot'])
 
     def apply (self, data):
         """Applies training to the data.
