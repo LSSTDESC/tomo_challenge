@@ -325,6 +325,9 @@ class PCACluster(Tomographer):
         # Once we have improved beta we can continue on to do the centroids themselves.
         if verbose: print("Centroids loop. Finding optimal lr.")
         top = -2 if impl != "fom_detf" else -1 # I wonder why the DETF has smaller gradients.
+        # By this point ~6000 FOM requires more finesse
+        # I have restricted this to FOM only for lack of proof it works on the others (no time!)
+        if num_centroids > 7 and impl == "fom": top -= 1
         centroid_lr, centroids = range_test(data_cut, z_cut, beta, centroids, 
                                             impl, num=num_points, high=top)
         if verbose: print(f"\nOptimal centroids lr: {centroid_lr}")
