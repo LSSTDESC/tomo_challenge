@@ -337,7 +337,7 @@ class ComplexSOM(Tomographer):
         edges_0 = np.linspace(0, 2, n_bin-1)
         res = minimize(minus_sn, edges_0, method='Powell', args=(c_wl,))
         print("WL final edges: ", res.x)
-        print("Maximum S/N: ", c_wl.get_sn_from_edges(res.x)*np.sqrt(0.25/fsky),assign_params=assign_params)
+        print("Maximum S/N: ", c_wl.get_sn_from_edges(res.x,assign_params=assign_params)*np.sqrt(0.25/fsky))
         print(" ")
         print(res)
 
