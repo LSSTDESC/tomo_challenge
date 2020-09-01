@@ -219,23 +219,23 @@ class SnCalc(object):
         # Bin IDs based on mean z
         ids = np.digitize(self.z_means, bins=edges)
         if assign_params['use_p_inbin'] or assign_params['use_p_outbin']:
+            def integrate_safe(p, z, m):
+                if np.sum(m) == 0:
+                    return 0
+                else:
+                    return simps(p[m], x=z[m])
             # Calculate probabilities in each bin
             zgroups = np.digitize(self.z_arr, bins=edges)
             masks = [zgroups == i for i in range(nbins)]
             if assign_params['use_p_outbin']:
                 # Matrix of probabilities in each bin
-                pzs = np.array([[simps(pz[m], x=self.z_arr[m])
+                pzs = np.array([[integrate_safe(pz, self.z_arr, m)
                                  for m in masks]
                                 for pz in self.pz_list])
                 pzd = np.array([pzs[j, ids[j]]
                                 for j in range(self.n_samples)])
             else:
                 # Overlaps in own bin
-                def integrate_safe(p, z, m):
-                    if np.sum(m) == 0:
-                        return 0
-                    else:
-                        return simps(p[m], x=z[m])
                 pzd = np.array([integrate_safe(pz, self.z_arr, masks[i])
                                 for pz, i in zip(self.pz_list, ids)])
             # Throw away based on in-bin probability
