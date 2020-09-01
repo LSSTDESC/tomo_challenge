@@ -5,16 +5,16 @@ import os
 
 
 assign_params_default = {'p_inbin_thr': 0.5,
-        'p_outbin_thr': 0.2,
-        'use_p_inbin': False,
-        'use_p_outbin': False}
+                         'p_outbin_thr': 0.2,
+                         'use_p_inbin': False,
+                         'use_p_outbin': False}
 
 
 class SnCalc(object):
     edges_large = 3.
 
     def __init__(self, z_arr, nz_list, fsky=0.4, lmax=2000, d_ell=10,
-            s_gamma=0.26, use_clustering=False):
+                 s_gamma=0.26, use_clustering=False, integrator='spline'):
         """ S/N calculator
         Args:
             z_arr (array_like): array of redshifts at which all the N(z)s are
@@ -32,7 +32,10 @@ class SnCalc(object):
                 `use_clustering=False`).
             use_clustering (bool): if `True`, SNR will be computed for
                 clustering instead of lensing.
+            integrator (string): CCL integration method. Either 'qag_quad'
+                or 'spline'.
         """
+        self.integrator = integrator
         self.s_gamma = s_gamma
         self.fsky = fsky
         self.lmax = lmax
@@ -57,7 +60,7 @@ class SnCalc(object):
     def get_cl_matrix(self, fname_save=None, recompute=False):
         """ Computes matrix of power spectra between all the initial groups.
         Args:
-                        fname_save (string): if not None, the result will be saved to a
+            fname_save (string): if not None, the result will be saved to a
                 file by this name, and if present and `recompute=False`, the
                 matrix will be read from that file.
             recompute (bool): if `True`, any previous calculations of the
@@ -71,26 +74,27 @@ class SnCalc(object):
 
         # Cosmology
         cosmo = ccl.Cosmology(Omega_c=0.25,
-                Omega_b=0.05,
-                h=0.67, n_s=0.96,
-                sigma8=0.81)
+                              Omega_b=0.05,
+                              h=0.67, n_s=0.96,
+                              sigma8=0.81)
 
         # Tracers
         if self.use_clustering:
             trs = [ccl.NumberCountsTracer(cosmo, False, (self.z_arr, nz),
-                bias=(self.z_arr,
-                    self._bz_model(cosmo,
-                        self.z_arr)))
-                    for nz in self.nz_list]
+                                          bias=(self.z_arr,
+                                                self._bz_model(cosmo,
+                                                               self.z_arr)))
+                   for nz in self.nz_list]
         else:
             trs = [ccl.WeakLensingTracer(cosmo, (self.z_arr, nz))
-                    for nz in self.nz_list]
+                   for nz in self.nz_list]
 
-            # Cls
+        # Cls
         self.cls = np.zeros([self.n_ell, self.n_samples, self.n_samples])
         for i in range(self.n_samples):
             for j in range(i, self.n_samples):
-                cl = ccl.angular_cl(cosmo, trs[i], trs[j], self.larr)
+                cl = ccl.angular_cl(cosmo, trs[i], trs[j], self.larr,
+                                    limber_integration_method=self.integrator)
                 self.cls[:, i, j] = cl
                 if j != i:
                     self.cls[:, j, i] = cl
@@ -157,10 +161,10 @@ class SnCalc(object):
         icl = np.linalg.inv(cl)
         sn2_1pt = np.sum(sl[:, :, :, None] * icl[:, None, :, :], axis=2)
         sn2_ell = np.sum(sn2_1pt[:, :, :, None] * sn2_1pt[:, None, :, :],
-                axis=2)
+                         axis=2)
         trsn2_ell = np.trace(sn2_ell, axis1=1, axis2=2)
         snr = np.sqrt(np.sum(trsn2_ell * (2*self.larr + 1) *
-            self.d_ell / self.fsky))
+                             self.d_ell / self.fsky))
 
         if full_output:
             dret = {'snr': snr, 'cl': sl, 'nl': nl, 'ls': self.larr}
@@ -171,26 +175,26 @@ class SnCalc(object):
     def get_sn(self, assign, full_output=False):
         """ Compute signal-to-noise ratio from a bin assignment list.
         Args:
-                        assign (list): list of arrays. Each element of the list should
+            assign (list): list of arrays. Each element of the list should
                 be a numpy array of integers, corresponding to the indices
                 of the initial groups that are now resampled into a larger
                 group.
             full_output (bool): if true, a dictionary with additional
                 information will be returned. Otherwise just total S/N.
         Returns:
-                        If `full_output=True`, dictionary containing S/N, power
+            If `full_output=True`, dictionary containing S/N, power
             spectra and noise spectra. Otherwise just S/N.
         """
         w, ndens = self.get_resample_metadata(assign)
         return self.get_sn_wn(w, ndens,
-                full_output=full_output)
+                              full_output=full_output)
 
     def check_edges(self, edges):
         """ Returns `True` if there's something wrong with the edges.
         """
         return np.any(edges < 0) or \
-                np.any(edges > self.edges_large) or \
-                np.any(np.diff(edges) < 0)
+            np.any(edges > self.edges_large) or \
+            np.any(np.diff(edges) < 0)
 
     def get_nzs_from_edges(self, edges, assign_params=assign_params_default):
         assign = self.assign_from_edges(edges, assign_params=assign_params)
