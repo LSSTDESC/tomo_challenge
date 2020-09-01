@@ -266,7 +266,8 @@ class PCACluster(Tomographer):
         beta = np.ones(1)
 
         # The function we're optimizing, can't use string inputs in functions 
-        # we're differentiating, hence this.
+        # we're differentiating, hence this. The name 'd2' is a historical artifact
+        # from when I was implementing various distance functions named dist, d2, and d3.
         if impl == "fom":
             d2 = dist_fom
         elif impl == "fom_detf":
@@ -323,14 +324,22 @@ class PCACluster(Tomographer):
 
         # Once we have improved beta we can continue on to do the centroids themselves.
         if verbose: print("Centroids loop. Finding optimal lr.")
+        top = -2 if impl != "fom_detf" else -1 # I wonder why the DETF has smaller gradients.
         centroid_lr, centroids = range_test(data_cut, z_cut, beta, centroids, 
-                                            impl, num=num_points, high=-2)
+                                            impl, num=num_points, high=top)
         if verbose: print(f"\nOptimal centroids lr: {centroid_lr}")
 
-        # I divide by ten because the centroids we found in the range test are usually
-        # a little unstable, so an even smaller learning rate is better.
-        centroids, loss = loop_and_improve(centroids, 1, 70, 
-                                           lr=centroid_lr/10)
+        # It's the eleventh hour and I don't quite have the time at the moment
+        # to prove rigorously that this is a good choice for lr but it is.
+        # I think that we actually want the lr to be on the order of 10^-3
+        # And in general this serves to do that, but without further testing
+        # I can't prove that's the case (yet)
+        if num_centroids < 8:
+            best_lr = centroid_lr / 10
+        else:
+            best_lr = centroid_lr
+        
+        centroids, loss = loop_and_improve(centroids, 1, 70, lr=best_lr)
  
         # Janky, but what part of Jax isn't?
         if verbose:
