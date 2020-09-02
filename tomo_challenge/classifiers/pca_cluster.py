@@ -252,7 +252,7 @@ class PCACluster(Tomographer):
             # "Best" learning rate is where the slope is the highest positive value
             # i.e. where the metric increases the most per learning rate step.
             if verbose: print(f"Best {impl.upper()} achieved in range test: {np.nanmax(val_hist)}")
-            return (x_slope[np.nanargmax(slope[1:])], improve_hist[np.argmax(val_hist)])
+            return (x_slope[np.nanargmax(slope[:-1])], improve_hist[np.argmax(val_hist)])
         
         # points = data_cut
         # redshift = z_cut
