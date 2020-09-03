@@ -180,8 +180,8 @@ class Cut:
         return (((data*self.w).sum(axis=1)-self.C)>0).astype(int)
     
     def mutate (self):
-        self.w *=np.random.normal(1,0.01,len(self.w))
-        self.C *=np.random.normal(1,0.01)
+        self.w *=np.random.normal(1,0.003,len(self.w))
+        self.C *=np.random.normal(1,0.001)
         
 class Astronomer:
     def __init__ (self, n_cuts, train_data, mate = None, id = None):
@@ -196,7 +196,7 @@ class Astronomer:
             self.id = set([id])
             
     def rompy_pompy(self, parentA, parentB):
-        self.Pmutate=np.sqrt(parentA.Pmutate*parentB.Pmutate)*np.random.normal(1.0,0.05)
+        self.Pmutate=1.0#np.sqrt(parentA.Pmutate*parentB.Pmutate)*np.random.normal(1.0,0.05)
         ## we make a copy of genes!
         self.cuts=deepcopy(choices(parentA.cuts+parentB.cuts,k=self.n_cuts))
         for i in np.where(np.random.uniform(0,1,self.n_cuts)<self.Pmutate)[0]:
