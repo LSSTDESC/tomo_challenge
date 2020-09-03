@@ -14,6 +14,7 @@ See Classifier Documentation below.
 
 """
 import numpy as np
+import matplotlib.pyplot as plt
 from .base import Tomographer
 
 class MineCraft(Tomographer):
@@ -102,7 +103,17 @@ class MineCraft(Tomographer):
             print ('id = ',binid,':',vals)
         self.idmap[()] = len(self.target.keys())  #last +1
         print (self.idmap)
-        #self.apply(training_data)
+
+        if False:
+            bincount=self.apply(training_data)
+            for i in range(bincount.max()):
+                a,b=np.histogram (training_z[bincount==i],bins=30)
+                b=0.5*(b[:1]+b[:-1])
+                plt.plot(b,a)
+            plt.xlabel('z')
+            plt.ylabel('prob')
+            plt.show()
+        
         #stop()
         
         
