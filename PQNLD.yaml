@@ -1,7 +1,7 @@
-metrics:  [SNR_3x2]
+metrics:  ['SNR_ww', 'SNR_gg', 'SNR_3x2', 'FOM_3x2']
 bands: riz
-training_file: data/training.hdf5
-validation_file: data/validation.hdf5
+training_file: data_buzzard/training.hdf5
+validation_file: data_buzzard/validation.hdf5
 output_file: example/example_output.txt
 # Backend implementing the metrics, either: "firecrown" (default), "jax-cosmo"
 metrics_impl: firecrown
@@ -9,15 +9,32 @@ metrics_impl: firecrown
 run:
   # This is a class name which will be looked up
   PQNLD:
-    run_3:
+    run_5:
       # These settings are sent to the classifier
-      bins: 15
-      som_dim: [151,151]
-      num_groups: 20000
+      bins: 5
+      som_dim: [101,101]
+      num_groups: 10000
       num_threads: 32
       group_type: 'redshift'
       data_threshold: [0,30]
-      sparse_frac: 0.05
+      sparse_frac: 0.5
+      plots: True 
+      plot_dir: 'plots' 
+      # These special settings decide whether the
+      # color and error colums are passed to the classifier
+      # as well as the magnitudes
+      colors: False
+      errors: True
+
+    run_10:
+      # These settings are sent to the classifier
+      bins: 10
+      som_dim: [101,101]
+      num_groups: 10000
+      num_threads: 32
+      group_type: 'redshift'
+      data_threshold: [0,30]
+      sparse_frac: 0.5
       plots: True 
       plot_dir: 'plots' 
       # These special settings decide whether the
