@@ -183,10 +183,27 @@ class SimpleSOM(Tomographer):
               #train_df = ro.conversion.py2rpy(train[['u_mag','g_mag','r_mag','i_mag','z_mag','y_mag']])
               train_df = ro.conversion.py2rpy(training_data)
 
-        print("Training the SOM using R kohtrain")
-        #Train the SOM using R kohtrain
-        som=kohonen.kohtrain(data=train_df,som_dim=IntVector(som_dim),max_na_frac=0,data_threshold=FloatVector(data_threshold),
-                    n_cores=num_threads,train_expr=StrVector(expressions),train_sparse=False,sparse_frac=sparse_frac)
+        #print("Training the SOM using R kohtrain")
+        ##Train the SOM using R kohtrain
+        #som=kohonen.kohtrain(data=train_df,som_dim=IntVector(som_dim),max_na_frac=0,data_threshold=FloatVector(data_threshold),
+        #            n_cores=num_threads,train_expr=StrVector(expressions),train_sparse=False,sparse_frac=sparse_frac)
+        #Construct or Load the SOM 
+        som_outname = f"SOM_{som_dim}_{self.bands}.pkl"
+        if not os.path.exists(som_outname):
+            print("Training the SOM using R kohtrain")
+            #Train the SOM using R kohtrain
+            som=kohonen.kohtrain(data=train_df,som_dim=IntVector(som_dim),max_na_frac=0,data_threshold=FloatVector(data_threshold),
+                        n_cores=num_threads,train_expr=StrVector(expressions),train_sparse=False,sparse_frac=sparse_frac)
+            #Output the SOM 
+            #base.save(som,file=som_outname)
+            with open(som_outname, 'wb') as f:
+                pickle.dump(som, f)
+        else:
+            print("Loading the pretrained SOM")
+            with open(som_outname, 'rb') as f:
+                som = pickle.load(f)
+            som.rx2['unit.classif']=FloatVector([])
+
 
         #If grouping by redshift, construct the cell redshift statistics
         if group_type == 'redshift' or plots == True:
