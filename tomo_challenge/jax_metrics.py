@@ -7,9 +7,8 @@ try:
     from jax import lax, jit, vmap, grad
     import jax_cosmo as jc
     import jax
-except ImportError:
-    warnings.warn("Couldn't import JAX or jax-cosmo, some metrics may be unavailable,",
-                  ImportWarning)
+except:
+    print ("Warning: Couldn't import JAX or jax-cosmo, some metrics may be unavailable.")
 
 def ell_binning():
     # we put this here to make sure it's used consistently
