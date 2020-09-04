@@ -128,9 +128,9 @@ class PQNLD(Tomographer):
             group_type = 'redshift'
 
         #Define the redshift summary statistics (used for making groups in the 'redshift' case
-        property_labels = ("mean_z_true","med_z_true","sd_z_true","mad_z_true","N","iqr_z_true","mean_ZB","median_ZB")
+        property_labels = ("mean_z_true","med_z_true","sd_z_true","mad_z_true","iqr_z_true","mean_ZB","median_ZB")
         property_expressions = ("mean(data$redshift_true)","median(data$redshift_true)","sd(data$redshift_true)",
-                                "mad(data$redshift_true)","nrow(data)",
+                                "mad(data$redshift_true)",
                                 "diff(quantile(data$redshift_true,probs=pnorm(c(-2,2))))","mean(data$Z_B)","median(data$Z_B)")
         #Define the SOM variables
         if self.bands == 'riz':
