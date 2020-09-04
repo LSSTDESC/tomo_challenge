@@ -260,10 +260,8 @@ class PQNLD(Tomographer):
             argv = ["\'bpz.py\'", "\'../training_bpz.cat\'"]
             os.system("echo 'sys.argv=[\""+"\",\"".join(argv)+"\"]' >> bpz_run.py")
             os.system("echo 'exec(open(\"bpz.py\").read())' >> bpz_run.py")
-            #res=call_python_version("2.7","bpz_run.py")
             res = os.system("python2 bpz_run.py")
             os.chdir('../')
-            print(res)
 
         print("Read the BPZ results")
         bpz_res = pd.read_fwf("training_bpz.bpz",comment="#",skiprows=62,header=None)
