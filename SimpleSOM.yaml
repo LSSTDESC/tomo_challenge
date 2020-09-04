@@ -1,4 +1,4 @@
-metrics:  [SNR_3x2]
+metrics:  ['SNR_ww', 'SNR_gg', 'SNR_3x2', 'FOM_3x2']
 bands: riz
 training_file: data_buzzard/training.hdf5
 validation_file: data_buzzard/validation.hdf5
