@@ -1,8 +1,8 @@
 metrics:  [SNR_3x2]
 bands: riz
-training_file: data/training.hdf5
-validation_file: data/validation.hdf5
-output_file: example/ComplexSOM_output_manygroup.txt
+training_file: data_buzzard/training.hdf5
+validation_file: data_buzzard/validation.hdf5
+output_file: example/ComplexSOM_output.txt
 # Backend implementing the metrics, either: "firecrown" (default), "jax-cosmo"
 metrics_impl: firecrown
 
@@ -11,18 +11,18 @@ run:
   ComplexSOM:
     run_3:
       # These settings are sent to the classifier
-      bins: 7
+      bins: 5
       som_dim: [51,51]
       num_groups: 100
       num_threads: 32
       group_type: 'redshift'
       data_threshold: [0,30]
-      sparse_frac: 0.25
+      sparse_frac: 0.5
       plots: True 
       plot_dir: 'plots' 
       metric: "SNR_3x2"
-      use_inbin: True
-      use_outbin: True
+      use_inbin: False
+      use_outbin: False
       # These special settings decide whether the
       # color and error colums are passed to the classifier
       # as well as the magnitudes

@@ -223,7 +223,7 @@ class ComplexSOM(Tomographer):
             print("Constructing cell-based redshift properties")
             #Construct the Nz properties per SOM cell
             cell_prop=kohonen.generate_kohgroup_property(som=som,data=train_df,
-                        expression=StrVector(property_expressions),expr_label=StrVector(property_labels))
+                        expression=StrVector(property_expressions),expr_label=StrVector(property_labels),returnMatrix=True)
             som=cell_prop.rx2('som')
             som.rx2['clust.classif']=FloatVector([])
             print("Constructing redshift-based hierarchical cluster tree")
@@ -244,7 +244,7 @@ class ComplexSOM(Tomographer):
         print("Constructing group-based redshift properties")
         group_prop=kohonen.generate_kohgroup_property(som=som,data=train_df,
             expression=StrVector(property_expressions),expr_label=StrVector(property_labels),
-            n_cluster_bins=num_groups)
+            n_cluster_bins=num_groups,returnMatrix=True)
 
         #extract the training som (just for convenience)
         train_som = group_prop.rx2('som')
@@ -387,7 +387,7 @@ class ComplexSOM(Tomographer):
         #Generate the validation associations/groups
         group_prop=kohonen.generate_kohgroup_property(som=self.train_som,data=data_df,
             expression="nrow(data)",expr_label="N",
-            n_cluster_bins=num_groups,n_cores=self.opt['num_threads'])
+            n_cluster_bins=num_groups,n_cores=self.opt['num_threads'],returnMatrix=True)
 
         #extract the validation som (just for convenience)
         valid_som = group_prop.rx2('som')
