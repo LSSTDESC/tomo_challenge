@@ -244,6 +244,9 @@ class PQNLD(Tomographer):
             print("Outputting the BPZ input cat")
             np.savetxt(f"training_bpz.cat",training_data,fmt='%3.5f')
 
+        if not os.path.exists("bpz-1.99.3/"): 
+            os.system("bash INSTALL.sh")
+        
         if not os.path.exists("training_bpz.bpz"): 
             print("Running BPZ on the training data")
             curdir=os.getcwd()
