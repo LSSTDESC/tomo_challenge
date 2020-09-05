@@ -42,9 +42,15 @@ run:
       # This setting is sent to the classifier
       bins: 2
       # cutting down to a fraction of original training set
-      train_percent: 3
-      epochs: 3
+      train_percent: 1
       activation: 'relu'
+#       hidden_layers_structure: [256, 256] #[8]
+#       learning_rate_rbm: 0.05
+#       learning_rate: 0.1
+#       n_epochs_rbm: 3
+#       n_iter_backprop: 100
+#       batch_size: 32
+#       dropout_p: 0.2
       # These special settings decide whether the
       # color and error colums are passed to the classifier
       # as well as the magnitudes
@@ -54,11 +60,19 @@ run:
       # This setting is sent to the classifier
       bins: 3
       # cutting down to a fraction of original training set
-      train_percent: 3
-      epochs: 3
+      train_percent: 1
       activation: 'relu'
+#       hidden_layers_structure: [256, 256] #[8]
+#       learning_rate_rbm: 0.05
+#       learning_rate: 0.1
+#       n_epochs_rbm: 3
+#       n_iter_backprop: 100
+#       batch_size: 32
+#       dropout_p: 0.2
       # These special settings decide whether the
       # color and error colums are passed to the classifier
       # as well as the magnitudes
       colors: True
       errors: False
+
+
