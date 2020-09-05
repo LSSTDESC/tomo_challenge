@@ -104,6 +104,7 @@ def run_one(classifier_name, bands, settings, train_data, train_z, valid_data,
     name = str(classifier.__name__)
     tc.metrics.plot_distributions(valid_z, results, f"plots/{name}_{settings}_{bands}.png")
 
+    print(f'----------------\nScores for {classifier_name}:\n{scores}\n----------------')
     return scores
 
 
