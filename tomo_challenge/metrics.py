@@ -2,6 +2,7 @@ import numpy as np
 import pathlib
 import tempfile
 import yaml
+import pyccl as ccl
 
 this_directory = pathlib.Path(__file__).resolve().parent
 default_config_path = this_directory.parent / 'tomo_challenge' / 'config.yml'

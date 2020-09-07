@@ -14,3 +14,4 @@ run:
       children: 12
       outroot: testrun
       letdie: True
+      apply_pickled: True
