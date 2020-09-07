@@ -1,6 +1,0 @@
-/global/cscratch1/sd/abault/tomo_challenge/bin/../tomo_challenge/data.py:89: UserWarning: Setting inf (undetected) bands to mag=30
-  warnings.warn("Setting inf (undetected) bands to mag=30")
-/global/homes/a/abault/.conda/envs/tomo/lib/python3.7/site-packages/jax/lib/xla_bridge.py:130: UserWarning: No GPU/TPU found, falling back to CPU.
-  warnings.warn('No GPU/TPU found, falling back to CPU.')
-/global/homes/a/abault/.conda/envs/tomo/lib/python3.7/site-packages/jax/lax/lax.py:5905: UserWarning: Explicitly requested dtype <class 'jax.numpy.lax_numpy.int64'> requested in astype is not available, and will be truncated to dtype int32. To enable more dtypes, set the jax_enable_x64 configuration option or the JAX_ENABLE_X64 shell environment variable. See https://github.com/google/jax#current-gotchas for more.
-  warnings.warn(msg.format(dtype, fun_name , truncated_dtype))
