@@ -1,0 +1,22 @@
+metrics:  all
+bands: riz
+training_file: /data/training.hdf5
+validation_file: /data/validation.hdf5
+output_file: tomo_challenge/funbins_example_combinebins.txt
+# Backend implementing the metrics, either: "firecrown" (default), "jax-cosmo"
+metrics_impl: jax-cosmo
+
+run:
+  # This is a class name which will be looked up
+  funbins:
+    run_4:
+      # This setting is sent to the classifier
+      bins: 4
+      seed: 123
+      method: 'log'
+      combinebins: [1,2]
+      # These special settings decide whether the
+      # color and error colums are passed to the classifier
+      # as well as the magnitudes
+      colors: True
+      errors: True
