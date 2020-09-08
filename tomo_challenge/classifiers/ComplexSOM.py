@@ -52,7 +52,7 @@ class ComplexSOM(Tomographer):
     # valid parameter -- see below
     valid_options = ['bins','som_dim','num_groups','num_threads',
             'group_type','data_threshold','sparse_frac','plots',
-            'plot_dir','metric','use_inbin','use_outbin']
+            'plot_dir','metric','use_inbin','use_outbin','testing']
     # this settings means arrays will be sent to train and apply instead
     # of dictionaries
     wants_arrays = False
@@ -138,85 +138,117 @@ class ComplexSOM(Tomographer):
         #Define the SOM variables
         if self.bands == 'riz':
             #riz bands
-            #expressions = ("r_mag-i_mag","r_mag-z_mag","i_mag-z_mag",
-            #               "z_mag","r_mag-i_mag-(i_mag-z_mag)")
-            expressions = ("r-i","r-z","i-z",
-                           "z","r-i-(i-z)")
+            if self.opt['sizes'] == True:
+                expressions = ("r-i","r-z","i-z",
+                               "z","r-i-(i-z)","mcal_T")
+            else: 
+                expressions = ("r-i","r-z","i-z",
+                               "z","r-i-(i-z)")
         elif self.bands == 'griz':
             #griz bands
-            #expressions = ("g_mag-r_mag","g_mag-i_mag",
-            #               "g_mag-z_mag","r_mag-i_mag","r_mag-z_mag","i_mag-z_mag",
-            #               "z_mag","g_mag-r_mag-(r_mag-i_mag)",
-            #               "r_mag-i_mag-(i_mag-z_mag)")
-            expressions = ("g-r","g-i",
-                           "g-z","r-i","r-z","i-z",
-                           "z","g-r-(r-i)",
-                           "r-i-(i-z)")
+            if self.opt['sizes'] == True:
+                expressions = ("g-r","g-i",
+                               "g-z","r-i","r-z","i-z",
+                               "z","g-r-(r-i)",
+                               "r-i-(i-z)","mcal_T")
+            else: 
+                expressions = ("g-r","g-i",
+                               "g-z","r-i","r-z","i-z",
+                               "z","g-r-(r-i)",
+                               "r-i-(i-z)")
         elif self.bands == 'grizy':
             #grizy bands
-            #expressions = ("g_mag-r_mag","g_mag-i_mag",
-            #               "g_mag-z_mag","g_mag-y_mag","r_mag-i_mag","r_mag-z_mag","r_mag-y_mag","i_mag-z_mag","i_mag-y_mag",
-            #               "z_mag-y_mag","z_mag","g_mag-r_mag-(r_mag-i_mag)",
-            #               "r_mag-i_mag-(i_mag-z_mag)","i_mag-z_mag-(z_mag-y_mag)")
-            expressions = ("g-r","g-i",
-                           "g-z","g-y","r-i","r-z","r-y","i-z","i-y",
-                           "z-y","z","g-r-(r-i)",
-                           "r-i-(i-z)","i-z-(z-y)")
+            if self.opt['sizes'] == True:
+                expressions = ("g-r","g-i",
+                               "g-z","g-y","r-i","r-z","r-y","i-z","i-y",
+                               "z-y","z","g-r-(r-i)",
+                               "r-i-(i-z)","i-z-(z-y)","mcal_T")
+            else: 
+                expressions = ("g-r","g-i",
+                               "g-z","g-y","r-i","r-z","r-y","i-z","i-y",
+                               "z-y","z","g-r-(r-i)",
+                               "r-i-(i-z)","i-z-(z-y)")
         elif self.bands == 'ugriz':
             #ugrizy bands
-            #expressions = ("u_mag-g_mag","u_mag-r_mag","u_mag-i_mag","u_mag-z_mag","g_mag-r_mag","g_mag-i_mag",
-            #               "g_mag-z_mag","r_mag-i_mag","r_mag-z_mag","i_mag-z_mag",
-            #               "z_mag","u_mag-g_mag-(g_mag-r_mag)","g_mag-r_mag-(r_mag-i_mag)",
-            #               "r_mag-i_mag-(i_mag-z_mag)")
-            expressions = ("u-g","u-r","u-i","u-z","g-r","g-i",
-                           "g-z","r-i","r-z","i-z",
-                           "z","u-g-(g-r)","g-r-(r-i)",
-                           "r-i-(i-z)")
+            if self.opt['sizes'] == True:
+                expressions = ("u-g","u-r","u-i","u-z","g-r","g-i",
+                               "g-z","r-i","r-z","i-z",
+                               "z","u-g-(g-r)","g-r-(r-i)",
+                               "r-i-(i-z)","mcal_T")
+            else: 
+                expressions = ("u-g","u-r","u-i","u-z","g-r","g-i",
+                               "g-z","r-i","r-z","i-z",
+                               "z","u-g-(g-r)","g-r-(r-i)",
+                               "r-i-(i-z)")
         elif self.bands == 'ugrizy':
             #ugrizy bands
-            #expressions = ("u_mag-g_mag","u_mag-r_mag","u_mag-i_mag","u_mag-z_mag","u_mag-y_mag","g_mag-r_mag","g_mag-i_mag",
-            #               "g_mag-z_mag","g_mag-y_mag","r_mag-i_mag","r_mag-z_mag","r_mag-y_mag","i_mag-z_mag","i_mag-y_mag",
-            #               "z_mag-y_mag","z_mag","u_mag-g_mag-(g_mag-r_mag)","g_mag-r_mag-(r_mag-i_mag)",
-            #               "r_mag-i_mag-(i_mag-z_mag)","i_mag-z_mag-(z_mag-y_mag)")
-            expressions = ("u-g","u-r","u-i","u-z","u-y","g-r","g-i",
-                           "g-z","g-y","r-i","r-z","r-y","i-z","i-y",
-                           "z-y","z","u-g-(g-r)","g-r-(r-i)",
-                           "r-i-(i-z)","i-z-(z-y)")
+            if self.opt['sizes'] == True:
+                expressions = ("u-g","u-r","u-i","u-z","u-y","g-r","g-i",
+                               "g-z","g-y","r-i","r-z","r-y","i-z","i-y",
+                               "z-y","z","u-g-(g-r)","g-r-(r-i)",
+                               "r-i-(i-z)","i-z-(z-y)","mcal_T")
+            else: 
+                expressions = ("u-g","u-r","u-i","u-z","u-y","g-r","g-i",
+                               "g-z","g-y","r-i","r-z","r-y","i-z","i-y",
+                               "z-y","z","u-g-(g-r)","g-r-(r-i)",
+                               "r-i-(i-z)","i-z-(z-y)")
 
-        print("Preparing the data")
-        training_data = pd.DataFrame.from_dict(training_data)
-        #Add the redshift variable to the train data
-        print("Adding redshift info to training data")
-        training_data['redshift_true'] = training_z
 
-        if sparse_frac < 1:
-            print("Sparse Sampling the training data")
-            cut = np.random.uniform(0, 1, training_z.size) < sparse_frac
-            training_data = training_data[cut]
-            training_z = training_z[cut]
-
-        #Construct the training data frame (just a python-to-R data conversion)
-        print("Converting the data to R format")
-        with localconverter(ro.default_converter + pandas2ri.converter):
-              #train_df = ro.conversion.py2rpy(train[['u_mag','g_mag','r_mag','i_mag','z_mag','y_mag']])
-              train_df = ro.conversion.py2rpy(training_data)
-
-        #Construct or Load the SOM 
-        som_outname = f"SOM_{som_dim}_{self.bands}.pkl"
-        if not os.path.exists(som_outname):
-            print("Training the SOM using R kohtrain")
-            #Train the SOM using R kohtrain
-            som=kohonen.kohtrain(data=train_df,som_dim=IntVector(som_dim),max_na_frac=0,data_threshold=FloatVector(data_threshold),
-                        n_cores=num_threads,train_expr=StrVector(expressions),train_sparse=False,sparse_frac=sparse_frac)
-            #Output the SOM 
-            #base.save(som,file=som_outname)
-            with open(som_outname, 'wb') as f:
-                pickle.dump(som, f)
+        #Define the output SOM name
+        if self.opt['sizes'] == True: 
+            som_outname = f"SOM_{som_dim}_{self.bands}_withsize.pkl"
         else:
-            print("Loading the pretrained SOM")
-            with open(som_outname, 'rb') as f:
+            som_outname = f"SOM_{som_dim}_{self.bands}.pkl"
+
+        #If Testing, load the pretrained SOM and matching training catalogue
+        if self.opt['testing'] == True:
+            #Use the default training set 
+            with open(f"test_{som_outname}", 'rb') as f:
                 som = pickle.load(f)
-            som.rx2['unit.classif']=FloatVector([])
+                print(base.length(som.rx2['unit.classif']))
+            with open("training_testcat.pkl", 'rb') as f:
+                train_df = pickle.load(f)
+                print(utils.str(train_df))
+        else: 
+            #Use the training set provided
+            print("Preparing the data")
+            training_data = pd.DataFrame.from_dict(training_data)
+            #Add the redshift variable to the train data
+            print("Adding redshift info to training data")
+            training_data['redshift_true'] = training_z
+
+            if sparse_frac < 1:
+                print("Sparse Sampling the training data")
+                cut = np.random.uniform(0, 1, training_z.size) < sparse_frac
+                training_data = training_data[cut]
+                training_z = training_z[cut]
+
+            #Construct the training data frame (just a python-to-R data conversion)
+            print("Converting the data to R format")
+            with localconverter(ro.default_converter + pandas2ri.converter):
+                  train_df = ro.conversion.py2rpy(training_data)
+
+            #with open("training_testcat.pkl", 'wb') as f:
+            #    pickle.dump(train_df, f)
+
+            #Construct or Load the SOM 
+            if not os.path.exists(som_outname):
+                print("Training the SOM using R kohtrain")
+                #Train the SOM using R kohtrain
+                som=kohonen.kohtrain(data=train_df,som_dim=IntVector(som_dim),max_na_frac=0,data_threshold=FloatVector(data_threshold),
+                            n_cores=num_threads,train_expr=StrVector(expressions),train_sparse=False,sparse_frac=sparse_frac)
+                print(base.length(som.rx2['unit.classif']))
+                #Output the SOM 
+                #base.save(som,file=som_outname)
+                #with open(f"test_{som_outname}", 'wb') as f:
+                #    pickle.dump(som, f)
+                with open(som_outname, 'wb') as f:
+                    pickle.dump(som, f)
+            else:
+                print("Loading the pretrained SOM")
+                with open(som_outname, 'rb') as f:
+                    som = pickle.load(f)
+                som.rx2['unit.classif']=FloatVector([])
 
         #If grouping by redshift, construct the cell redshift statistics
         if group_type == 'redshift' or plots == True:
