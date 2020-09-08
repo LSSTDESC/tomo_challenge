@@ -1,0 +1,21 @@
+metrics:  [SNR_3x2, FOM_3x2, FOM_DETF_3x2]
+bands: riz
+training_file: data/training.hdf5
+validation_file: data/validation.hdf5
+output_file: example/example_output_jax.txt
+# Backend implementing the metrics, either: "firecrown" (default), "jax-cosmo"
+metrics_impl: jax-cosmo
+
+run:
+  # This is a class name which will be looked up
+  JaxCNN:
+    {% for nbins in [2,3,4,5] %}
+    run_{{ nbins }}:
+      # This setting is sent to the classifier
+      bins: {{ nbins }}
+      # These special settings decide whether the
+      # color and error colums are passed to the classifier
+      # as well as the magnitudes
+      colors: True
+      errors: False
+    {% endfor %}

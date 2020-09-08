@@ -14,29 +14,7 @@ from tomo_challenge import jax_metrics
 
 from jax_cosmo.redshift import kde_nz
 
-
 import os
-
-# Simple CNN from flax
-class CNN(nn.Module):
-    def apply(self, x):
-        b = x.shape[0]
-        x = nn.Conv(x, features=128, kernel_size=(4,), padding='SAME')
-        x = nn.BatchNorm(x)
-        x = nn.leaky_relu(x)
-        x = nn.avg_pool(x, window_shape=(2,), padding='SAME')
-        x = nn.Conv(x, features=256, kernel_size=(4,), padding='SAME')
-        x = nn.BatchNorm(x)
-        x = nn.leaky_relu(x)
-        x = nn.avg_pool(x, window_shape=(2,), padding='SAME')
-        x = x.reshape(b, -1)
-        x = nn.Dense(x, features=128)
-        x = nn.BatchNorm(x)
-        x = nn.leaky_relu(x)
-        x = nn.Dense(x, features=n_bins)
-        x = nn.softmax(x)
-        return x
-
 
 class JaxCNN(Tomographer):
     """ Neural Network Classifier """
@@ -85,12 +63,32 @@ class JaxCNN(Tomographer):
         n_bins = self.opt['bins']
         print("Finding bins for training data")
         
+        # Simple CNN from flax
+        class CNN(nn.Module):
+            def apply(self, x):
+                b = x.shape[0]
+                x = nn.Conv(x, features=128, kernel_size=(4,), padding='SAME')
+                x = nn.BatchNorm(x)
+                x = nn.leaky_relu(x)
+                x = nn.avg_pool(x, window_shape=(2,), padding='SAME')
+                x = nn.Conv(x, features=256, kernel_size=(4,), padding='SAME')
+                x = nn.BatchNorm(x)
+                x = nn.leaky_relu(x)
+                x = nn.avg_pool(x, window_shape=(2,), padding='SAME')
+                x = x.reshape(b, -1)
+                x = nn.Dense(x, features=128)
+                x = nn.BatchNorm(x)
+                x = nn.leaky_relu(x)
+                x = nn.Dense(x, features=n_bins)
+                x = nn.softmax(x)
+                return x
+        
         # Hyperparameters
         prng = jax.random.PRNGKey(0)
         learning_rate = 0.001
         input_shape = (1, training_data.shape[1], 1)
         batch_size = 5000
-        epochs = 200
+        epochs = 2
         
         # Initialize model and optimizer
         def create_model_optimizer(n_bins):
@@ -101,7 +99,7 @@ class JaxCNN(Tomographer):
         
         # Helper function
         def get_batch():
-            inds = onp.random.choice(len(z_train), batch_size)
+            inds = onp.random.choice(len(training_z), batch_size)
             return {'labels': training_z[inds], 'features': training_data[inds]}
         
         @jax.jit
@@ -131,9 +129,9 @@ class JaxCNN(Tomographer):
         figure = plt.figure(figsize=(10, 6))
         plt.plot(range(epochs), losses)
         plt.xlabel('Epoch')
-        plt.ylable('1 / FOM')
+        plt.ylabel('1 / FOM')
         plt.yscale('log')
-        plt.savefig(f'{n_bins}-bins_{self.bands}.png')
+        plt.savefig(f'../../{n_bins}-bins_{self.bands}.png')
         plt.close()
         
         self.model = optimizer.target
