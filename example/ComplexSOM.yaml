@@ -14,7 +14,7 @@ run:
       testing: True
       bins: 5
       som_dim: [51,51]
-      num_groups: 200
+      num_groups: 100
       num_threads: 32
       group_type: 'redshift'
       data_threshold: [0,30]
