@@ -150,6 +150,7 @@ class PCACluster(Tomographer):
         # I took this cut from the random forest example.
         # I cut after doing the PCA in case the cut changes the
         # principal axes and I want to avoid that.
+        np.random.seed(1985) # To ensure this is the same every time.
         cut = np.random.uniform(0, 1, data_reduced.shape[0]) < 0.05
         data_cut =  data_reduced[cut]
         z_cut = training_z[cut]
@@ -190,81 +191,31 @@ class PCACluster(Tomographer):
             cat = dist(points, centroids, beta)
             return -compute_fom(cat, z, inds=[5, 6], binned_nz=True)
         
-        # Finds the optimal learning rate given a set of data and
-        # centroids.
-        def range_test(points, redshift, beta, centroids, impl="fom", 
-                       num=50, ind=1, high=-1):
-            # The function we're optimizing, can't use string inputs in functions 
-            # we're differentiating, hence this.
-            if impl == "fom":
-                d2 = dist_fom
-            elif impl == "fom_detf":
-                d2 = dist_fom_detf
-            else:
-                d2 = dist_snr
+        def get_equality_centroids(data, redshift, n_bins=3):
+            # Find the edges that split the redshifts into n_bins bins of
+            # equal number counts in each
+            p = np.linspace(0, 100, n_bins + 1)
+            z_edges = np.percentile(redshift, p)
 
-            val_hist = []
-            improve_hist = []
-            if ind == 3:
-                to_improve = np.copy(beta)
-            else:
-                to_improve = np.copy(centroids)
+            training_bin = np.zeros_like(data[:, 0])
 
-            i = 0
-            # We want to do this once first so the initial point is, well the starting SNR/FOM
-            if ind == 3:
-                val, grads = jax.value_and_grad(d2, ind)(points, centroids, redshift, to_improve)
-            else:
-                val, grads = jax.value_and_grad(d2, ind)(points, to_improve, redshift, beta)
-            val_hist.append(-val)
+            # Now find all the objects in each of these bins
+            for i in range(n_bins):
+                z_low = z_edges[i]
+                z_high = z_edges[i + 1]
+                training_bin[(redshift > z_low) & (redshift <= z_high)] = i
 
-            # More points will get you more accurate results but will take longer
-            lr_arr = np.logspace(-6, high, num)
-            for cur_lr in lr_arr:
-                if verbose: print(f"Epoch {i+1}, LR {cur_lr}")
-                i += 1
-                if ind == 3:
-                    val, grads = jax.value_and_grad(d2, ind)(points, centroids, redshift, to_improve)
-                else:
-                    val, grads = jax.value_and_grad(d2, ind)(points, to_improve, redshift, beta)
+            centroids = []
+            for i in range(0, int(training_bin.max()) + 1):
+                cond = training_bin == i
+                centroids.append(data[cond].mean(axis=0))
 
-                if verbose: print(f"{impl.upper()}:", -val)
-                # This is where the actual gradient descent is performed, and
-                # the value is saved to find the optimal lr
-                val_hist.append(-val)
-                to_improve += -(grads) * cur_lr
-                improve_hist.append(to_improve)
-
-            # One liner that calculates the slopes between consecutive points.
-            # Roll moves it back one so roll - original is equal to the difference
-            # between a point and the next one in the array.
-            delta_y = (np.roll(val_hist[1:], -1) - val_hist[1:])
-            delta_x = (np.log10(np.roll(lr_arr, -1)) - np.log10(lr_arr))
-            slope = (delta_y / delta_x)[:-1]
-            
-            # For calculating the best value we achieved during this run.
-            val_hist = np.asarray(val_hist)[1:]
-            improve_hist = np.asarray(improve_hist)
-
-            # The halfway point between each point, the "x" of the slope.
-            x_slope = ((np.roll(lr_arr, -1) + lr_arr) / 2)[:-1]
-
-            # "Best" learning rate is where the slope is the highest positive value
-            # i.e. where the metric increases the most per learning rate step.
-            if verbose: print(f"Best {impl.upper()} achieved in range test: {np.nanmax(val_hist)}")
-            return (x_slope[np.nanargmax(slope[:-1])], improve_hist[np.argmax(val_hist)])
+            return np.asarray(centroids)
         
         # points = data_cut
         # redshift = z_cut
-        cent = np.mean(data_cut, axis=0)
-        rad_diff = 2 * np.pi / num_centroids
-        l = []
-        for i in range(num_centroids):
-            p = 0.25 * np.asarray([np.cos(i * rad_diff), np.sin(i * rad_diff), 0])
-            l.append(p + cent)
-        # Starting points
-        centroids = np.asarray(l)
-        beta = np.ones(1)
+        beta = np.ones(1) * num_centroids
+        if verbose: print(f"Using beta: {beta}")
 
         # The function we're optimizing, can't use string inputs in functions 
         # we're differentiating, hence this. The name 'd2' is a historical artifact
@@ -276,83 +227,95 @@ class PCACluster(Tomographer):
         else:
             d2 = dist_snr
 
-        # Index of the thing we're improving for taking derivative
-        # And the thing we're improving.
         # Technically this is the actual training loop but I call it twice
         # hence the abstraction to a function.
-        def loop_and_improve(val, ind, num_epochs, lr=0):
+        def loop_and_improve(val, num_epochs):
             to_improve = np.copy(val)
             val_history = []
 
+            # These top and bottom are designed for DETF.
+            # Need to reduce by factor of ~10^1 for SNR and
+            # ~10^2 for FOM, since DETF is order ~10, SNR ~10^2, FOM ~10^3
+            top = -1.5
+            bottom = -3
+
+            if impl == "fom": 
+                top -= 2
+                bottom -= 2
+            elif impl == "snr":
+                top -= 1
+                bottom -= 1
+
+            lr_arr = np.logspace(bottom, top, num_epochs // 2) * 2.5
+            lr_arr = np.concatenate([lr_arr, np.flip(lr_arr, 0)])
+
+            # Do this first so we know where we start.
+            val, grads = jax.value_and_grad(d2, 1)(data_cut, to_improve, z_cut, beta)
+            print(f"Starting {impl.upper()}: {-val}")
+            best = np.copy(to_improve)
+            best_score = val
+
             # Terminate at the number of epochs or if the change 
             # in snr is too small to be meaningful. We also force 
-            # a minimum of 2 epochs.
+            # a minimum of (num epochs // 3) epochs.
             i = 0
             delta_val = 1
-            cur_lr = lr
-            while (i < num_epochs and abs(delta_val) > 0.50) or i < 2:
+            min_change = 0.25
+            while (i < num_epochs and abs(delta_val) > min_change) or i < num_epochs // 3:
                 try:
-                    if verbose: print(f"Epoch {i + 1}")
-                    if ind == 3:
-                        val, grads = jax.value_and_grad(d2, ind)(data_cut, centroids, z_cut, to_improve)
-                    else:
-                        val, grads = jax.value_and_grad(d2, ind)(data_cut, to_improve, z_cut, beta)
-
-                    if verbose: print(f"{impl.upper()}:", -val)
-                    val_history.append(-val)
-
-                    # Learning rate annealing
-                    cur_lr *= 0.9
+                    cur_lr = lr_arr[i]
+                    if verbose: print(f"Epoch {i + 1} LR {np.round(cur_lr, 6)}")
                     to_improve += -(grads) * cur_lr
+
+                    # Finding the resultang value and then the grad for the next epoch.
+                    val, grads = jax.value_and_grad(d2, 1)(data_cut, to_improve, z_cut, beta)
+
+                    if verbose: print(f"{impl.upper()}: {-val}")
+                    val_history.append(val)
+
+                    # Storing the best found score in case we jump out of the minimum
+                    # (possible... if not likely in some situations)
+                    if val < best_score:
+                        best = np.copy(to_improve)
+                        best_score = val
+
                     i += 1
-                    if verbose and len(val_history) > 1:
-                        delta_val = -val - val_history[-2]
-                        if verbose: print(f"Delta {impl.upper()}: {delta_val}")
+                    if len(val_history) > 1:
+                        delta_val = val - val_history[-2]
+                        if verbose: print(f"Delta {impl.upper()}: {-delta_val}")
+
                 except UnexpectedTracerError:
                     # I swear this isn't my fault.
                     if verbose: print("Tracer Error, retrying epoch")
                     continue
 
-            return (to_improve, val_history)
+            return (best, best_score, val_history)
 
-        if verbose: print("Beta loop. Finding optimal lr.")
-        num_points = 50
-        beta_lr, _ = range_test(data_cut, z_cut, beta, centroids, impl, num=num_points, ind=3)
-        if verbose: print(f"\nOptimal Beta lr: {beta_lr}")
+        # This finds the mean in all directions then organizes
+        # the starting centroids in an equally spaced circle around the x-y center.
+        cent = np.mean(data_cut, axis=0)
+        rad_diff = 2 * np.pi / num_centroids
+        l = []
+        for i in range(num_centroids):
+            p = 0.15 * np.asarray([np.cos(i * rad_diff), np.sin(i * rad_diff), 0])
+            l.append(p + cent)
 
-        beta, _ = loop_and_improve(beta, 3, 70, lr=beta_lr)
-        if verbose: print(f"Final beta: {beta}")
+        # Run twice with two different starting centroids and use the best one.
+        num_epochs = 100
+        if verbose: print("\nStart 1")
+        centroids = np.asarray(l)
+        c1, score1, _ = loop_and_improve(centroids, num_epochs)
 
-        # Once we have improved beta we can continue on to do the centroids themselves.
-        if verbose: print("Centroids loop. Finding optimal lr.")
-        top = -2 if impl != "fom_detf" else -1 # I wonder why the DETF has smaller gradients.
-        # By this point ~6000 FOM requires more finesse
-        # I have restricted this to FOM only for lack of proof it works on the others (no time!)
-        if num_centroids > 7 and impl == "fom": top -= 1
-        centroid_lr, centroids = range_test(data_cut, z_cut, beta, centroids, 
-                                            impl, num=num_points, high=top)
-        if verbose: print(f"\nOptimal centroids lr: {centroid_lr}")
+        if verbose: print("\nStart 2")
+        centroids = get_equality_centroids(data_cut, z_cut, num_centroids)
+        c2, score2, _ = loop_and_improve(centroids, num_epochs)
 
-        # It's the eleventh hour and I don't quite have the time at the moment
-        # to prove rigorously that this is a good choice for lr but it is.
-        # I think that we actually want the lr to be on the order of 10^-3
-        # And in general this serves to do that, but without further testing
-        # I can't prove that's the case (yet)
-        if num_centroids < 8:
-            best_lr = centroid_lr / 10
+        if score1 < score2:
+            if verbose: print(f"Circular start used. {-score1} > {-score2}")
+            self.centroids = c1
         else:
-            best_lr = centroid_lr
-        
-        centroids, loss = loop_and_improve(centroids, 1, 70, lr=best_lr)
- 
-        # Janky, but what part of Jax isn't?
-        if verbose:
-            try:
-                print(f"Final {impl.upper()}:", -d2(data_cut, centroids, z_cut, beta))
-            except UnexpectedTracerError:
-                print(f"Final {impl.upper()}:", -d2(data_cut, centroids, z_cut, beta))
-
-        self.centroids = centroids
+            if verbse: print(f"Equality start used. {-score2} > {-score1}")
+            self.centroids = c2
 
     
     # In theory for maximum speed you could jit compile this, since it's
