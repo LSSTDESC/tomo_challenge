@@ -274,7 +274,7 @@ class ComplexSOM(Tomographer):
             som.rx2['hclust']=hclust
             som.rx2['cell_clust']=cell_group
         else:
-            print("Groups will be constructed by redshift property")
+            print("Groups will be constructed by colour property")
 
         #Construct the Nz properties per SOM group
         print("Constructing group-based redshift properties")
