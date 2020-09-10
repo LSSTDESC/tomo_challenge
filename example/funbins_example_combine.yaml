@@ -2,7 +2,7 @@ metrics:  all
 bands: riz
 training_file: /data/training.hdf5
 validation_file: /data/validation.hdf5
-output_file: tomo_challenge/funbins_example_combinebins.txt
+output_file: funbins_example_combinebins.txt
 # Backend implementing the metrics, either: "firecrown" (default), "jax-cosmo"
 metrics_impl: jax-cosmo
 
