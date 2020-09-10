@@ -265,12 +265,16 @@ class ComplexSOM(Tomographer):
             props = props.rx2("data.white")
             props.rx[base.which(base.is_na(props))] = -1
             print(base.summary(props))
+        
+        if group_type=='redshift':
+            print("Groups will be constructed by redshift property")
             hclust=stats.hclust(stats.dist(props))
             cell_group=stats.cutree(hclust,k=num_groups)
-
             #Assign the cell groups to the SOM structure
             som.rx2['hclust']=hclust
             som.rx2['cell_clust']=cell_group
+        else:
+            print("Groups will be constructed by redshift property")
 
         #Construct the Nz properties per SOM group
         print("Constructing group-based redshift properties")
