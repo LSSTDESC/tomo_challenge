@@ -4,7 +4,6 @@ from snc import SnCalc, assign_params_default
 from scipy.interpolate import interp1d
 from scipy.optimize import minimize, brentq
 from scipy.integrate import simps
-import matplotlib.pyplot as plt
 
 
 parser = ArgumentParser()
@@ -12,6 +11,8 @@ parser.add_argument("--nz-file", default="nzs.npy", type=str,
                     help="Path to input file containing the N(z) of all initial groups")
 parser.add_argument("--prefix-out", default='out', type=str,
                     help="Prefix for all output files")
+parser.add_argument("--suffix-out", default='', type=str,
+                    help="Suffix for all output files")
 parser.add_argument("--n-bins", default=4, type=int,
                     help="Number of bins (excluding a possible trash bin")
 parser.add_argument("--prob-in-bin", default=-1., type=float,
@@ -20,6 +21,16 @@ parser.add_argument("--prob-in-bin", default=-1., type=float,
 parser.add_argument("--prob-out-bin", default=-1., type=float,
                     help="Maximum fraction of the N(z) that should be inside other bins."
                     "If <= 0, this will not be taken into account in the optimization.")
+parser.add_argument('--in-bin-free', default=False, action='store_true',
+                    help='Free up in-bin probability (default: False)')
+parser.add_argument('--use-clustering', default=False, action='store_true',
+                    help='Use clustering (default: False)')
+parser.add_argument('--use-3x2', default=False, action='store_true',
+                    help='Use 3x2 (default: False)')
+parser.add_argument('--random-start', default=False, action='store_true',
+                    help='Use random starting points (default: False)')
+parser.add_argument('--random-seed', default=1234, type=int,
+                    help='Random seed')
 o = parser.parse_args()
 
 nzs = np.load(o.nz_file)
@@ -38,20 +49,41 @@ ng_each = ng_each_small * ng_tot / ng_tot_small
 nzs = nzs * ng_tot / ng_tot_small
 
 # Initialize calculator
-sc = SnCalc(zz, nzs, fsky=fsky)
-sc.get_cl_matrix(fname_save=o.prefix_out + 'cl_wl.npz')
+sc = SnCalc(zz, nzs, fsky=fsky, use_clustering=o.use_clustering, use_3x2=o.use_3x2)
+if o.use_3x2:
+    suffix = 'cl_3x2.npz'
+else:
+    if o.use_clustering:
+        suffix = 'cl_gc.npz'
+    else:
+        suffix = 'cl_wl.npz'
+sc.get_cl_matrix(fname_save=o.prefix_out + suffix)
 
 # Initial edge guess (defined as having equal number of galaxies)
-nz_tot = np.sum(nzs, axis=0)
-cumulative_fraction = np.cumsum(nz_tot) / np.sum(nz_tot)
-cumul_f = interp1d(zz, cumulative_fraction, bounds_error=False,
-                   fill_value=(0, 1))
-edges_0 = np.array([brentq(lambda z : cumul_f(z) - q, 0, 2)
-                    for q in (np.arange(o.n_bins-1)+1.)/o.n_bins])
+if o.random_start:
+    np.random.seed(o.random_seed)
+    z_end = 1.5
+    delta_z = z_end / (o.n_bins-1)
+    edges_0 = delta_z * (np.arange(o.n_bins-1) + np.random.rand(o.n_bins-1))
+else:
+    nz_tot = np.sum(nzs, axis=0)
+    cumulative_fraction = np.cumsum(nz_tot) / np.sum(nz_tot)
+    cumul_f = interp1d(zz, cumulative_fraction, bounds_error=False,
+                       fill_value=(0, 1))
+    edges_0 = np.array([brentq(lambda z : cumul_f(z) - q, 0, 2)
+                        for q in (np.arange(o.n_bins-1)+1.)/o.n_bins])
 
+if o.in_bin_free:
+    if o.random_start:
+        pin = np.random.rand()
+    else:
+        pin = 0.5
+    edges_0 = np.concatenate((np.array([pin]), edges_0))
+print(edges_0)
 
 # Minimize
 # Binning parameters
+
 params = assign_params_default.copy()
 if o.prob_in_bin > 0:
     params['p_inbin_thr'] = o.prob_in_bin
@@ -59,15 +91,29 @@ if o.prob_in_bin > 0:
 if o.prob_out_bin > 0:
     params['p_outbin_thr'] = o.prob_out_bin
     params['use_p_outbin'] = True
+if o.in_bin_free:
+    params['use_p_inbin'] = True
+    params['p_inbin_thr'] = edges_0[0]
 
 
 def minus_sn(edges, calc):
-    return -calc.get_sn_from_edges(edges, assign_params=params)
+    if o.in_bin_free:
+        if (edges[0] < 0) or (edges[0] > 1):
+            return 0.
+        params['p_inbin_thr'] = edges[0]
+        edges_use = edges[1:]
+    else:
+        edges_use = edges
+    return -calc.get_sn_from_edges(edges_use, assign_params=params)
 
     
 # Actual optimization
 res = minimize(minus_sn, edges_0, method='Powell', args=(sc,))
-edges_1 = res.x
+if o.in_bin_free:
+    edges_1 = res.x[1:]
+    params['p_inbin_thr'] = res.x[0]
+else:
+    edges_1 = res.x
 
 # Post-process:
 # S/N
@@ -92,26 +138,16 @@ n_tot = simps(np.sum(nz_best, axis=0),
 
 d_out = {'sn': sn,
          'edges': edges_1}
-plt.figure()
+if o.in_bin_free:
+    d_out['p_in'] = params['p_inbin_thr']
+    print("P_in: ", params['p_inbin_thr'])
 for (i, a), n in zip(assign, nz_best):
     name = get_bin_name(i)
     d_out[name+'_groups'] = a
     d_out[name+'_nz'] = n
-    print("Bin %d, groups: " % i, a)
     n_here = simps(n, x=zz)
     f = n_here / n_tot
     frac = "%.1lf" % (100 * f)
-    if i == -1:
-        bin_name = 'Trash bin'
-    else:
-        bin_name = f'Bin {i}'
-    plt.plot(zz, n/n_here,
-             label=bin_name + f' ({frac} %)')
-plt.legend()
-plt.xlabel(r'$z$', fontsize=15)
-plt.ylabel(r'$p(z)$', fontsize=15)
-plt.savefig(o.prefix_out + '_nz_summary.png',
-            bbox_inches='tight')
+    print("Bin %d, groups: " % i, a, frac)
 
-np.savez(o.prefix_out + '_bin_info.npz', **d_out)
-plt.show()
+np.savez(o.prefix_out + o.suffix_out + '_bin_info.npz', **d_out)
