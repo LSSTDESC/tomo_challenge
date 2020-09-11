@@ -23,6 +23,7 @@ from rpy2.robjects.vectors import StrVector, IntVector, DataFrame, FloatVector, 
 import pandas as pd
 from rpy2.robjects import pandas2ri
 from rpy2.robjects.conversion import localconverter
+import pickle
 
 #Check that all the needed packages are installed
 # R package nameo
@@ -42,18 +43,6 @@ devtools=ro.packages.importr("devtools")
 #devtools.install_github("AngusWright/helpRfuncs")
 #devtools.install_github("AngusWright/kohonen/kohonen")
 kohonen=ro.packages.importr("kohonen")
-import execnet
-
-def call_python_version(Version, Script):
-    gw = execnet.makegateway("popen//python=python%s" % Version)
-    channel = gw.remote_exec("""
-          import sys
-          def call_script():
-            exec(open("%s").read())
-          channel.send(call_script())
-          """ % (Script))
-    channel.send("")
-    return channel.receive()
 
 class PQNLD(Tomographer):
     """ Combined Template and SOM Classifier """
@@ -232,7 +221,7 @@ class PQNLD(Tomographer):
         if os.path.exists("training_bpz.cat"):
             print("Read the BPZ inputs")
             cols = training_data.columns
-            training_data = pd.read_csv("training_bpz.cat",sep=' ')
+            training_data = pd.read_csv("training_bpz.cat",sep=' ',header=None)
             training_data.columns = cols
             training_z = training_data[['redshift_true']]
         else:
@@ -264,7 +253,10 @@ class PQNLD(Tomographer):
             os.chdir('../')
 
         print("Read the BPZ results")
-        bpz_res = pd.read_fwf("training_bpz.bpz",comment="#",skiprows=62,header=None)
+        #bpz_res = pd.read_fwf("training_bpz.bpz",comment="#",skiprows=62,header=None)
+        os.system("grep -v '^#' training_bpz.bpz | sed 's/  / /g' | sed 's/  / /g' | \
+                sed 's/  / /g' | sed 's/^ //g' | sed 's/ $//g' > training_bpz.asc")
+        bpz_res = pd.read_csv("training_bpz.asc",sep=' ',header=None)
 
         print("Adding BPZ Photoz info to training data")
         training_data['Z_B'] = bpz_res[[1]]
@@ -301,12 +293,15 @@ class PQNLD(Tomographer):
             print("Constructing cell-based redshift properties")
             #Construct the Nz properties per SOM cell
             cell_prop=kohonen.generate_kohgroup_property(som=som,data=train_df,
-                        expression=StrVector(property_expressions),expr_label=StrVector(property_labels))
+                        expression=StrVector(property_expressions),expr_label=StrVector(property_labels),returnMatrix=True)
             print("Constructing redshift-based hierarchical cluster tree")
             #Cluster the SOM cells into num_groups groups
             props = cell_prop.rx2['property']
-            props.rx[base.which(base.is_na(props))] = -1
-            hclust=stats.hclust(stats.dist(props))
+            try:
+                hclust=stats.hclust(stats.dist(props))
+            except: 
+                props.rx[base.which(base.is_na(props))] = -1
+                hclust=stats.hclust(stats.dist(props))
             cell_group=stats.cutree(hclust,k=num_groups)
 
             #Assign the cell groups to the SOM structure
@@ -317,7 +312,7 @@ class PQNLD(Tomographer):
         print("Constructing group-based redshift properties")
         group_prop=kohonen.generate_kohgroup_property(som=som,data=train_df,
             expression=StrVector(property_expressions),expr_label=StrVector(property_labels),
-            n_cluster_bins=num_groups)
+            n_cluster_bins=num_groups,returnMatrix=True)
 
         #extract the training som (just for convenience)
         train_som = group_prop.rx2('som')
@@ -385,94 +380,144 @@ class PQNLD(Tomographer):
           each galaxy.
         """
         
-        #Construct the BPZ columns file 
+        #Define the SOM variables
         if self.bands == 'riz':
+            #riz bands
+            expressions = ("r-i","r-z","i-z",
+                           "z","r-i-(i-z)","Z_B")
             # Filter columns AB/Vega zp_error zp_offset
-            columns = pd.DataFrame(["r_SDSS","i_SDSS","z_SDSS"],
-                                   ["1,5","2,6","3,7"],
+            columns = pd.DataFrame(np.transpose(np.array([
+                                   ["r_SDSS","i_SDSS","z_SDSS"],
+                                   ["1,2","3,4","5,6"],
                                    ["AB","AB","AB"],
                                    ["0.01","0.01","0.01"],
-                                   ["0.000001","0.000001","0.000001"])
+                                   ["0.00","0.00","0.00"]])))
             #Output the columns file 
-            np.savetxt(f"validation_bpz.columns",columns,fmt='%3.5f')
-            columns = pd.DataFrame(["M_0","Z_S"],
-                                   ["3","8"])
+            columns.to_csv(r"validation_bpz.columns",sep=' ',index=None,header=None,mode='w')
+            columns = pd.DataFrame(np.transpose(
+                                  np.array([["M_0"],
+                                            ["5"]])))
             #Output the columns file 
-            np.savetxt(f"validation_bpz.columns",columns,fmt='%d',append=True)
+            columns.to_csv(r"validation_bpz.columns",sep=' ',index=None,header=None,mode='a')
         elif self.bands == 'griz':
+            #griz bands
+            expressions = ("g-r","g-i",
+                           "g-z","r-i","r-z","i-z",
+                           "z","g-r-(r-i)",
+                           "r-i-(i-z)","Z_B")
             # Filter columns AB/Vega zp_error zp_offset
             columns = pd.DataFrame(["g_SDSS","r_SDSS","i_SDSS","z_SDSS"],
-                                   ["1,5","2,6","3,7","4,8"],
+                                   ["1,2","3,4","5,6","7,8"],
                                    ["AB","AB","AB","AB"],
                                    ["0.01","0.01","0.01","0.01"],
-                                   [0.,0.,0.,0.])
+                                   ["0.000001","0.000001","0.000001","0.000001"])
             #Output the columns file 
-            np.savetxt(f"validation_bpz.columns",columns,fmt='%3.5f')
-            columns = pd.DataFrame(["M_0","Z_S"],
-                                   ["4","9"])
+            columns.to_csv(r"validation_bpz.columns",sep=' ',index=None,header=None,mode='w')
+            columns = pd.DataFrame(["M_0"],
+                                   ["7"])
             #Output the columns file 
-            np.savetxt(f"validation_bpz.columns",columns,fmt='%d',append=True)
+            columns.to_csv(r"validation_bpz.columns",sep=' ',index=None,header=None,mode='a')
         elif self.bands == 'grizy':
+            #grizy bands
+            expressions = ("g-r","g-i",
+                           "g-z","g-y","r-i","r-z","r-y","i-z","i-y",
+                           "z-y","z","g-r-(r-i)",
+                           "r-i-(i-z)","i-z-(z-y)","Z_B")
             # Filter columns AB/Vega zp_error zp_offset
             columns = pd.DataFrame(["g_SDSS","r_SDSS","i_SDSS","z_SDSS","y_SDSS"],
-                                   ["1,6","2,7","3,8","4,9","5,10"],
+                                   ["1,2","3,4","5,6","7,8","9,10"],
                                    ["AB","AB","AB","AB","AB"],
                                    ["0.01","0.01","0.01","0.01","0.01"],
-                                   [0.,0.,0.,0.,0.])
+                                   ["0.000001","0.000001","0.000001","0.000001","0.000001"])
             #Output the columns file 
-            np.savetxt(f"validation_bpz.columns",columns,fmt='%3.5f')
-            columns = pd.DataFrame(["M_0","Z_S"],
-                                   ["4","13"])
+            columns.to_csv(r"validation_bpz.columns",sep=' ',index=None,header=None,mode='w')
+            columns = pd.DataFrame(["M_0"],
+                                   ["7"])
             #Output the columns file 
-            np.savetxt(f"validation_bpz.columns",columns,fmt='%d',append=True)
+            columns.to_csv(r"validation_bpz.columns",sep=' ',index=None,header=None,mode='a')
         elif self.bands == 'ugriz':
+            #ugrizy bands
+            expressions = ("u-g","u-r","u-i","u-z","g-r","g-i",
+                           "g-z","r-i","r-z","i-z",
+                           "z","u-g-(g-r)","g-r-(r-i)",
+                           "r-i-(i-z)","Z_B")
             # Filter columns AB/Vega zp_error zp_offset
             columns = pd.DataFrame(["u_SDSS","g_SDSS","r_SDSS","i_SDSS","z_SDSS"],
-                                   ["1,6","2,7","3,8","4,9","5,10"],
+                                   ["1,2","3,4","5,6","7,8","9,10"],
                                    ["AB","AB","AB","AB","AB"],
                                    ["0.01","0.01","0.01","0.01","0.01"],
-                                   [0.,0.,0.,0.,0.])
+                                   ["0.000001","0.000001","0.000001","0.000001","0.000001"])
             #Output the columns file 
-            np.savetxt(f"validation_bpz.columns",columns,fmt='%3.5f')
-            columns = pd.DataFrame(["M_0","Z_S"],
-                                   ["5","11"])
+            columns.to_csv(r"validation_bpz.columns",sep=' ',index=None,header=None,mode='w')
+            columns = pd.DataFrame(["M_0"],
+                                   ["9"])
             #Output the columns file 
-            np.savetxt(f"validation_bpz.columns",columns,fmt='%d',append=True)
+            columns.to_csv(r"validation_bpz.columns",sep=' ',index=None,header=None,mode='a')
         elif self.bands == 'ugrizy':
+            #ugrizy bands
+            expressions = ("u-g","u-r","u-i","u-z","u-y","g-r","g-i",
+                           "g-z","g-y","r-i","r-z","r-y","i-z","i-y",
+                           "z-y","z","u-g-(g-r)","g-r-(r-i)",
+                           "r-i-(i-z)","i-z-(z-y)","Z_B")
             # Filter columns AB/Vega zp_error zp_offset
             columns = pd.DataFrame(["u_SDSS","g_SDSS","r_SDSS","i_SDSS","z_SDSS","y_SDSS"],
-                                   ["1,7","2,8","3,9","4,10","5,11","6,12"],
+                                   ["1,2","3,4","5,6","7,8","9,10","11,12"],
                                    ["AB","AB","AB","AB","AB","AB"],
                                    ["0.01","0.01","0.01","0.01","0.01","0.01"],
                                    ["0.000001","0.000001","0.000001","0.000001","0.000001","0.000001"])
             #Output the columns file 
-            np.savetxt(f"validation_bpz.columns",columns,fmt='%3.5f')
-            columns = pd.DataFrame(["M_0","Z_S"],
-                                   ["5","13"])
+            columns.to_csv(r"validation_bpz.columns",sep=' ',index=None,header=None,mode='w')
+            columns = pd.DataFrame(["M_0"],
+                                   ["9"])
             #Output the columns file 
-            np.savetxt(f"validation_bpz.columns",columns,fmt='%d',append=True)
+            columns.to_csv(r"validation_bpz.columns",sep=' ',index=None,header=None,mode='a')
 
             
-        #Output the columns file 
-        np.savetxt(f"validation_bpz.columns",columns,fmt='%3.5f')
-
         #Number of tomographic bins 
         n_bin = self.opt['bins']
 
         print("Preparing the data")
         data = pd.DataFrame.from_dict(data)
+        print(data.shape)
 
-        print("Outputting the BPZ input cat")
-        np.savetxt(f"validation_bpz.cat",data,fmt='%3.5f')
+        print("Adding redshift info to training data")
+        if os.path.exists("validation_bpz.cat"):
+            print("Read the BPZ inputs")
+            cols = data.columns
+            shape=data.shape
+            data = pd.read_csv("validation_bpz.cat",sep=' ',header=None)
+            data.columns = cols
+        else:
+            print("Outputting the BPZ input cat")
+            np.savetxt(f"validation_bpz.cat",data,fmt='%3.5f')
 
-        print("Running BPZ on the validation data")
-        call_python_version("2.7","bpz","bpz",['validation_bpz.cat'])
+        if not os.path.exists("validation_bpz.bpz"): 
+            print("Running BPZ on the validation data")
+            curdir=os.getcwd()
+            os.chdir('bpz-1.99.3/')
+            os.system("echo '#NEW' > bpz_run.py")
+            os.system("echo import sys >> bpz_run.py")
+            os.system("echo import os >> bpz_run.py")
+            os.system("echo 'os.environ[\"HOME\"]=\""+curdir+"\"' >>bpz_run.py")
+            os.system("echo 'os.environ[\"BPZPATH\"]=\""+curdir+"/bpz-1.99.3/\"' >> bpz_run.py")
+            os.system("echo 'os.environ[\"NUMERIX\"]=\"numpy\"' >> bpz_run.py")
+            argv = ["\'bpz.py\'", "\'../validation_bpz.cat\'"]
+            os.system("echo 'sys.argv=[\""+"\",\"".join(argv)+"\"]' >> bpz_run.py")
+            os.system("echo 'exec(open(\"bpz.py\").read())' >> bpz_run.py")
+            res = os.system("python2 bpz_run.py")
+            os.chdir('../')
 
         print("Read the BPZ results")
-        bpz_res = pd.read_csv("validation_bpz.bpz",sep=' ')
+        #bpz_res = pd.read_fwf("validation_bpz.bpz",comment="#",skiprows=62,header=None)
+        os.system("grep -v '^#' validation_bpz.bpz | sed 's/  / /g' | sed 's/  / /g' | \
+                sed 's/  / /g' | sed 's/^ //g' | sed 's/ $//g' > validation_bpz.asc")
+        bpz_res = pd.read_csv("validation_bpz.asc",sep=' ',header=None)
+        print(bpz_res)
 
         print("Adding BPZ Photoz info to validation data")
-        data['Z_B'] = bpz_res[["Z_B"]]
+        print(data)
+        data['Z_B'] = bpz_res[[1]]
+        print(data)
 
         #Construct the validation data frame (just a python-to-R data conversion)
         print("Converting the data to R format")
@@ -481,8 +526,10 @@ class PQNLD(Tomographer):
 
         print("Parsing the validation data into the SOM groupings")
         #Generate the validation associations/groups
+        print(base.summary(data_df))
+        print(base.dim(data_df))
         group_prop=kohonen.generate_kohgroup_property(som=self.train_som,data=data_df,
-            expression="nrow(data)",expr_label="N",
+            expression="nrow(data)",expr_label="N",returnMatrix=True,
             n_cluster_bins=self.opt['num_groups'],n_cores=self.opt['num_threads'])
 
         #Calculate the cumulative count 
@@ -499,6 +546,8 @@ class PQNLD(Tomographer):
         group_bins = FloatVector(base.cut(FloatVector(zcumsum),FloatVector(n_edges),
             include=True)).rx(base.order(self.z_order))
 
+        print(base.summary(group_bins))
+        print(base.length(group_bins))
         #extract the validation som (just for convenience)
         valid_som = group_prop.rx2('som')
 
