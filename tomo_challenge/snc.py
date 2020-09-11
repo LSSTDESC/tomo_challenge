@@ -108,8 +108,11 @@ class SnCalc(object):
         self.cls = np.zeros([self.n_ell, self.n_tracers, self.n_tracers])
         for i in range(self.n_tracers):
             for j in range(i, self.n_tracers):
-                cl = ccl.angular_cl(cosmo, trs[i], trs[j], self.larr,
-                                    limber_integration_method=self.integrator)
+                try:
+                    cl = ccl.angular_cl(cosmo, trs[i], trs[j], self.larr,
+                                        limber_integration_method=self.integrator)
+                except:
+                    cl = np.zeros(len(self.larr))
                 self.cls[:, i, j] = cl
                 if j != i:
                     self.cls[:, j, i] = cl
