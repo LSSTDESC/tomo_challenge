@@ -124,6 +124,12 @@ def add_colors(data, bands, errors=False):
         if errors:
             data[f'{b}{c}_err'] = np.sqrt(data[f'{b}_err']**2 + data[f'{c}_err']**2)
 
+def add_size(data, filename):
+
+    with h5py.File(filename, 'r') as f:
+        # load all bands
+        data['mcal_T'] = f[f'mcal_T'][:]
+
 
 def dict_to_array(data, bands, errors=False, colors=False):
     nobj = data[bands[0]].size
@@ -165,11 +171,14 @@ def colors_for_bands(bands):
 
 
 
-def load_data(filename, bands, colors=False, errors=False, array=False):
+def load_data(filename, bands, colors=False, errors=False, size=False, array=False):
     data = load_mags(filename, bands, errors=errors)
 
     if colors:
         add_colors(data, bands, errors=errors)
+
+    if size:
+        add_size(data, filename)
 
     if array:
         data = dict_to_array(data, bands, errors=errors, colors=colors)

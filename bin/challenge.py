@@ -27,12 +27,15 @@ def main(config_yaml):
     # Decide if anyone needs the colors calculating and/or errors loading
     anyone_wants_colors = False
     anyone_wants_errors = False
+    anyone_wants_sizes = False
     for run in config['run'].values():
         for version in run.values():
             if version.get('errors'):
                 anyone_wants_errors = True
             if version.get('colors'):
                 anyone_wants_colors = True
+            if version.get('sizes'):
+                anyone_wants_sizes = True
 
 
     bands = config['bands']
@@ -41,14 +44,16 @@ def main(config_yaml):
         config['training_file'],
         bands,
         errors=anyone_wants_errors,
-        colors=anyone_wants_colors
+        colors=anyone_wants_colors,
+        size=anyone_wants_sizes
     )
 
     validation_data = tc.load_data(
         config['validation_file'],
         bands,
         errors=anyone_wants_errors,
-        colors=anyone_wants_colors
+        colors=anyone_wants_colors,
+        size=anyone_wants_sizes
     )
 
     training_z = tc.load_redshift(config['training_file'])
@@ -59,7 +64,7 @@ def main(config_yaml):
     else:
         metrics_fn = tc.compute_scores
 
-    with open(config['output_file'],'w') as output_file:
+    with open(config['output_file'],'a') as output_file:
         for classifier_name, runs in config['run'].items():
             for run, settings in runs.items():
                 scores = run_one(classifier_name, bands, settings,
@@ -77,15 +82,16 @@ def run_one(classifier_name, bands, settings, train_data, train_z, valid_data,
     if classifier.wants_arrays:
         errors = settings.get('errors')
         colors = settings.get('colors')
-        train_data = tc.dict_to_array(train_data, bands, errors=errors, colors=colors)
-        valid_data = tc.dict_to_array(valid_data, bands, errors=errors, colors=colors)
+        sizes = settings.get('sizes')
+        train_data = tc.dict_to_array(train_data, bands, errors=errors, colors=colors, sizes=sizes)
+        valid_data = tc.dict_to_array(valid_data, bands, errors=errors, colors=colors, sizes=sizes)
 
     print ("Executing: ", classifier_name, bands, settings)
 
     ## first check if options are valid
     print (settings, classifier.valid_options)
     for key in settings.keys():
-        if key not in classifier.valid_options and key not in ['errors', 'colors']:
+        if key not in classifier.valid_options and key not in ['errors', 'colors', 'sizes']:
             raise ValueError(f"Key {key} is not recognized by classifier {classifier_name}")
 
     print ("Initializing classifier...")
@@ -102,7 +108,7 @@ def run_one(classifier_name, bands, settings, train_data, train_z, valid_data,
 
     print ("Making some pretty plots...")
     name = str(classifier.__name__)
-    tc.metrics.plot_distributions(valid_z, results, f"plots/{name}_{settings}_{bands}.png")
+    tc.metrics.plot_distributions(valid_z, results, f"plots/{name}_{bands}.png")
 
     return scores
 

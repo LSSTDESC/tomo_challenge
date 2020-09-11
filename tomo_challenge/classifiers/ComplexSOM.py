@@ -53,7 +53,8 @@ class ComplexSOM(Tomographer):
     # valid parameter -- see below
     valid_options = ['bins','som_dim','num_groups','num_threads',
             'group_type','data_threshold','sparse_frac','plots',
-            'plot_dir','metric','use_inbin','use_outbin']
+            'plot_dir','metric','use_inbin','use_outbin','testing',
+            'whiten','redshift_propset']
     # this settings means arrays will be sent to train and apply instead
     # of dictionaries
     wants_arrays = False
@@ -118,6 +119,10 @@ class ComplexSOM(Tomographer):
         use_outbin = self.opt['use_outbin']
         #Plots
         plots = self.opt['plots']
+        #redshift properties to use in grouping
+        redshift_propset = self.opt['redshift_propset']
+        #Whiten the redshift data when grouping?
+        whiten = self.opt['whiten']
         #Plot Output Directory
         plot_dir = self.opt['plot_dir']
         #Group Type
@@ -132,123 +137,179 @@ class ComplexSOM(Tomographer):
                          'use_p_outbin': use_outbin}
 
         #Define the redshift summary statistics (used for making groups in the 'redshift' case
-        property_labels = ("mean_z_true","med_z_true","sd_z_true","mad_z_true","iqr_z_true")
-        property_expressions = ("mean(data$redshift_true)","median(data$redshift_true)","sd(data$redshift_true)",
-                                "mad(data$redshift_true)",
-                                "diff(quantile(data$redshift_true,probs=pnorm(c(-2,2))))")
+        if redshift_propset==1:
+            property_labels = StrVector(("mean_z_true","med_z_true","sd_z_true","mad_z_true","iqr_z_true"))
+            property_expressions = StrVector(("mean(data$redshift_true)","median(data$redshift_true)","sd(data$redshift_true)",
+                    "mad(data$redshift_true)",
+                    "diff(quantile(data$redshift_true,probs=pnorm(c(-2,2))))"))
+        elif redshift_propset==2: 
+            property_labels = StrVector(("mean_z_true","med_z_true","mad_z_true"))
+            property_expressions = StrVector(("mean(data$redshift_true)","median(data$redshift_true)",
+                    "mad(data$redshift_true)"))
+        elif redshift_propset==3: 
+            property_labels = StrVector(("quan_05","quan_16","quan_50","quan_84","quan_95"))
+            property_expressions = ("quantile(data$redshift_true,probs=c(5,16,50,84,95)/100)")
+        else:
+            property_labels = StrVector(("mean_z_true","med_z_true","sd_z_true","mad_z_true","iqr_z_true"))
+            property_expressions = StrVector(("mean(data$redshift_true)","median(data$redshift_true)","sd(data$redshift_true)",
+                    "mad(data$redshift_true)",
+                    "diff(quantile(data$redshift_true,probs=pnorm(c(-2,2))))"))
+        
         #Define the SOM variables
         if self.bands == 'riz':
             #riz bands
-            #expressions = ("r_mag-i_mag","r_mag-z_mag","i_mag-z_mag",
-            #               "z_mag","r_mag-i_mag-(i_mag-z_mag)")
-            expressions = ("r-i","r-z","i-z",
-                           "z","r-i-(i-z)")
+            if self.opt['sizes'] == True:
+                expressions = ("r-i","r-z","i-z",
+                               "z","r-i-(i-z)","mcal_T")
+            else: 
+                expressions = ("r-i","r-z","i-z",
+                               "z","r-i-(i-z)")
         elif self.bands == 'griz':
             #griz bands
-            #expressions = ("g_mag-r_mag","g_mag-i_mag",
-            #               "g_mag-z_mag","r_mag-i_mag","r_mag-z_mag","i_mag-z_mag",
-            #               "z_mag","g_mag-r_mag-(r_mag-i_mag)",
-            #               "r_mag-i_mag-(i_mag-z_mag)")
-            expressions = ("g-r","g-i",
-                           "g-z","r-i","r-z","i-z",
-                           "z","g-r-(r-i)",
-                           "r-i-(i-z)")
+            if self.opt['sizes'] == True:
+                expressions = ("g-r","g-i",
+                               "g-z","r-i","r-z","i-z",
+                               "z","g-r-(r-i)",
+                               "r-i-(i-z)","mcal_T")
+            else: 
+                expressions = ("g-r","g-i",
+                               "g-z","r-i","r-z","i-z",
+                               "z","g-r-(r-i)",
+                               "r-i-(i-z)")
         elif self.bands == 'grizy':
             #grizy bands
-            #expressions = ("g_mag-r_mag","g_mag-i_mag",
-            #               "g_mag-z_mag","g_mag-y_mag","r_mag-i_mag","r_mag-z_mag","r_mag-y_mag","i_mag-z_mag","i_mag-y_mag",
-            #               "z_mag-y_mag","z_mag","g_mag-r_mag-(r_mag-i_mag)",
-            #               "r_mag-i_mag-(i_mag-z_mag)","i_mag-z_mag-(z_mag-y_mag)")
-            expressions = ("g-r","g-i",
-                           "g-z","g-y","r-i","r-z","r-y","i-z","i-y",
-                           "z-y","z","g-r-(r-i)",
-                           "r-i-(i-z)","i-z-(z-y)")
+            if self.opt['sizes'] == True:
+                expressions = ("g-r","g-i",
+                               "g-z","g-y","r-i","r-z","r-y","i-z","i-y",
+                               "z-y","z","g-r-(r-i)",
+                               "r-i-(i-z)","i-z-(z-y)","mcal_T")
+            else: 
+                expressions = ("g-r","g-i",
+                               "g-z","g-y","r-i","r-z","r-y","i-z","i-y",
+                               "z-y","z","g-r-(r-i)",
+                               "r-i-(i-z)","i-z-(z-y)")
         elif self.bands == 'ugriz':
             #ugrizy bands
-            #expressions = ("u_mag-g_mag","u_mag-r_mag","u_mag-i_mag","u_mag-z_mag","g_mag-r_mag","g_mag-i_mag",
-            #               "g_mag-z_mag","r_mag-i_mag","r_mag-z_mag","i_mag-z_mag",
-            #               "z_mag","u_mag-g_mag-(g_mag-r_mag)","g_mag-r_mag-(r_mag-i_mag)",
-            #               "r_mag-i_mag-(i_mag-z_mag)")
-            expressions = ("u-g","u-r","u-i","u-z","g-r","g-i",
-                           "g-z","r-i","r-z","i-z",
-                           "z","u-g-(g-r)","g-r-(r-i)",
-                           "r-i-(i-z)")
+            if self.opt['sizes'] == True:
+                expressions = ("u-g","u-r","u-i","u-z","g-r","g-i",
+                               "g-z","r-i","r-z","i-z",
+                               "z","u-g-(g-r)","g-r-(r-i)",
+                               "r-i-(i-z)","mcal_T")
+            else: 
+                expressions = ("u-g","u-r","u-i","u-z","g-r","g-i",
+                               "g-z","r-i","r-z","i-z",
+                               "z","u-g-(g-r)","g-r-(r-i)",
+                               "r-i-(i-z)")
         elif self.bands == 'ugrizy':
             #ugrizy bands
-            #expressions = ("u_mag-g_mag","u_mag-r_mag","u_mag-i_mag","u_mag-z_mag","u_mag-y_mag","g_mag-r_mag","g_mag-i_mag",
-            #               "g_mag-z_mag","g_mag-y_mag","r_mag-i_mag","r_mag-z_mag","r_mag-y_mag","i_mag-z_mag","i_mag-y_mag",
-            #               "z_mag-y_mag","z_mag","u_mag-g_mag-(g_mag-r_mag)","g_mag-r_mag-(r_mag-i_mag)",
-            #               "r_mag-i_mag-(i_mag-z_mag)","i_mag-z_mag-(z_mag-y_mag)")
-            expressions = ("u-g","u-r","u-i","u-z","u-y","g-r","g-i",
-                           "g-z","g-y","r-i","r-z","r-y","i-z","i-y",
-                           "z-y","z","u-g-(g-r)","g-r-(r-i)",
-                           "r-i-(i-z)","i-z-(z-y)")
+            if self.opt['sizes'] == True:
+                expressions = ("u-g","u-r","u-i","u-z","u-y","g-r","g-i",
+                               "g-z","g-y","r-i","r-z","r-y","i-z","i-y",
+                               "z-y","z","u-g-(g-r)","g-r-(r-i)",
+                               "r-i-(i-z)","i-z-(z-y)","mcal_T")
+            else: 
+                expressions = ("u-g","u-r","u-i","u-z","u-y","g-r","g-i",
+                               "g-z","g-y","r-i","r-z","r-y","i-z","i-y",
+                               "z-y","z","u-g-(g-r)","g-r-(r-i)",
+                               "r-i-(i-z)","i-z-(z-y)")
 
-        print("Preparing the data")
-        training_data = pd.DataFrame.from_dict(training_data)
-        #Add the redshift variable to the train data
-        print("Adding redshift info to training data")
-        training_data['redshift_true'] = training_z
-
-        if sparse_frac < 1:
-            print("Sparse Sampling the training data")
-            cut = np.random.uniform(0, 1, training_z.size) < sparse_frac
-            training_data = training_data[cut]
-            training_z = training_z[cut]
-
-        #Construct the training data frame (just a python-to-R data conversion)
-        print("Converting the data to R format")
-        with localconverter(ro.default_converter + pandas2ri.converter):
-              #train_df = ro.conversion.py2rpy(train[['u_mag','g_mag','r_mag','i_mag','z_mag','y_mag']])
-              train_df = ro.conversion.py2rpy(training_data)
-
-        #Construct or Load the SOM 
-        som_outname = f"SOM_{som_dim}_{self.bands}.pkl"
-        if not os.path.exists(som_outname):
-            print("Training the SOM using R kohtrain")
-            #Train the SOM using R kohtrain
-            som=kohonen.kohtrain(data=train_df,som_dim=IntVector(som_dim),max_na_frac=0,data_threshold=FloatVector(data_threshold),
-                        n_cores=num_threads,train_expr=StrVector(expressions),train_sparse=False,sparse_frac=sparse_frac)
-            #Output the SOM 
-            #base.save(som,file=som_outname)
-            with open(som_outname, 'wb') as f:
-                pickle.dump(som, f)
+        #Define the output SOM name
+        if self.opt['sizes'] == True: 
+            som_outname = f"SOM_{som_dim}_{self.bands}_withsize.pkl"
         else:
-            print("Loading the pretrained SOM")
-            with open(som_outname, 'rb') as f:
+            som_outname = f"SOM_{som_dim}_{self.bands}.pkl"
+
+        #If Testing, load the pretrained SOM and matching training catalogue
+        if self.opt['testing'] == True:
+            #Use the default training set 
+            with open(f"test_{som_outname}", 'rb') as f:
                 som = pickle.load(f)
-            som.rx2['unit.classif']=FloatVector([])
+                print(base.length(som.rx2['unit.classif']))
+            with open("training_testcat.pkl", 'rb') as f:
+                train_df = pickle.load(f)
+                print(utils.str(train_df))
+        else: 
+            #Use the training set provided
+            print("Preparing the data")
+            training_data = pd.DataFrame.from_dict(training_data)
+            #Add the redshift variable to the train data
+            print("Adding redshift info to training data")
+            training_data['redshift_true'] = training_z
+
+            if sparse_frac < 1:
+                print("Sparse Sampling the training data")
+                cut = np.random.uniform(0, 1, training_z.size) < sparse_frac
+                training_data = training_data[cut]
+                training_z = training_z[cut]
+
+            #Construct the training data frame (just a python-to-R data conversion)
+            print("Converting the data to R format")
+            with localconverter(ro.default_converter + pandas2ri.converter):
+                  train_df = ro.conversion.py2rpy(training_data)
+
+            #with open("training_testcat.pkl", 'wb') as f:
+            #    pickle.dump(train_df, f)
+
+            #Construct or Load the SOM 
+            if not os.path.exists(som_outname):
+                print("Training the SOM using R kohtrain")
+                #Train the SOM using R kohtrain
+                som=kohonen.kohtrain(data=train_df,som_dim=IntVector(som_dim),max_na_frac=0,data_threshold=FloatVector(data_threshold),
+                            n_cores=num_threads,train_expr=StrVector(expressions),train_sparse=False,sparse_frac=sparse_frac)
+                print(base.length(som.rx2['unit.classif']))
+                #Output the SOM 
+                #base.save(som,file=som_outname)
+                #with open(f"test_{som_outname}", 'wb') as f:
+                #    pickle.dump(som, f)
+                with open(som_outname, 'wb') as f:
+                    pickle.dump(som, f)
+            else:
+                print("Loading the pretrained SOM")
+                with open(som_outname, 'rb') as f:
+                    som = pickle.load(f)
+                som.rx2['unit.classif']=FloatVector([])
 
         #If grouping by redshift, construct the cell redshift statistics
         if group_type == 'redshift' or plots == True:
             print("Constructing cell-based redshift properties")
             #Construct the Nz properties per SOM cell
             cell_prop=kohonen.generate_kohgroup_property(som=som,data=train_df,
-                        expression=StrVector(property_expressions),expr_label=StrVector(property_labels))
+                        expression=property_expressions,expr_label=property_labels,returnMatrix=True)
+            som=cell_prop.rx2('som')
+            som.rx2['clust.classif']=FloatVector([])
             print("Constructing redshift-based hierarchical cluster tree")
             #Cluster the SOM cells into num_groups groups
-            props = kohonen.kohwhiten(cell_prop.rx2['property'],train_expr=base.colnames(cell_prop.rx2['property']),
-                    data_missing='NA',data_threshold=FloatVector([0,12]))
-            props = props.rx2("data.white")
-            props.rx[base.which(base.is_na(props))] = -1
+            if whiten==True:
+                props = kohonen.kohwhiten(cell_prop.rx2['property'],train_expr=base.colnames(cell_prop.rx2['property']),
+                        data_missing='NA',data_threshold=FloatVector([0,12]))
+                props = props.rx2("data.white")
+                props.rx[base.which(base.is_na(props))] = -10
+            else:
+                props = cell_prop.rx2['property']
+                props.rx[base.which(base.is_na(props))] = -1
+
             print(base.summary(props))
+        
+        if group_type=='redshift':
+            print("Groups will be constructed by redshift property")
             hclust=stats.hclust(stats.dist(props))
             cell_group=stats.cutree(hclust,k=num_groups)
-
             #Assign the cell groups to the SOM structure
             som.rx2['hclust']=hclust
             som.rx2['cell_clust']=cell_group
+        else:
+            print("Groups will be constructed by colour property")
 
         #Construct the Nz properties per SOM group
         print("Constructing group-based redshift properties")
         group_prop=kohonen.generate_kohgroup_property(som=som,data=train_df,
-            expression=StrVector(property_expressions),expr_label=StrVector(property_labels),
-            n_cluster_bins=num_groups)
+            expression=property_expressions,expr_label=property_labels,
+            n_cluster_bins=num_groups,returnMatrix=True)
 
         #extract the training som (just for convenience)
         train_som = group_prop.rx2('som')
 
-        if plots == True: 
+        if plots == True and redshift_propset==1: 
             #Make the diagnostic plots
             props = group_prop.rx2('property')
             cprops = cell_prop.rx2('property')
@@ -393,7 +454,7 @@ class ComplexSOM(Tomographer):
         #Generate the validation associations/groups
         group_prop=kohonen.generate_kohgroup_property(som=self.train_som,data=data_df,
             expression="nrow(data)",expr_label="N",
-            n_cluster_bins=num_groups,n_cores=self.opt['num_threads'])
+            n_cluster_bins=num_groups,n_cores=self.opt['num_threads'],returnMatrix=True)
 
         #extract the validation som (just for convenience)
         valid_som = group_prop.rx2('som')
