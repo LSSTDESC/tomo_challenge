@@ -392,7 +392,7 @@ class ComplexSOM(Tomographer):
         # Initial edge guess
         nz_tot = np.sum(nzs, axis=0)
         cumulative_fraction = np.cumsum(nz_tot) / np.sum(nz_tot)
-        cumul_f = interp1d(zz, cumulative_fraction, bounds_error=False,
+        cumul_f = interp1d(z_cen, cumulative_fraction, bounds_error=False,
                            fill_value=(0, 1))
         edges_0 = np.array([brentq(lambda z : cumul_f(z) - q, 0, 2)
                             for q in (np.arange(o.n_bins-1)+1.)/o.n_bins])
