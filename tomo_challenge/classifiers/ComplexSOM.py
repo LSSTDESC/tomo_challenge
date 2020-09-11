@@ -52,7 +52,8 @@ class ComplexSOM(Tomographer):
     # valid parameter -- see below
     valid_options = ['bins','som_dim','num_groups','num_threads',
             'group_type','data_threshold','sparse_frac','plots',
-            'plot_dir','metric','use_inbin','use_outbin','testing']
+            'plot_dir','metric','use_inbin','use_outbin','testing',
+            'whiten','redshift_propset']
     # this settings means arrays will be sent to train and apply instead
     # of dictionaries
     wants_arrays = False
@@ -117,6 +118,10 @@ class ComplexSOM(Tomographer):
         use_outbin = self.opt['use_outbin']
         #Plots
         plots = self.opt['plots']
+        #redshift properties to use in grouping
+        redshift_propset = self.opt['redshift_propset']
+        #Whiten the redshift data when grouping?
+        whiten = self.opt['whiten']
         #Plot Output Directory
         plot_dir = self.opt['plot_dir']
         #Group Type
@@ -131,10 +136,24 @@ class ComplexSOM(Tomographer):
                 'use_p_outbin': use_outbin}
 
         #Define the redshift summary statistics (used for making groups in the 'redshift' case
-        property_labels = ("mean_z_true","med_z_true","sd_z_true","mad_z_true","iqr_z_true")
-        property_expressions = ("mean(data$redshift_true)","median(data$redshift_true)","sd(data$redshift_true)",
-                                "mad(data$redshift_true)",
-                                "diff(quantile(data$redshift_true,probs=pnorm(c(-2,2))))")
+        if redshift_propset==1:
+            property_labels = StrVector(("mean_z_true","med_z_true","sd_z_true","mad_z_true","iqr_z_true"))
+            property_expressions = StrVector(("mean(data$redshift_true)","median(data$redshift_true)","sd(data$redshift_true)",
+                    "mad(data$redshift_true)",
+                    "diff(quantile(data$redshift_true,probs=pnorm(c(-2,2))))"))
+        elif redshift_propset==2: 
+            property_labels = StrVector(("mean_z_true","med_z_true","mad_z_true"))
+            property_expressions = StrVector(("mean(data$redshift_true)","median(data$redshift_true)",
+                    "mad(data$redshift_true)"))
+        elif redshift_propset==3: 
+            property_labels = StrVector(("quan_05","quan_16","quan_50","quan_84","quan_95"))
+            property_expressions = ("quantile(data$redshift_true,probs=c(5,16,50,84,95)/100)")
+        else:
+            property_labels = StrVector(("mean_z_true","med_z_true","sd_z_true","mad_z_true","iqr_z_true"))
+            property_expressions = StrVector(("mean(data$redshift_true)","median(data$redshift_true)","sd(data$redshift_true)",
+                    "mad(data$redshift_true)",
+                    "diff(quantile(data$redshift_true,probs=pnorm(c(-2,2))))"))
+        
         #Define the SOM variables
         if self.bands == 'riz':
             #riz bands
@@ -192,7 +211,6 @@ class ComplexSOM(Tomographer):
                                "g-z","g-y","r-i","r-z","r-y","i-z","i-y",
                                "z-y","z","u-g-(g-r)","g-r-(r-i)",
                                "r-i-(i-z)","i-z-(z-y)")
-
 
         #Define the output SOM name
         if self.opt['sizes'] == True: 
@@ -255,15 +273,20 @@ class ComplexSOM(Tomographer):
             print("Constructing cell-based redshift properties")
             #Construct the Nz properties per SOM cell
             cell_prop=kohonen.generate_kohgroup_property(som=som,data=train_df,
-                        expression=StrVector(property_expressions),expr_label=StrVector(property_labels),returnMatrix=True)
+                        expression=property_expressions,expr_label=property_labels,returnMatrix=True)
             som=cell_prop.rx2('som')
             som.rx2['clust.classif']=FloatVector([])
             print("Constructing redshift-based hierarchical cluster tree")
             #Cluster the SOM cells into num_groups groups
-            props = kohonen.kohwhiten(cell_prop.rx2['property'],train_expr=base.colnames(cell_prop.rx2['property']),
-                    data_missing='NA',data_threshold=FloatVector([0,12]))
-            props = props.rx2("data.white")
-            props.rx[base.which(base.is_na(props))] = -1
+            if whiten==True:
+                props = kohonen.kohwhiten(cell_prop.rx2['property'],train_expr=base.colnames(cell_prop.rx2['property']),
+                        data_missing='NA',data_threshold=FloatVector([0,12]))
+                props = props.rx2("data.white")
+                props.rx[base.which(base.is_na(props))] = -10
+            else:
+                props = cell_prop.rx2['property']
+                props.rx[base.which(base.is_na(props))] = -1
+
             print(base.summary(props))
         
         if group_type=='redshift':
@@ -279,13 +302,13 @@ class ComplexSOM(Tomographer):
         #Construct the Nz properties per SOM group
         print("Constructing group-based redshift properties")
         group_prop=kohonen.generate_kohgroup_property(som=som,data=train_df,
-            expression=StrVector(property_expressions),expr_label=StrVector(property_labels),
+            expression=property_expressions,expr_label=property_labels,
             n_cluster_bins=num_groups,returnMatrix=True)
 
         #extract the training som (just for convenience)
         train_som = group_prop.rx2('som')
 
-        if plots == True: 
+        if plots == True and redshift_propset==1: 
             #Make the diagnostic plots
             props = group_prop.rx2('property')
             cprops = cell_prop.rx2('property')
