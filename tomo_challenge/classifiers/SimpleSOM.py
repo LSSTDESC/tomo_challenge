@@ -14,6 +14,8 @@ See Classifier Documentation below.
 
 from .base import Tomographer
 import numpy as np
+import pickle
+import os
 import rpy2
 import rpy2.robjects as ro
 import rpy2.robjects.packages as rpack
@@ -114,53 +116,34 @@ class SimpleSOM(Tomographer):
             group_type = 'redshift'
 
         #Define the redshift summary statistics (used for making groups in the 'redshift' case
-        property_labels = ("mean_z_true","med_z_true","sd_z_true","mad_z_true","iqr_z_true")
-        property_expressions = ("mean(data$redshift_true)","median(data$redshift_true)","sd(data$redshift_true)",
-                                "mad(data$redshift_true)",
-                                "diff(quantile(data$redshift_true,probs=pnorm(c(-2,2))))")
+        property_labels = StrVector(("mean_z_true","med_z_true","mad_z_true"))
+        property_expressions = StrVector(("mean(data$redshift_true)","median(data$redshift_true)",
+                "mad(data$redshift_true)"))
         #Define the SOM variables
         if self.bands == 'riz':
             #riz bands
-            #expressions = ("r_mag-i_mag","r_mag-z_mag","i_mag-z_mag",
-            #               "z_mag","r_mag-i_mag-(i_mag-z_mag)")
             expressions = ("r-i","r-z","i-z",
                            "z","r-i-(i-z)")
         elif self.bands == 'griz':
             #griz bands
-            #expressions = ("g_mag-r_mag","g_mag-i_mag",
-            #               "g_mag-z_mag","r_mag-i_mag","r_mag-z_mag","i_mag-z_mag",
-            #               "z_mag","g_mag-r_mag-(r_mag-i_mag)",
-            #               "r_mag-i_mag-(i_mag-z_mag)")
             expressions = ("g-r","g-i",
                            "g-z","r-i","r-z","i-z",
                            "z","g-r-(r-i)",
                            "r-i-(i-z)")
         elif self.bands == 'grizy':
             #grizy bands
-            #expressions = ("g_mag-r_mag","g_mag-i_mag",
-            #               "g_mag-z_mag","g_mag-y_mag","r_mag-i_mag","r_mag-z_mag","r_mag-y_mag","i_mag-z_mag","i_mag-y_mag",
-            #               "z_mag-y_mag","z_mag","g_mag-r_mag-(r_mag-i_mag)",
-            #               "r_mag-i_mag-(i_mag-z_mag)","i_mag-z_mag-(z_mag-y_mag)")
             expressions = ("g-r","g-i",
                            "g-z","g-y","r-i","r-z","r-y","i-z","i-y",
                            "z-y","z","g-r-(r-i)",
                            "r-i-(i-z)","i-z-(z-y)")
         elif self.bands == 'ugriz':
             #ugrizy bands
-            #expressions = ("u_mag-g_mag","u_mag-r_mag","u_mag-i_mag","u_mag-z_mag","g_mag-r_mag","g_mag-i_mag",
-            #               "g_mag-z_mag","r_mag-i_mag","r_mag-z_mag","i_mag-z_mag",
-            #               "z_mag","u_mag-g_mag-(g_mag-r_mag)","g_mag-r_mag-(r_mag-i_mag)",
-            #               "r_mag-i_mag-(i_mag-z_mag)")
             expressions = ("u-g","u-r","u-i","u-z","g-r","g-i",
                            "g-z","r-i","r-z","i-z",
                            "z","u-g-(g-r)","g-r-(r-i)",
                            "r-i-(i-z)")
         elif self.bands == 'ugrizy':
             #ugrizy bands
-            #expressions = ("u_mag-g_mag","u_mag-r_mag","u_mag-i_mag","u_mag-z_mag","u_mag-y_mag","g_mag-r_mag","g_mag-i_mag",
-            #               "g_mag-z_mag","g_mag-y_mag","r_mag-i_mag","r_mag-z_mag","r_mag-y_mag","i_mag-z_mag","i_mag-y_mag",
-            #               "z_mag-y_mag","z_mag","u_mag-g_mag-(g_mag-r_mag)","g_mag-r_mag-(r_mag-i_mag)",
-            #               "r_mag-i_mag-(i_mag-z_mag)","i_mag-z_mag-(z_mag-y_mag)")
             expressions = ("u-g","u-r","u-i","u-z","u-y","g-r","g-i",
                            "g-z","g-y","r-i","r-z","r-y","i-z","i-y",
                            "z-y","z","u-g-(g-r)","g-r-(r-i)",
@@ -210,14 +193,15 @@ class SimpleSOM(Tomographer):
             print("Constructing cell-based redshift properties")
             #Construct the Nz properties per SOM cell
             cell_prop=kohonen.generate_kohgroup_property(som=som,data=train_df,
-                        expression=StrVector(property_expressions),expr_label=StrVector(property_labels))
-            print("Constructing redshift-based hierarchical cluster tree")
-            #Cluster the SOM cells into num_groups groups
+                        expression=property_expressions,expr_label=property_labels)
             props = cell_prop.rx2['property']
             props.rx[base.which(base.is_na(props))] = -1
+
+        if group_type == 'redshift':
+            print("Constructing redshift-based hierarchical cluster tree")
+            #Cluster the SOM cells into num_groups groups
             hclust=stats.hclust(stats.dist(props))
             cell_group=stats.cutree(hclust,k=num_groups)
-
             #Assign the cell groups to the SOM structure
             som.rx2['hclust']=hclust
             som.rx2['cell_clust']=cell_group
@@ -225,7 +209,7 @@ class SimpleSOM(Tomographer):
         #Construct the Nz properties per SOM group
         print("Constructing group-based redshift properties")
         group_prop=kohonen.generate_kohgroup_property(som=som,data=train_df,
-            expression=StrVector(property_expressions),expr_label=StrVector(property_labels),
+            expression=property_expressions,expr_label=property_labels,
             n_cluster_bins=num_groups)
 
         #extract the training som (just for convenience)
@@ -255,18 +239,10 @@ class SimpleSOM(Tomographer):
             gr.plot(train_som,property=props.rx(True,base.which(props.colnames.ro=='mean_z_true')),ncolors=1e3,zlog=False,
                     type='property',shape='straight',heatkeywidth=som_dim[0]/20,main='Group mean redshift',zlim=FloatVector([0,1.8]))
             #redshift std
-            gr.plot(train_som,property=props.rx(True,base.which(props.colnames.ro=='sd_z_true')),ncolors=1e3,zlog=False,
+            gr.plot(train_som,property=props.rx(True,base.which(props.colnames.ro=='mad_z_true')),ncolors=1e3,zlog=False,
                     type='property',shape='straight',heatkeywidth=som_dim[0]/20,main='Group redshift stdev',zlim=FloatVector([0,0.2]))
-            #2sigma redshift IQR
-            gr.plot(train_som,property=props.rx(True,base.which(props.colnames.ro=='iqr_z_true')),ncolors=1e3,zlog=False,
-                    type='property',shape='straight',heatkeywidth=som_dim[0]/20,main='group 2sigma IQR',zlim=FloatVector([0,0.4]))
-            #N group
-            gr.plot(train_som,property=props.rx(True,base.which(props.colnames.ro=='N')),ncolors=1e3,zlog=False,
-                    type='property',shape='straight',heatkeywidth=som_dim[0]/20,main='N group')
-
             #Close the plot device 
             dev.dev_off()
-
 
 
         print("Outputting trained SOM and redshift ordering of SOM groups")
@@ -305,7 +281,6 @@ class SimpleSOM(Tomographer):
         #Construct the validation data frame (just a python-to-R data conversion)
         print("Converting the data to R format")
         with localconverter(ro.default_converter + pandas2ri.converter):
-              #train_df = ro.conversion.py2rpy(train[['u_mag','g_mag','r_mag','i_mag','z_mag','y_mag']])
               data_df = ro.conversion.py2rpy(data)
 
         print("Parsing the validation data into the SOM groupings")
@@ -335,7 +310,6 @@ class SimpleSOM(Tomographer):
         print("Output source tomographic bin assignments")
         valid_bin = base.unsplit(group_bins,FactorVector(valid_som.rx2['clust.classif'],
             levels=base.seq(self.opt['num_groups'])),drop=False)
-        #valid_bin = valid_som.rx2['clust.classif']
         valid_bin = np.array(valid_bin)-1
 
         return valid_bin

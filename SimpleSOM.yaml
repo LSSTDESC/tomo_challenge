@@ -15,9 +15,41 @@ run:
       som_dim: [101,101]
       num_groups: 10000
       num_threads: 32
+      group_type: 'colour'
+      data_threshold: [0,30]
+      sparse_frac: 1.00
+      plots: True 
+      plot_dir: 'plots' 
+      # These special settings decide whether the
+      # color and error colums are passed to the classifier
+      # as well as the magnitudes
+      colors: False
+      errors: False
+    run_5:
+      # These settings are sent to the classifier
+      bins: 5
+      som_dim: [101,101]
+      num_groups: 10000
+      num_threads: 32
       group_type: 'redshift'
       data_threshold: [0,30]
-      sparse_frac: 0.25
+      sparse_frac: 1.00
+      plots: True 
+      plot_dir: 'plots' 
+      # These special settings decide whether the
+      # color and error colums are passed to the classifier
+      # as well as the magnitudes
+      colors: False
+      errors: False
+    run_10:
+      # These settings are sent to the classifier
+      bins: 10
+      som_dim: [101,101]
+      num_groups: 10000
+      num_threads: 32
+      group_type: 'colour'
+      data_threshold: [0,30]
+      sparse_frac: 1.00
       plots: True 
       plot_dir: 'plots' 
       # These special settings decide whether the
@@ -33,7 +65,7 @@ run:
       num_threads: 32
       group_type: 'redshift'
       data_threshold: [0,30]
-      sparse_frac: 0.25
+      sparse_frac: 1.00
       plots: True 
       plot_dir: 'plots' 
       # These special settings decide whether the
