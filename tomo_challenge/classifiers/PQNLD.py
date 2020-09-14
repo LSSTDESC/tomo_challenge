@@ -19,7 +19,7 @@ import numpy as np
 import rpy2
 import rpy2.robjects as ro
 import rpy2.robjects.packages as rpack
-from rpy2.robjects.vectors import StrVector, IntVector, DataFrame, FloatVector, FactorVector
+from rpy2.robjects.vectors import StrVector, IntVector, DataFrame, FloatVector, FactorVector, BoolVector
 import pandas as pd
 from rpy2.robjects import pandas2ri
 from rpy2.robjects.conversion import localconverter
@@ -117,15 +117,18 @@ class PQNLD(Tomographer):
             group_type = 'redshift'
 
         #Define the redshift summary statistics (used for making groups in the 'redshift' case
-        property_labels = ("mean_z_true","med_z_true","sd_z_true","mad_z_true","iqr_z_true","mean_ZB","median_ZB")
-        property_expressions = ("mean(data$redshift_true)","median(data$redshift_true)","sd(data$redshift_true)",
-                                "mad(data$redshift_true)",
-                                "diff(quantile(data$redshift_true,probs=pnorm(c(-2,2))))","mean(data$Z_B)","median(data$Z_B)")
+        ZB_property_labels = ("mean_ZB","mad_ZB")
+        ZB_property_expressions = ("mean(data$Z_B)",
+                                "mad(data$Z_B)")
+        property_labels = ("mean_z_true","med_z_true","mad_z_true")
+        property_expressions = ("mean(data$redshift_true)",
+                                "median(data$redshift_true)",
+                                "mad(data$redshift_true)")
         #Define the SOM variables
         if self.bands == 'riz':
             #riz bands
             expressions = ("r-i","r-z","i-z",
-                           "z","r-i-(i-z)","Z_B")
+                           "z","r-i-(i-z)")
             # Filter columns AB/Vega zp_error zp_offset
             columns = pd.DataFrame(np.transpose(np.array([
                                    ["r_SDSS","i_SDSS","z_SDSS"],
@@ -145,7 +148,7 @@ class PQNLD(Tomographer):
             expressions = ("g-r","g-i",
                            "g-z","r-i","r-z","i-z",
                            "z","g-r-(r-i)",
-                           "r-i-(i-z)","Z_B")
+                           "r-i-(i-z)")
             # Filter columns AB/Vega zp_error zp_offset
             columns = pd.DataFrame(["g_SDSS","r_SDSS","i_SDSS","z_SDSS"],
                                    ["1,2","3,4","5,6","7,8"],
@@ -163,7 +166,7 @@ class PQNLD(Tomographer):
             expressions = ("g-r","g-i",
                            "g-z","g-y","r-i","r-z","r-y","i-z","i-y",
                            "z-y","z","g-r-(r-i)",
-                           "r-i-(i-z)","i-z-(z-y)","Z_B")
+                           "r-i-(i-z)","i-z-(z-y)")
             # Filter columns AB/Vega zp_error zp_offset
             columns = pd.DataFrame(["g_SDSS","r_SDSS","i_SDSS","z_SDSS","y_SDSS"],
                                    ["1,2","3,4","5,6","7,8","9,10"],
@@ -181,7 +184,7 @@ class PQNLD(Tomographer):
             expressions = ("u-g","u-r","u-i","u-z","g-r","g-i",
                            "g-z","r-i","r-z","i-z",
                            "z","u-g-(g-r)","g-r-(r-i)",
-                           "r-i-(i-z)","Z_B")
+                           "r-i-(i-z)")
             # Filter columns AB/Vega zp_error zp_offset
             columns = pd.DataFrame(["u_SDSS","g_SDSS","r_SDSS","i_SDSS","z_SDSS"],
                                    ["1,2","3,4","5,6","7,8","9,10"],
@@ -199,7 +202,7 @@ class PQNLD(Tomographer):
             expressions = ("u-g","u-r","u-i","u-z","u-y","g-r","g-i",
                            "g-z","g-y","r-i","r-z","r-y","i-z","i-y",
                            "z-y","z","u-g-(g-r)","g-r-(r-i)",
-                           "r-i-(i-z)","i-z-(z-y)","Z_B")
+                           "r-i-(i-z)","i-z-(z-y)")
             # Filter columns AB/Vega zp_error zp_offset
             columns = pd.DataFrame(["u_SDSS","g_SDSS","r_SDSS","i_SDSS","z_SDSS","y_SDSS"],
                                    ["1,2","3,4","5,6","7,8","9,10","11,12"],
@@ -246,9 +249,19 @@ class PQNLD(Tomographer):
             os.system("echo 'os.environ[\"HOME\"]=\""+curdir+"\"' >>bpz_run.py")
             os.system("echo 'os.environ[\"BPZPATH\"]=\""+curdir+"/bpz-1.99.3/\"' >> bpz_run.py")
             os.system("echo 'os.environ[\"NUMERIX\"]=\"numpy\"' >> bpz_run.py")
-            argv = ["\'bpz.py\'", "\'../training_bpz.cat\'"]
+            argv = ["\'bpz.py\'", "\'../training_bpz.cat\'",
+                "-PRIOR", "NGVS", "-SPECTRA", "CWWSB_capak.list",
+                "-ZMIN", "0.001", "-ZMAX", "7.000",
+                "-INTERP", "10", "-NEW_AB", "yes",
+                "-ODDS", "0.68", "-MIN_RMS", "0.0", "-INTERACTIVE", "no",
+                "-PROBS_LITE", "no",
+                "-VERBOSE", "yes",
+                "-CHECK", "no"]
             os.system("echo 'sys.argv=[\""+"\",\"".join(argv)+"\"]' >> bpz_run.py")
             os.system("echo 'exec(open(\"bpz.py\").read())' >> bpz_run.py")
+            os.system("cp ../BPZ_SEDs/prior_NGVS.py .")
+            os.system("cp ../BPZ_SEDs/*.sed SED/")
+            os.system("cp ../BPZ_SEDs/CWWSB_capak.list SED/")
             res = os.system("python2 bpz_run.py")
             os.chdir('../')
 
@@ -266,13 +279,8 @@ class PQNLD(Tomographer):
         with localconverter(ro.default_converter + pandas2ri.converter):
               train_df = ro.conversion.py2rpy(training_data)
 
-        #print("Training the SOM using R kohtrain")
-        ##Train the SOM using R kohtrain
-        #som=kohonen.kohtrain(data=train_df,som_dim=IntVector(som_dim),max_na_frac=0,data_threshold=FloatVector(data_threshold),
-        #            n_cores=num_threads,train_expr=StrVector(expressions),train_sparse=False,sparse_frac=sparse_frac)
-
         #Construct or Load the SOM 
-        som_outname = f"SOM_BPZ_{som_dim}_{self.bands}.pkl"
+        som_outname = f"SOM_{som_dim}_{self.bands}.pkl"
         if not os.path.exists(som_outname):
             print("Training the SOM using R kohtrain")
             #Train the SOM using R kohtrain
@@ -289,21 +297,63 @@ class PQNLD(Tomographer):
             som.rx2['unit.classif']=FloatVector([])
 
         #If grouping by redshift, construct the cell redshift statistics
-        if group_type == 'redshift' or plots == True:
-            print("Constructing cell-based redshift properties")
-            #Construct the Nz properties per SOM cell
-            cell_prop=kohonen.generate_kohgroup_property(som=som,data=train_df,
-                        expression=StrVector(property_expressions),expr_label=StrVector(property_labels),returnMatrix=True)
-            print("Constructing redshift-based hierarchical cluster tree")
-            #Cluster the SOM cells into num_groups groups
-            props = cell_prop.rx2['property']
-            try:
-                hclust=stats.hclust(stats.dist(props))
-            except: 
-                props.rx[base.which(base.is_na(props))] = -1
-                hclust=stats.hclust(stats.dist(props))
-            cell_group=stats.cutree(hclust,k=num_groups)
+        print("Constructing cell-based redshift properties")
+        #Construct the Nz properties per SOM cell
+        cell_prop=kohonen.generate_kohgroup_property(som=som,data=train_df,
+                    expression=StrVector(property_expressions),expr_label=StrVector(property_labels),returnMatrix=True)
+        som = cell_prop.rx2('som')
+        cell_prop_ZB=kohonen.generate_kohgroup_property(som=cell_som,data=train_df,
+                    expression=StrVector(ZB_property_expressions),expr_label=StrVector(ZB_property_labels),returnMatrix=True)
+        cell_prop_N=kohonen.generate_kohgroup_property(som=cell_som,data=train_df,
+                    expression="nrow(data)",expr_label="N",returnMatrix=True)
+        print("Generate cumulative source counts a.f.o. cell mean z")
+        #Extract the mean-z per group
+        cell_z = cell_prop.rx2('property').rx(True,
+                base.which(cell_prop.rx2('property').colnames.ro=='mean_z_true'))
+        #Order the groups by mean z
+        z_order = base.order(cell_z)
+        zcumsum=base.cumsum(cell_prop_N.rx2('property').rx(z_order))
+        print(base.summary(cell_prop_N.rx2('property')))
+        print(base.summary(z_order))
+        print("Flagging problematic cells in at most 20 equal N bins of redshift")
+        p = np.linspace(0, 100, 21)
+        n_edges = np.percentile(zcumsum, p)
 
+        print(n_edges)
+        # Now put the groups into redshift bins.
+        cell_bins = FloatVector(base.cut(FloatVector(zcumsum),base.unique(FloatVector(n_edges)),
+            include=True)).rx(base.order(z_order))
+        source_bin = base.unsplit(cell_bins,FactorVector(cell_som.rx2['unit.classif'],
+            levels=base.seq(som_dim[0]*som_dim[1])),drop=False)
+        badcell = BoolVector(base.rep(False,som_dim[0]*som_dim[1]))
+        for zbin in range(n_bin+1):
+            zs = train_df.rx2['redshift_true']
+            zs = zs.rx(base.which(source_bin.ro==zbin))
+            zb = train_df.rx2['Z_B']
+            zb = zb.rx(base.which(source_bin.ro==zbin))
+            bias = zs.ro - zb
+            meanbias = base.mean(bias)   
+            madbias = stats.mad(bias)
+            zs = cell_prop.rx2('property').rx(True,
+                base.which(cell_prop.rx2('property').colnames.ro=='mean_z_true'))
+            zb = cell_prop.rx2('property').rx(True,
+                base.which(cell_prop_ZB.rx2('property').colnames.ro=='mean_ZB'))
+            cellbias = zs.ro - zb
+            cellstat = base.abs(cellbias.ro - meanbias)
+            cellstat = cellstat.ro/madbias
+            celllog = BoolVector(cellstat.ro>=5.)
+            badcell.rx[celllog] = True
+
+        print("Constructing redshift-based hierarchical cluster tree")
+        #Cluster the SOM cells into num_groups groups
+        props = cell_prop.rx2('property')
+        props.rx[base.which(base.is_na(props))] = -1
+        props.rx[badcell,True] = -1 
+        zs = cell_prop.rx2('property').rx(True,
+            base.which(cell_prop.rx2('property').colnames.ro=='mean_z_true'))
+        if group_type == 'redshift':
+            hclust=stats.hclust(stats.dist(props))
+            cell_group=stats.cutree(hclust,k=num_groups)
             #Assign the cell groups to the SOM structure
             som.rx2['hclust']=hclust
             som.rx2['cell_clust']=cell_group
@@ -341,14 +391,14 @@ class PQNLD(Tomographer):
             gr.plot(train_som,property=props.rx(True,base.which(props.colnames.ro=='mean_z_true')),ncolors=1e3,zlog=False,
                     type='property',shape='straight',heatkeywidth=som_dim[0]/20,main='Group mean redshift',zlim=FloatVector([0,1.8]))
             #redshift std
-            gr.plot(train_som,property=props.rx(True,base.which(props.colnames.ro=='sd_z_true')),ncolors=1e3,zlog=False,
+            gr.plot(train_som,property=props.rx(True,base.which(props.colnames.ro=='mad_z_true')),ncolors=1e3,zlog=False,
                     type='property',shape='straight',heatkeywidth=som_dim[0]/20,main='Group redshift stdev',zlim=FloatVector([0,0.2]))
-            #2sigma redshift IQR
-            gr.plot(train_som,property=props.rx(True,base.which(props.colnames.ro=='iqr_z_true')),ncolors=1e3,zlog=False,
-                    type='property',shape='straight',heatkeywidth=som_dim[0]/20,main='group 2sigma IQR',zlim=FloatVector([0,0.4]))
-            #N group
-            gr.plot(train_som,property=props.rx(True,base.which(props.colnames.ro=='N')),ncolors=1e3,zlog=False,
-                    type='property',shape='straight',heatkeywidth=som_dim[0]/20,main='N group')
+            ##2sigma redshift IQR
+            #gr.plot(train_som,property=props.rx(True,base.which(props.colnames.ro=='iqr_z_true')),ncolors=1e3,zlog=False,
+            #        type='property',shape='straight',heatkeywidth=som_dim[0]/20,main='group 2sigma IQR',zlim=FloatVector([0,0.4]))
+            ##N group
+            #gr.plot(train_som,property=props.rx(True,base.which(props.colnames.ro=='N')),ncolors=1e3,zlog=False,
+            #        type='property',shape='straight',heatkeywidth=som_dim[0]/20,main='N group')
 
             #Close the plot device 
             dev.dev_off()
@@ -384,7 +434,7 @@ class PQNLD(Tomographer):
         if self.bands == 'riz':
             #riz bands
             expressions = ("r-i","r-z","i-z",
-                           "z","r-i-(i-z)","Z_B")
+                           "z","r-i-(i-z)")
             # Filter columns AB/Vega zp_error zp_offset
             columns = pd.DataFrame(np.transpose(np.array([
                                    ["r_SDSS","i_SDSS","z_SDSS"],
@@ -404,7 +454,7 @@ class PQNLD(Tomographer):
             expressions = ("g-r","g-i",
                            "g-z","r-i","r-z","i-z",
                            "z","g-r-(r-i)",
-                           "r-i-(i-z)","Z_B")
+                           "r-i-(i-z)")
             # Filter columns AB/Vega zp_error zp_offset
             columns = pd.DataFrame(["g_SDSS","r_SDSS","i_SDSS","z_SDSS"],
                                    ["1,2","3,4","5,6","7,8"],
@@ -422,7 +472,7 @@ class PQNLD(Tomographer):
             expressions = ("g-r","g-i",
                            "g-z","g-y","r-i","r-z","r-y","i-z","i-y",
                            "z-y","z","g-r-(r-i)",
-                           "r-i-(i-z)","i-z-(z-y)","Z_B")
+                           "r-i-(i-z)","i-z-(z-y)")
             # Filter columns AB/Vega zp_error zp_offset
             columns = pd.DataFrame(["g_SDSS","r_SDSS","i_SDSS","z_SDSS","y_SDSS"],
                                    ["1,2","3,4","5,6","7,8","9,10"],
@@ -440,7 +490,7 @@ class PQNLD(Tomographer):
             expressions = ("u-g","u-r","u-i","u-z","g-r","g-i",
                            "g-z","r-i","r-z","i-z",
                            "z","u-g-(g-r)","g-r-(r-i)",
-                           "r-i-(i-z)","Z_B")
+                           "r-i-(i-z)")
             # Filter columns AB/Vega zp_error zp_offset
             columns = pd.DataFrame(["u_SDSS","g_SDSS","r_SDSS","i_SDSS","z_SDSS"],
                                    ["1,2","3,4","5,6","7,8","9,10"],
@@ -458,7 +508,7 @@ class PQNLD(Tomographer):
             expressions = ("u-g","u-r","u-i","u-z","u-y","g-r","g-i",
                            "g-z","g-y","r-i","r-z","r-y","i-z","i-y",
                            "z-y","z","u-g-(g-r)","g-r-(r-i)",
-                           "r-i-(i-z)","i-z-(z-y)","Z_B")
+                           "r-i-(i-z)","i-z-(z-y)")
             # Filter columns AB/Vega zp_error zp_offset
             columns = pd.DataFrame(["u_SDSS","g_SDSS","r_SDSS","i_SDSS","z_SDSS","y_SDSS"],
                                    ["1,2","3,4","5,6","7,8","9,10","11,12"],
@@ -480,44 +530,51 @@ class PQNLD(Tomographer):
         data = pd.DataFrame.from_dict(data)
         print(data.shape)
 
-        print("Adding redshift info to training data")
-        if os.path.exists("validation_bpz.cat"):
-            print("Read the BPZ inputs")
-            cols = data.columns
-            shape=data.shape
-            data = pd.read_csv("validation_bpz.cat",sep=' ',header=None)
-            data.columns = cols
-        else:
-            print("Outputting the BPZ input cat")
-            np.savetxt(f"validation_bpz.cat",data,fmt='%3.5f')
+        #print("Adding redshift info to training data")
+        #if os.path.exists("validation_bpz.cat"):
+        #    print("Read the BPZ inputs")
+        #    cols = data.columns
+        #    shape=data.shape
+        #    data = pd.read_csv("validation_bpz.cat",sep=' ',header=None)
+        #    data.columns = cols
+        #else:
+        #    print("Outputting the BPZ input cat")
+        #    np.savetxt(f"validation_bpz.cat",data,fmt='%3.5f')
 
-        if not os.path.exists("validation_bpz.bpz"): 
-            print("Running BPZ on the validation data")
-            curdir=os.getcwd()
-            os.chdir('bpz-1.99.3/')
-            os.system("echo '#NEW' > bpz_run.py")
-            os.system("echo import sys >> bpz_run.py")
-            os.system("echo import os >> bpz_run.py")
-            os.system("echo 'os.environ[\"HOME\"]=\""+curdir+"\"' >>bpz_run.py")
-            os.system("echo 'os.environ[\"BPZPATH\"]=\""+curdir+"/bpz-1.99.3/\"' >> bpz_run.py")
-            os.system("echo 'os.environ[\"NUMERIX\"]=\"numpy\"' >> bpz_run.py")
-            argv = ["\'bpz.py\'", "\'../validation_bpz.cat\'"]
-            os.system("echo 'sys.argv=[\""+"\",\"".join(argv)+"\"]' >> bpz_run.py")
-            os.system("echo 'exec(open(\"bpz.py\").read())' >> bpz_run.py")
-            res = os.system("python2 bpz_run.py")
-            os.chdir('../')
+        #if not os.path.exists("validation_bpz.bpz"): 
+        #    print("Running BPZ on the validation data")
+        #    curdir=os.getcwd()
+        #    os.chdir('bpz-1.99.3/')
+        #    os.system("echo '#NEW' > bpz_run.py")
+        #    os.system("echo import sys >> bpz_run.py")
+        #    os.system("echo import os >> bpz_run.py")
+        #    os.system("echo 'os.environ[\"HOME\"]=\""+curdir+"\"' >>bpz_run.py")
+        #    os.system("echo 'os.environ[\"BPZPATH\"]=\""+curdir+"/bpz-1.99.3/\"' >> bpz_run.py")
+        #    os.system("echo 'os.environ[\"NUMERIX\"]=\"numpy\"' >> bpz_run.py")
+        #    argv = ["\'bpz.py\'", "\'../validation_bpz.cat\'",
+        #        "-PRIOR", "NGVS", "-SPECTRA", "CWWSB4.list",
+        #        "-ZMIN", "0.001", "-ZMAX", "7.000",
+        #        "-INTERP", "10", "-NEW_AB", "no",
+        #        "-ODDS", "0.68", "-MIN_RMS", "0.0", "-INTERACTIVE", "no",
+        #        "-PROBS_LITE", "no",
+        #        "-VERBOSE", "yes",
+        #        "-CHECK", "no"]
+        #    os.system("echo 'sys.argv=[\""+"\",\"".join(argv)+"\"]' >> bpz_run.py")
+        #    os.system("echo 'exec(open(\"bpz.py\").read())' >> bpz_run.py")
+        #    res = os.system("python2 bpz_run.py")
+        #    os.chdir('../')
 
-        print("Read the BPZ results")
-        #bpz_res = pd.read_fwf("validation_bpz.bpz",comment="#",skiprows=62,header=None)
-        os.system("grep -v '^#' validation_bpz.bpz | sed 's/  / /g' | sed 's/  / /g' | \
-                sed 's/  / /g' | sed 's/^ //g' | sed 's/ $//g' > validation_bpz.asc")
-        bpz_res = pd.read_csv("validation_bpz.asc",sep=' ',header=None)
-        print(bpz_res)
+        #print("Read the BPZ results")
+        ##bpz_res = pd.read_fwf("validation_bpz.bpz",comment="#",skiprows=62,header=None)
+        #os.system("grep -v '^#' validation_bpz.bpz | sed 's/  / /g' | sed 's/  / /g' | \
+        #        sed 's/  / /g' | sed 's/^ //g' | sed 's/ $//g' > validation_bpz.asc")
+        #bpz_res = pd.read_csv("validation_bpz.asc",sep=' ',header=None)
+        #print(bpz_res)
 
-        print("Adding BPZ Photoz info to validation data")
-        print(data)
-        data['Z_B'] = bpz_res[[1]]
-        print(data)
+        #print("Adding BPZ Photoz info to validation data")
+        #print(data)
+        #data['Z_B'] = bpz_res[[1]]
+        #print(data)
 
         #Construct the validation data frame (just a python-to-R data conversion)
         print("Converting the data to R format")

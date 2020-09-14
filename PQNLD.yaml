@@ -13,11 +13,11 @@ run:
       # These settings are sent to the classifier
       bins: 5
       som_dim: [101,101]
-      num_groups: 8000
+      num_groups: 10000
       num_threads: 32
       group_type: 'redshift'
       data_threshold: [0,30]
-      sparse_frac: 0.5
+      sparse_frac: 1.0
       plots: False
       plot_dir: 'plots' 
       # These special settings decide whether the
@@ -30,11 +30,11 @@ run:
       # These settings are sent to the classifier
       bins: 10
       som_dim: [101,101]
-      num_groups: 8000
+      num_groups: 10000
       num_threads: 32
       group_type: 'redshift'
       data_threshold: [0,30]
-      sparse_frac: 0.5
+      sparse_frac: 1.0
       plots: False
       plot_dir: 'plots' 
       # These special settings decide whether the
