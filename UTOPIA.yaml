@@ -12,7 +12,16 @@ run:
     run_5:
       # These settings are sent to the classifier
       bins: 5
-      sparse_frac: 0.5
+      sparse_frac: 1.0
+      # These special settings decide whether the
+      # color and error colums are passed to the classifier
+      # as well as the magnitudes
+      colors: False
+      errors: False
+    run_5:
+      # These settings are sent to the classifier
+      bins: 5
+      sparse_frac: 1.0
       # These special settings decide whether the
       # color and error colums are passed to the classifier
       # as well as the magnitudes
@@ -21,7 +30,16 @@ run:
     run_10:
       # These settings are sent to the classifier
       bins: 10
-      sparse_frac: 0.5
+      sparse_frac: 1.0
+      # These special settings decide whether the
+      # color and error colums are passed to the classifier
+      # as well as the magnitudes
+      colors: False
+      errors: False
+    run_10:
+      # These settings are sent to the classifier
+      bins: 10
+      sparse_frac: 1.0
       # These special settings decide whether the
       # color and error colums are passed to the classifier
       # as well as the magnitudes
