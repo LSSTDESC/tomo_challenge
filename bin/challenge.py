@@ -7,6 +7,7 @@ import jinja2
 
 ## get root dir, one dir above this script
 root_dir=os.path.join(os.path.split(sys.argv[0])[0],"..")
+print(root_dir)
 sys.path.append(root_dir)
 import tomo_challenge as tc
 
@@ -69,7 +70,7 @@ def main(config_yaml):
                                  training_data, training_z, validation_data, validation_z,
                                  config['metrics'], metrics_fn)
 
-                output_file.write (f"{classifier_name} {run} {settings} {scores} \n")
+                output_file.write(f"{classifier_name} {run} {settings} {scores} \n")
 
 
 
@@ -96,6 +97,7 @@ def run_one(classifier_name, bands, settings, train_data, train_z, valid_data,
 
     print ("Training...")
     C.train(train_data,train_z)
+    #perfect = C.train(train_data,train_z)
 
     print ("Applying...")
     results = C.apply(valid_data)

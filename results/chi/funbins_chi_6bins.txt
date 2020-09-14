@@ -1,0 +1,1 @@
+funbins run_6 {'bins': 6, 'seed': 123, 'method': 'chi', 'combinebins': None, 'colors': True, 'errors': True} {'SNR_ww': 355.50146484375, 'FOM_ww': 37.755615234375, 'FOM_DETF_ww': 0.926099956035614, 'SNR_gg': 1291.5467529296875, 'FOM_gg': 1620.9384765625, 'FOM_DETF_gg': 15.487205505371094, 'SNR_3x2': 1293.889404296875, 'FOM_3x2': 5691.78515625, 'FOM_DETF_3x2': 107.30359649658203} 

@@ -1,0 +1,1 @@
+RF_Uniform_CombineBins run_5 {'bins': 5, 'colors': True, 'errors': True} {'SNR_ww': 344.4664127650933, 'FOM_ww': 707.9343834362847, 'SNR_gg': 1111.5530740704078, 'FOM_gg': 1722.9278602544168, 'SNR_3x2': 1115.220976362594, 'FOM_3x2': 36901.359762732245} 
