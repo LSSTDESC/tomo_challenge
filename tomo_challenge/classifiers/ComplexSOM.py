@@ -148,6 +148,8 @@ class ComplexSOM(Tomographer):
         elif redshift_propset==3: 
             property_labels = StrVector(("quan_05","quan_16","quan_50","quan_84","quan_95"))
             property_expressions = ("quantile(data$redshift_true,probs=c(5,16,50,84,95)/100)")
+            property_labels = StrVector(("quan_05","quan_16","quan_84","quan_95"))
+            property_expressions = ("quantile(data$redshift_true,probs=c(5,16,84,95)/100)")
         else:
             property_labels = StrVector(("mean_z_true","med_z_true","sd_z_true","mad_z_true","iqr_z_true"))
             property_expressions = StrVector(("mean(data$redshift_true)","median(data$redshift_true)","sd(data$redshift_true)",
@@ -214,7 +216,7 @@ class ComplexSOM(Tomographer):
 
         #Define the output SOM name
         if self.opt['sizes'] == True: 
-            som_outname = f"SOM_{som_dim}_{self.bands}_withsize.pkl"
+            som_outname = f"SOM_{som_dim}_{self.bands}_withsizelin.pkl"
         else:
             som_outname = f"SOM_{som_dim}_{self.bands}.pkl"
 
@@ -257,9 +259,6 @@ class ComplexSOM(Tomographer):
                             n_cores=num_threads,train_expr=StrVector(expressions),train_sparse=False,sparse_frac=sparse_frac)
                 print(base.length(som.rx2['unit.classif']))
                 #Output the SOM 
-                #base.save(som,file=som_outname)
-                #with open(f"test_{som_outname}", 'wb') as f:
-                #    pickle.dump(som, f)
                 with open(som_outname, 'wb') as f:
                     pickle.dump(som, f)
             else:

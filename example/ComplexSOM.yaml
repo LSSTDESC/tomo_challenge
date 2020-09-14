@@ -11,12 +11,14 @@ run:
   ComplexSOM:
     run_5:
       # These settings are sent to the classifier
-      testing: True
+      testing: False
       bins: 5
       som_dim: [51,51]
       num_groups: 100
       num_threads: 32
       group_type: 'redshift'
+      whiten: False
+      redshift_propset: 2
       data_threshold: [0,30]
       sparse_frac: 1.0
       plots: True 
@@ -29,7 +31,7 @@ run:
       # as well as the magnitudes
       colors: False
       errors: False
-      sizes: False
+      sizes: True
     run_10:
       # These settings are sent to the classifier
       testing: False
