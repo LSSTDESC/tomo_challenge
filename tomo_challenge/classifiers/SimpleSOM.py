@@ -193,7 +193,7 @@ class SimpleSOM(Tomographer):
             print("Constructing cell-based redshift properties")
             #Construct the Nz properties per SOM cell
             cell_prop=kohonen.generate_kohgroup_property(som=som,data=train_df,
-                        expression=property_expressions,expr_label=property_labels)
+                        expression=property_expressions,expr_label=property_labels,returnMatrix=True)
             props = cell_prop.rx2['property']
             props.rx[base.which(base.is_na(props))] = -1
 
@@ -210,7 +210,7 @@ class SimpleSOM(Tomographer):
         print("Constructing group-based redshift properties")
         group_prop=kohonen.generate_kohgroup_property(som=som,data=train_df,
             expression=property_expressions,expr_label=property_labels,
-            n_cluster_bins=num_groups)
+            n_cluster_bins=num_groups,returnMatrix=True)
 
         #extract the training som (just for convenience)
         train_som = group_prop.rx2('som')
@@ -286,12 +286,12 @@ class SimpleSOM(Tomographer):
         print("Parsing the validation data into the SOM groupings")
         #Generate the validation associations/groups
         group_prop=kohonen.generate_kohgroup_property(som=self.train_som,data=data_df,
-            expression="nrow(data)",expr_label="N",
+            expression="nrow(data)",expr_label="N",returnMatrix=True,
             n_cluster_bins=self.opt['num_groups'],n_cores=self.opt['num_threads'])
 
         #Calculate the cumulative count 
         print("Generate cumulative source counts a.f.o. group mean z")
-        zcumsum=base.cumsum(group_prop.rx2('property').rx(self.z_order))
+        zcumsum=base.cumsum(group_prop.rx2['property'].rx(self.z_order))
 
         # Find the edges that split the redshifts into n_z bins of
         # equal number counts in each
