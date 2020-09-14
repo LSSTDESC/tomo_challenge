@@ -9,7 +9,7 @@ metrics_impl: firecrown
 run:
   # This is a class name which will be looked up
   UTOPIA:
-    run_5:
+    run_5a:
       # These settings are sent to the classifier
       bins: 5
       sparse_frac: 1.0
@@ -18,7 +18,25 @@ run:
       # as well as the magnitudes
       colors: False
       errors: False
-    run_5:
+    run_10a:
+      # These settings are sent to the classifier
+      bins: 10
+      sparse_frac: 1.0
+      # These special settings decide whether the
+      # color and error colums are passed to the classifier
+      # as well as the magnitudes
+      colors: False
+      errors: False
+    run_15a:
+      # These settings are sent to the classifier
+      bins: 15
+      sparse_frac: 1.0
+      # These special settings decide whether the
+      # color and error colums are passed to the classifier
+      # as well as the magnitudes
+      colors: False
+      errors: False
+    run_5b:
       # These settings are sent to the classifier
       bins: 5
       sparse_frac: 1.0
@@ -27,18 +45,18 @@ run:
       # as well as the magnitudes
       colors: True
       errors: False
-    run_10:
+    run_10b:
       # These settings are sent to the classifier
       bins: 10
       sparse_frac: 1.0
       # These special settings decide whether the
       # color and error colums are passed to the classifier
       # as well as the magnitudes
-      colors: False
+      colors: True
       errors: False
-    run_10:
+    run_15b:
       # These settings are sent to the classifier
-      bins: 10
+      bins: 15
       sparse_frac: 1.0
       # These special settings decide whether the
       # color and error colums are passed to the classifier
