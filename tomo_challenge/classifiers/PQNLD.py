@@ -302,9 +302,9 @@ class PQNLD(Tomographer):
         cell_prop=kohonen.generate_kohgroup_property(som=som,data=train_df,
                     expression=StrVector(property_expressions),expr_label=StrVector(property_labels),returnMatrix=True)
         som = cell_prop.rx2('som')
-        cell_prop_ZB=kohonen.generate_kohgroup_property(som=cell_som,data=train_df,
+        cell_prop_ZB=kohonen.generate_kohgroup_property(som=som,data=train_df,
                     expression=StrVector(ZB_property_expressions),expr_label=StrVector(ZB_property_labels),returnMatrix=True)
-        cell_prop_N=kohonen.generate_kohgroup_property(som=cell_som,data=train_df,
+        cell_prop_N=kohonen.generate_kohgroup_property(som=som,data=train_df,
                     expression="nrow(data)",expr_label="N",returnMatrix=True)
         print("Generate cumulative source counts a.f.o. cell mean z")
         #Extract the mean-z per group
@@ -323,7 +323,7 @@ class PQNLD(Tomographer):
         # Now put the groups into redshift bins.
         cell_bins = FloatVector(base.cut(FloatVector(zcumsum),base.unique(FloatVector(n_edges)),
             include=True)).rx(base.order(z_order))
-        source_bin = base.unsplit(cell_bins,FactorVector(cell_som.rx2['unit.classif'],
+        source_bin = base.unsplit(cell_bins,FactorVector(som.rx2['unit.classif'],
             levels=base.seq(som_dim[0]*som_dim[1])),drop=False)
         badcell = BoolVector(base.rep(False,som_dim[0]*som_dim[1]))
         for zbin in range(n_bin+1):
