@@ -23,8 +23,9 @@ import pandas as pd
 from rpy2.robjects import pandas2ri
 from rpy2.robjects.conversion import localconverter
 from ..snc import SnCalc 
-from scipy.optimize import minimize
-from scipy.integrate import simps 
+from scipy.interpolate import interp1d
+from scipy.optimize import minimize, brentq
+from scipy.integrate import simps
 import pickle
 
 #Check that all the needed packages are installed
@@ -131,9 +132,9 @@ class ComplexSOM(Tomographer):
             group_type = 'redshift'
         #Define the assign_params variable, used in bin optimisation 
         assign_params = {'p_inbin_thr': 0.5,
-                'p_outbin_thr': 0.2,
-                'use_p_inbin': use_inbin,
-                'use_p_outbin': use_outbin}
+                         'p_outbin_thr': 0.2,
+                         'use_p_inbin': use_inbin,
+                         'use_p_outbin': use_outbin}
 
         #Define the redshift summary statistics (used for making groups in the 'redshift' case
         if redshift_propset==1:
@@ -363,8 +364,8 @@ class ComplexSOM(Tomographer):
         z_arr = np.linspace(0, 2, 124)
         z_cen = z_arr[0:-1]+(z_arr[1]-z_arr[0])/2. 
         #Construct the per-group Nz
-        nzs = [(np.histogram(training_z[train_group == group+1],z_arr)[0]) for group in np.arange(num_groups)[np.array(tab)!=0]]
-       
+        nzs = [(np.histogram(training_z[train_group == group+1],z_arr)[0])
+               for group in np.arange(num_groups)[np.array(tab)!=0]]
         #np.save('plots/nzs.npy', nzs)
        
         #Update the fsky
@@ -375,35 +376,42 @@ class ComplexSOM(Tomographer):
         area_arcmin = (180*60/np.pi)**2*4*np.pi*fsky
         ng_tot_goal = ndens_arcmin * area_arcmin
         ng_tot_curr = np.sum(np.array(tab))
-        nzs = [nz * ng_tot_goal / ng_tot_curr for nz in nzs]
-
+        nzs = np.array([nz * ng_tot_goal / ng_tot_curr for nz in nzs])
         #np.save('plots/nzs_norm.npy', nzs)
-       
-        #print(nzs)
     
         # Now initialize a S/N calculator for these initial groups.
         os.system('rm wl_nb%d.npz' % n_bin)
         if metric == 'SNR_ww': 
-            c_wl = SnCalc(z_cen, nzs, use_clustering=False,fsky=fsky)
+            c_wl = SnCalc(z_cen, nzs, use_clustering=False, fsky=fsky)
         else:
             c_wl = SnCalc(z_cen, nzs, use_clustering=True,fsky=fsky)
-        print("Initializing WL")
+        print("Initializing Cls")
         c_wl.get_cl_matrix(fname_save='wl_nb%d.npz' % n_bin)
+
+        # Initial edge guess
+        nz_tot = np.sum(nzs, axis=0)
+        cumulative_fraction = np.cumsum(nz_tot) / np.sum(nz_tot)
+        cumul_f = interp1d(z_cen, cumulative_fraction, bounds_error=False,
+                           fill_value=(0, 1))
+        edges_0 = np.array([brentq(lambda z : cumul_f(z) - q, 0, 2)
+                            for q in (np.arange(o.n_bins-1)+1.)/o.n_bins])
+        
         # Finally, let's write the function to minimize and optimize for a 4-bin case.
         def minus_sn(edges, calc):
             return -calc.get_sn_from_edges(edges,assign_params=assign_params)
 
         print("Optimizing WL")
-        edges_0 = np.linspace(0, 2, n_bin-1)
         res = minimize(minus_sn, edges_0, method='Powell', args=(c_wl,))
-        print("WL final edges: ", res.x)
-        print("Maximum S/N: ", c_wl.get_sn_from_edges(res.x,assign_params=assign_params)*np.sqrt(0.25/fsky))
+        print("Final edges: ", res.x)
+        print("Maximum S/N: ", c_wl.get_sn_from_edges(res.x,
+                                                      assign_params=assign_params))
         print(" ")
-        print(res)
 
         #Construct the per-group Nz
         print("Outputting trained SOM and redshift ordering of SOM groups")
-        groups_in_tomo = c_wl.assign_from_edges(res.x, get_ids=True)
+        groups_in_tomo = c_wl.assign_from_edges(res.x,
+                                                assign_params=assign_params,
+                                                get_ids=True)
         group_bins = np.zeros(num_groups)
         for bin_no, groups in groups_in_tomo:
             print(bin_no, groups)
@@ -452,8 +460,10 @@ class ComplexSOM(Tomographer):
 
         #Assign the sources, by group, to tomographic bins
         print("Output source tomographic bin assignments")
-        valid_bin = base.unsplit(IntVector(self.group_bins),FactorVector(valid_som.rx2['clust.classif'],
-            levels=base.seq(num_groups)),drop=False)
+        valid_bin = base.unsplit(IntVector(self.group_bins),
+                                 FactorVector(valid_som.rx2['clust.classif'],
+                                              levels=base.seq(num_groups)),
+                                 drop=False)
         valid_bin = np.array(valid_bin)
 
         return valid_bin
