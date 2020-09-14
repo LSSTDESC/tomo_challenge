@@ -15,6 +15,8 @@ See Classifier Documentation below.
 from .base import Tomographer
 import numpy as np
 from sklearn.ensemble import RandomForestClassifier
+import jax_cosmo.parameters
+import jax_cosmo.background
 
 
 class funbins(Tomographer):
@@ -42,7 +44,7 @@ class funbins(Tomographer):
         Valiad options are:
             'bins' - number of tomographic bins
             'seed' - the seed to use for RandomState
-            'method' - what method to use for binning: 'log', 'random', 'linear'
+            'method' - what method to use for binning: 'log', 'random', 'linear', 'chi'
             'combinebins' - what 2 bins to combine as a list
 
         """
@@ -76,7 +78,7 @@ class funbins(Tomographer):
             print('The default method for binning has been set to log.')
         else:
             method = self.opt['method']
-            assert method in ['log', 'random', 'linear'], 'The method must be log, random, or linear'
+            assert method in ['log', 'random', 'linear', 'chi'], 'The method must be log, random, linear, or chi'
             print(f'The method has been set to {method}')
         
         if self.opt['combinebins'] is None:
@@ -115,6 +117,21 @@ class funbins(Tomographer):
         #n_bin = 8
         #training_bin = np.load('dc2-labels.npy')#[:len(training_z)]
         #print(len(training_bin))        
+        
+        if method == 'chi':
+            z = np.asarray(training_z)
+            # Tabulate comoving distance over a grid spanning the full range of input redshifts.
+            zgrid = np.linspace(0, z.max(), 1000)
+            agrid = 1 / (1 + zgrid)
+            model = jax_cosmo.parameters.Planck15()
+            chi_grid = jax_cosmo.background.radial_comoving_distance(model, agrid)
+            # Compute bin edges that are equally spaced in chi.
+            chi_edges = np.linspace(0, chi_grid[-1], n_bin + 1)
+            z_edges = np.empty(n_bin + 1)
+            z_edges[0] = 0.
+            z_edges[-1] = z.max()
+            z_edges[1:-1] = np.interp(chi_edges[1:-1], chi_grid, zgrid)
+            
         
         # Now find all the objects in each of these bins
         for i in range(n_bin):
