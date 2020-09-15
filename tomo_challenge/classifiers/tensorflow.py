@@ -8,12 +8,15 @@ import matplotlib.pyplot as plt
 import tensorflow as tf
 from tensorflow import keras
 # from dbn.tensorflow import SupervisedDBNClassification # version conflict with tf_v2 (had to put it inside the DBN class)
-    
+
+# Data normalization with sklearn
+from sklearn.preprocessing import MinMaxScaler, StandardScaler
+
 class TensorFlow_FFNN(Tomographer):
     """ TensorFlow Deep Neural Network Classifier """
 
     # valid parameter -- see below
-    valid_options = ['bins','train_percent','epochs','activation','optimizer']
+    valid_options = ['bins','train_percent','test_percent','epochs','activation','optimizer','data_scaler','heal_undetected']
     # this settings means arrays will be sent to train and apply instead
     # of dictionaries
     wants_arrays = True
@@ -50,6 +53,7 @@ class TensorFlow_FFNN(Tomographer):
           true redshift for the training sample
         """
 
+        data_scaler = self.opt['data_scaler'] if 'data_scaler' in self.opt else 'MinMaxScaler'
         n_bin = self.opt['bins']
         train_percent = self.opt['train_percent'] if 'train_percent' in self.opt else 2
         epochs = self.opt['epochs'] if 'epochs' in self.opt else 3
@@ -57,8 +61,16 @@ class TensorFlow_FFNN(Tomographer):
         optimizer = self.opt['optimizer'] if 'optimizer' in self.opt else 'adam'
         print("Finding bins for training data")
 
-        # Data scaling # max mag 30?
-        training_data = (training_data / 30).astype(np.float32)
+        # Data rescaling
+        self.scaler = MinMaxScaler(feature_range=(-1,1)) if data_scaler=='MinMaxScaler' else StandardScaler()
+        
+        print(f"Using {data_scaler} to rescale data for better results")
+    
+        # Fit scaler on data and use the same scaler in the future when needed
+        self.scaler.fit(training_data)
+        
+        # apply transform to get rescaled values
+        training_data = self.scaler.transform(training_data) # inverse: data_original = scaler.inverse_transform(data_rescaled)
 
         # Now put the training data into redshift bins.
         # Use zero so that the one object with minimum
@@ -76,20 +88,23 @@ class TensorFlow_FFNN(Tomographer):
             z_high = z_edges[i + 1]
             training_bin[(training_z > z_low) & (training_z < z_high)] = i
 
-        if train_percent<100:
+        if 0<train_percent<100:
             # for speed, cut down to ?% of original size
-            print(f'Cutting down to {train_percent}% of original size for speed.')
+            print(f'Cutting down to {train_percent}% of original training sample size for speed.')
             cut = np.random.uniform(0, 1, training_z.size) < train_percent/100
             training_bin = training_bin[cut]
             training_data = training_data[cut]
-        elif train_percent>100:
-            raise ValueError('train_percent>100 is not valid')
+        elif train_percent==100:
+            pass
+        else:
+            raise ValueError('train_percent is not valid')
 
         print('Setting up the layers')
         # Set up the layers
         classifier = keras.Sequential([
             keras.layers.Flatten(input_shape=(training_data.shape[1],)),
-            keras.layers.Dense(8, activation=activation),
+            keras.layers.Dense((n_bin+training_data.shape[1])//2, activation=activation),
+            #keras.layers.Dense((3*n_bin+training_data.shape[1])//4, activation=activation),
             keras.layers.Dense(n_bin)
         ])
 
@@ -102,7 +117,14 @@ class TensorFlow_FFNN(Tomographer):
         # Train the model
         print("Fitting classifier")
         # Lots of data, so this will take some time
-        classifier.fit(training_data, training_bin, epochs=epochs)
+        
+        callback = tf.keras.callbacks.EarlyStopping(monitor='loss', patience=3)
+        # This callback will stop the training when there is no improvement in
+        # the validation loss for three consecutive epochs. (This is to avoid overfitting)
+        history = classifier.fit(training_data, training_bin, epochs=epochs, callbacks=[callback])
+        epochs_ran = len(history.history["loss"])
+        if epochs_ran<epochs:
+            print(f'Only {epochs_ran} out of maximum {epochs} epochs are run to avoid overfitting.')
 
         self.classifier = classifier
         self.z_edges = z_edges
@@ -121,8 +143,8 @@ class TensorFlow_FFNN(Tomographer):
           each galaxy.
         """
 
-        # Data scaling # max mag 30?
-        data = (data / 30).astype(np.float32)
+        # Apply transform to get rescaled values using the scaler we already fit to the training data
+        data = self.scaler.transform(data)
 
         # Make predictions
         probability_model = tf.keras.Sequential([self.classifier, 
@@ -140,8 +162,8 @@ class TensorFlow_DBN(Tomographer):
     """ TensorFlow Deep Belief Network Classifier """
     
     # valid parameter -- see below
-    valid_options = ['bins','train_percent','n_epochs_rbm','hidden_layers_structure',
-                     'activation','learning_rate_rbm','learning_rate','n_iter_backprop','batch_size','dropout_p']
+    valid_options = ['bins','train_percent','test_percent','n_epochs_rbm','hidden_layers_structure',
+                     'activation','learning_rate_rbm','learning_rate','n_iter_backprop','batch_size','dropout_p','data_scaler','heal_undetected']
     # this settings means arrays will be sent to train and apply instead
     # of dictionaries
     wants_arrays = True
@@ -180,6 +202,7 @@ class TensorFlow_DBN(Tomographer):
 
         from dbn.tensorflow import SupervisedDBNClassification
             
+        data_scaler = self.opt['data_scaler'] if 'data_scaler' in self.opt else 'MinMaxScaler'
         n_bin = self.opt['bins']
         train_percent = self.opt['train_percent'] if 'train_percent' in self.opt else 1
         n_epochs_rbm = self.opt['n_epochs_rbm'] if 'n_epochs_rbm' in self.opt else 2
@@ -193,8 +216,16 @@ class TensorFlow_DBN(Tomographer):
                                     
         print("Finding bins for training data")
 
-        # Data scaling # max mag 30?
-        training_data = (training_data / 30).astype(np.float32)
+        # Data rescaling
+        self.scaler = MinMaxScaler(feature_range=(-1,1)) if data_scaler=='MinMaxScaler' else StandardScaler()
+        
+        print(f"Using {data_scaler} to rescale data for better results")
+    
+        # Fit scaler on data and use the same scaler in the future when needed
+        self.scaler.fit(training_data)
+        
+        # apply transform to get rescaled values
+        training_data = self.scaler.transform(training_data) # inverse: data_original = scaler.inverse_transform(data_rescaled)
 
         # Now put the training data into redshift bins.
         # Use zero so that the one object with minimum
@@ -212,16 +243,18 @@ class TensorFlow_DBN(Tomographer):
             z_high = z_edges[i + 1]
             training_bin[(training_z > z_low) & (training_z < z_high)] = i
 
-        if train_percent<100:
+        if 0<train_percent<100:
             # for speed, cut down to ?% of original size
-            print(f'Cutting down to {train_percent}% of original size for speed.')
+            print(f'Cutting down to {train_percent}% of original training sample size for speed.')
             cut = np.random.uniform(0, 1, training_z.size) < train_percent/100
             training_bin = training_bin[cut]
             training_data = training_data[cut]
-        elif train_percent>100:
-            raise ValueError('train_percent>100 is not valid')
+        elif train_percent==100:
+            pass
+        else:
+            raise ValueError('train_percent is not valid')
 
-        print('Setting up the layers')
+        print('Setting up the layers for DBN')
         # Set up the layers
         classifier = SupervisedDBNClassification(hidden_layers_structure=hidden_layers_structure,
                                                  learning_rate_rbm=learning_rate_rbm,
@@ -253,14 +286,13 @@ class TensorFlow_DBN(Tomographer):
           each galaxy.
         """
 
-        # Data scaling
-        data = (data / 30).astype(np.float32)
+        # Apply transform to get rescaled values using the scaler we already fit to the training data
+        data = self.scaler.transform(data)
 
-
-#         from sklearn.metrics import accuracy_score
+        #from sklearn.metrics import accuracy_score
         
         # Find predictions
         tomo_bin = self.classifier.predict(data)
-#         print(f'Done.\nAccuracy: {accuracy_score(data, tomo_bin)}') # error ValueError: Classification metrics can't handle a mix of continuous-multioutput and binary targets
+        #print(f'Done.\nAccuracy: {accuracy_score(data, tomo_bin)}') # error ValueError: Classification metrics can't handle a mix of continuous-multioutput and binary targets
         
         return np.array(tomo_bin)
