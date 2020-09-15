@@ -18,7 +18,7 @@ run:
       # cutting down to a fraction of original training and test sets
       train_percent: 5
       test_percent: 100
-      epochs: 20
+      epochs: 100
       activation: 'relu'
       optimizer: 'adam'
       # These special settings decide whether the
