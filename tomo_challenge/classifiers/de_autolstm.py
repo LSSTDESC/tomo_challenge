@@ -3,9 +3,9 @@ import tensorflow.keras as keras
 import numpy as np
 import time 
 
-from tomo_challenge.utils.utils import save_logs
-from tomo_challenge.utils.utils import calculate_metrics
-from tomo_challenge.utils.utils import get_available_gpus
+#from tomo_challenge.utils.utils import save_logs
+#from tomo_challenge.utils.utils import calculate_metrics
+#from tomo_challenge.utils.utils import get_available_gpus
 
 class Classifier_LSTM:
 
@@ -82,3 +82,6 @@ class Classifier_LSTM:
 		y_pred = model.predict(x_test)
 
 		return y_pred
+def get_available_gpus():
+	local_device_protos = device_lib.list_local_devices()
+	return [x.name for x in local_device_protos if x.device_type == 'GPU']
