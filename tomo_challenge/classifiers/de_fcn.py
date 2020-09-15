@@ -3,7 +3,8 @@ import keras
 import numpy as np
 import time 
 import sys
-from tomo_challenge.utils.utils import get_available_gpus
+#from tomo_challenge.utils.utils import get_available_gpus
+from tensorflow.python.client import device_lib
 
 class Classifier_FCN:
 
@@ -79,3 +80,6 @@ class Classifier_FCN:
 		model = keras.models.load_model(model_path)
 		y_pred = model.predict(x_test)
 		return y_pred
+def get_available_gpus():
+	local_device_protos = device_lib.list_local_devices()
+	return [x.name for x in local_device_protos if x.device_type == 'GPU']
