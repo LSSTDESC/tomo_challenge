@@ -28,7 +28,7 @@ class PCACluster(Tomographer):
     """ PCA based clustering algorithm """
     
     # valid parameter -- see below
-    valid_options = ["bins", "metric", "verbose"]
+    valid_options = ["bins", "metric", "verbose", "buzzard"]
     # this settings means arrays will be sent to train and apply instead
     # of dictionaries
     wants_arrays = False
@@ -74,6 +74,7 @@ class PCACluster(Tomographer):
         impl = self.opt["metric"].lower()
         verbose = self.opt["verbose"]
         num_centroids = self.opt["bins"]
+        buzzard = self.opt["buzzard"] if "buzzard" in self.opt.keys() else False
         
         # Gets the color data and the errors which we will use for weights.
         color_data = []
@@ -245,6 +246,8 @@ class PCACluster(Tomographer):
             elif impl == "snr":
                 top -= 1
                 bottom -= 1
+            elif buzzard and impl == "fom_detf":
+                top += 1
 
             lr_arr = np.logspace(bottom, top, num_epochs // 2) * 2.5
             lr_arr = np.concatenate([lr_arr, np.flip(lr_arr, 0)])
