@@ -52,7 +52,6 @@ class PCACluster(Tomographer):
             "verbose" - Whether to print verbosely. This prints continual training updates. 
 
         """
-        assert bands == "griz", "This method is designed to use griz with colors and errors!"
         self.bands = bands
         self.opt = options
         
@@ -78,7 +77,8 @@ class PCACluster(Tomographer):
         
         # Gets the color data and the errors which we will use for weights.
         color_data = []
-        for c in ["r", "gr", "ri", "rz"]:
+        f = ["r", "gr", "ri", "rz"] if self.bands == "griz" else ["r", "ri", "rz"]
+        for c in f:
             color_data.append(training_data[c])
         color_data = np.asarray(color_data).T
         errs = training_data["r_err"].reshape(-1, 1)
@@ -317,7 +317,7 @@ class PCACluster(Tomographer):
             if verbose: print(f"Circular start used. {-score1} > {-score2}")
             self.centroids = c1
         else:
-            if verbse: print(f"Equality start used. {-score2} > {-score1}")
+            if verbose: print(f"Equality start used. {-score2} > {-score1}")
             self.centroids = c2
 
     
@@ -339,7 +339,8 @@ class PCACluster(Tomographer):
         """
         
         data_valid = []
-        for c in ["r", "gr", "ri", "rz"]:
+        f = ["r", "gr", "ri", "rz"] if self.bands == "griz" else ["r", "ri", "rz"]
+        for c in f:
             data_valid.append(data[c])
         data_valid = np.asarray(data_valid).T
         data_valid_r = data_valid @ self.eigs
