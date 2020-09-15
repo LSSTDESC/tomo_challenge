@@ -4,6 +4,8 @@ import os
 import click
 import yaml
 import jinja2
+import numpy as np
+import datetime
 
 ## get root dir, one dir above this script
 root_dir=os.path.join(os.path.split(sys.argv[0])[0],"..")
@@ -24,16 +26,25 @@ def main(config_yaml):
         except KeyError:
             raise ValueError(f"Tomographer {name} is not defined")
 
-    # Decide if anyone needs the colors calculating and/or errors loading
+    # Decide if anyone needs the colors calculating and/or errors etc. loading
     anyone_wants_colors = False
     anyone_wants_errors = False
+    anyone_wants_band_triplets = False
+    anyone_wants_band_triplets_errors = False
+    anyone_wants_heal_undetected = False
     for run in config['run'].values():
         for version in run.values():
             if version.get('errors'):
                 anyone_wants_errors = True
             if version.get('colors'):
                 anyone_wants_colors = True
-
+            if version.get('band_triplets'):
+                anyone_wants_band_triplets = True
+            if version.get('band_triplets_errors'):
+                anyone_wants_band_triplets_errors = True
+            if version.get('heal_undetected'):
+                anyone_wants_heal_undetected = True
+                
 
     bands = config['bands']
 
@@ -41,14 +52,20 @@ def main(config_yaml):
         config['training_file'],
         bands,
         errors=anyone_wants_errors,
-        colors=anyone_wants_colors
+        colors=anyone_wants_colors,
+        band_triplets=anyone_wants_band_triplets,
+        band_triplets_errors=anyone_wants_band_triplets_errors,
+        heal_undetected=anyone_wants_heal_undetected
     )
 
     validation_data = tc.load_data(
         config['validation_file'],
         bands,
         errors=anyone_wants_errors,
-        colors=anyone_wants_colors
+        colors=anyone_wants_colors,
+        band_triplets=anyone_wants_band_triplets,
+        band_triplets_errors=anyone_wants_band_triplets_errors,
+        heal_undetected=anyone_wants_heal_undetected
     )
 
     training_z = tc.load_redshift(config['training_file'])
@@ -77,15 +94,31 @@ def run_one(classifier_name, bands, settings, train_data, train_z, valid_data,
     if classifier.wants_arrays:
         errors = settings.get('errors')
         colors = settings.get('colors')
-        train_data = tc.dict_to_array(train_data, bands, errors=errors, colors=colors)
-        valid_data = tc.dict_to_array(valid_data, bands, errors=errors, colors=colors)
+        band_triplets = settings.get('band_triplets')
+        band_triplets_errors = settings.get('band_triplets_errors')
+        train_data = tc.dict_to_array(train_data, bands, errors=errors, colors=colors, band_triplets=band_triplets, band_triplets_errors=band_triplets_errors)
+        valid_data = tc.dict_to_array(valid_data, bands, errors=errors, colors=colors, band_triplets=band_triplets, band_triplets_errors=band_triplets_errors)
+        
+    #if classifier_name in ['TensorFlow_FFNN','TensorFlow_DBN']:
+    test_percent = settings.get('test_percent') if 'test_percent' in settings else 100
+    if 0<test_percent<100:
+        # for speed, cut down to ?% of original size
+        print(f'Cutting down to {test_percent}% of original test sample size for speed.')
+        cut = np.random.uniform(0, 1, valid_data.shape[0]) < test_percent/100
+        valid_data = valid_data[cut]
+        valid_z = valid_z[cut]
+    elif test_percent==100:
+        pass
+    else:
+        raise ValueError('test_percent is not valid')
 
+    begin_time = datetime.datetime.now()
     print ("Executing: ", classifier_name, bands, settings)
 
     ## first check if options are valid
     print (settings, classifier.valid_options)
     for key in settings.keys():
-        if key not in classifier.valid_options and key not in ['errors', 'colors']:
+        if key not in classifier.valid_options and key not in ['errors', 'colors', 'band_triplets', 'band_triplets_errors']:
             raise ValueError(f"Key {key} is not recognized by classifier {classifier_name}")
 
     print ("Initializing classifier...")
@@ -102,9 +135,12 @@ def run_one(classifier_name, bands, settings, train_data, train_z, valid_data,
 
     print ("Making some pretty plots...")
     name = str(classifier.__name__)
-    tc.metrics.plot_distributions(valid_z, results, f"plots/{name}_{settings}_{bands}.png")
+    code = abs(hash(str(settings)))
+    tc.metrics.plot_distributions(valid_z, results, f"plots/{name}_{code}_{bands}.png", metadata=settings)
 
-    print(f'----------------\nScores for {classifier_name}:\n{scores}\n----------------')
+    print(f'----------------\nScores for {classifier_name} with {settings.get("bins")} bins:\n{scores}\n----------------')
+    print(f'Execution time: {datetime.datetime.now()-begin_time}')
+
     return scores
 
 
