@@ -1,0 +1,66 @@
+metrics:  ['SNR_ww', 'SNR_gg', 'SNR_3x2', 'FOM_3x2','FOM_DETF_3x2']
+bands: riz
+training_file: data_buzzard/training.hdf5
+validation_file: data_buzzard/validation.hdf5
+output_file: example/UTOPIA_output.txt
+# Backend implementing the metrics, either: "firecrown" (default), "jax-cosmo"
+metrics_impl: firecrown
+
+run:
+  # This is a class name which will be looked up
+  UTOPIA:
+    run_5a:
+      # These settings are sent to the classifier
+      bins: 5
+      sparse_frac: 1.0
+      # These special settings decide whether the
+      # color and error colums are passed to the classifier
+      # as well as the magnitudes
+      colors: False
+      errors: False
+    run_10a:
+      # These settings are sent to the classifier
+      bins: 10
+      sparse_frac: 1.0
+      # These special settings decide whether the
+      # color and error colums are passed to the classifier
+      # as well as the magnitudes
+      colors: False
+      errors: False
+    run_15a:
+      # These settings are sent to the classifier
+      bins: 15
+      sparse_frac: 1.0
+      # These special settings decide whether the
+      # color and error colums are passed to the classifier
+      # as well as the magnitudes
+      colors: False
+      errors: False
+    run_5b:
+      # These settings are sent to the classifier
+      bins: 5
+      sparse_frac: 1.0
+      # These special settings decide whether the
+      # color and error colums are passed to the classifier
+      # as well as the magnitudes
+      colors: True
+      errors: False
+    run_10b:
+      # These settings are sent to the classifier
+      bins: 10
+      sparse_frac: 1.0
+      # These special settings decide whether the
+      # color and error colums are passed to the classifier
+      # as well as the magnitudes
+      colors: True
+      errors: False
+    run_15b:
+      # These settings are sent to the classifier
+      bins: 15
+      sparse_frac: 1.0
+      # These special settings decide whether the
+      # color and error colums are passed to the classifier
+      # as well as the magnitudes
+      colors: True
+      errors: False
+
