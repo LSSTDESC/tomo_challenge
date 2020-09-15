@@ -105,7 +105,8 @@ def run_one(classifier_name, bands, settings, train_data, train_z, valid_data,
 
     print ("Making some pretty plots...")
     name = str(classifier.__name__)
-    tc.metrics.plot_distributions(valid_z, results, f"plots/{name}_{settings}_{bands}.png")
+    code = abs(hash(str(settings)))
+    tc.metrics.plot_distributions(valid_z, results, f"plots/{name}_{code}_{bands}.png", metadata=settings)
 
     return scores
 
