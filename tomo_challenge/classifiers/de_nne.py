@@ -2,8 +2,9 @@
 import tensorflow.keras as keras
 import numpy as np
 
-from tomo_challenge.utils.utils import create_directory
-from tomo_challenge.utils.utils import check_if_file_exits
+#from tomo_challenge.utils.utils import create_directory
+#from tomo_challenge.utils.utils import check_if_file_exits
+import os
 import gc
 import time
 import sys
@@ -76,3 +77,16 @@ class Classifier_NNE:
         create_directory(self.output_directory + '/DONE')
 
         return y_pred
+
+def check_if_file_exits(file_name):
+    return os.path.exists(file_name)
+
+def create_directory(directory_path): 
+    if os.path.exists(directory_path): 
+        return None
+    else: 
+        try: 
+            os.makedirs(directory_path)
+        except: 
+            return None 
+        return directory_path    
