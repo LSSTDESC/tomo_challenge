@@ -2,13 +2,13 @@ metrics:  ['SNR_ww', 'SNR_gg', 'SNR_3x2', 'FOM_3x2']
 bands: riz
 training_file: data_buzzard/training.hdf5
 validation_file: data_buzzard/validation.hdf5
-output_file: example/SimpleSOM_output.txt
+output_file: example/SimpleSOM2_output.txt
 # Backend implementing the metrics, either: "firecrown" (default), "jax-cosmo"
 metrics_impl: firecrown
 
 run:
   # This is a class name which will be looked up
-  SimpleSOM:
+  SimpleSOM2:
     run_5:
       # These settings are sent to the classifier
       bins: 5
