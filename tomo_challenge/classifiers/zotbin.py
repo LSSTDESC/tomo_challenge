@@ -1,11 +1,23 @@
+from pathlib import Path
+
 from .base import Tomographer
 import numpy as np
 
 try:
-    from zotbin.group import groupbins, load_groups, save_groups, fdigitize
-    from zotbin.binned import get_zedges_chi
+    import jax.experimental.optimizers
 except ImportError:
-    print('You need to install the zotbin package:\n  pip install git+https://github.com/dkirkby/zotbin.git')
+    print('The ZotBin classifier needs the jax and jax-cosmo packages.')
+
+try:
+    #from zotbin.group import groupbins, load_groups, save_groups, fdigitize
+    #from zotbin.binned import get_zedges_chi
+    from zotbin.util import prepare, get_signature, get_file
+    from zotbin.flow import learn_flow
+    from zotbin.binned import load_binned
+    from zotbin.group import groupbins, load_groups, fdigitize, assign_bins
+    from zotbin.optimize import optimize
+except ImportError:
+    print('The ZotBin classifierr needs the zotbin package:\n  pip install git+https://github.com/dkirkby/zotbin.git')
 
 
 class ZotBin(Tomographer):
@@ -13,7 +25,9 @@ class ZotBin(Tomographer):
     """
 
     # valid parameter -- see below
-    valid_options = ['bins']
+    valid_options = [
+        'bins', 'init', 'npct', 'ngrp', 'similarity',
+        'metric', 'ntrial', 'nsteps', 'interval', 'eta', 'seed']
     # this settings means arrays will be sent to train and apply instead
     # of dictionaries
     wants_arrays = True
@@ -37,15 +51,15 @@ class ZotBin(Tomographer):
         """
         self.bands = bands
         self.opt = options
-        if self.opt['loadgroups'] is not None:
-            self.zedges, self.fedges, self.grpid, _, _ = load_groups(self.opt['loadgroups'])
-
-    def prepare(self, data, band='i'):
-        # Use colors and one magnitude as the training features.
-        # No further preprocessing is required since we only care about rank order.
-        colors = np.diff(data, axis=1)
-        i = self.bands.index(band)
-        return np.concatenate((colors, data[:, i:i + 1]), axis=1)
+        self.preprocessor = None
+        self.fedges = None
+        similarity = options['similarity']
+        if similarity not in ('cosine', 'weighted', 'EMD'):
+            raise ValueError(f'Invalid similarity: "{similarity}".')
+        metric = options['metric']
+        if metric not in ('SNR_3x2', 'FOM_3x2', 'FOM_DETF_3x2'):
+            raise ValueError(f'Invalid optimization metric: "{metric}".')
+        self.init_data = load_binned(get_file(options['init']))
 
     def train (self, data, z):
         """Trains the classifier
@@ -59,22 +73,48 @@ class ZotBin(Tomographer):
           true redshift for the training sample
 
         """
+        print(f'train: input data shape is {data.shape}.')
+        # Prepare input features.
+        features, detected = prepare(data, self.bands)
+        features = features[detected]
+        z = z[detected]
+        # Use cached preprocessed data if available.
+        signature = get_signature(features)
+        pname = Path('preprocessed_{0}.npy'.format(signature))
+        if pname.exists():
+            print('Using cached preprocessed data.')
+            U = np.load(pname)
+        else:
+            # Learn a preprocessing transform to an approximately uniform distribution of features.
+            print('Learning preprocessor normalizing flow...')
+            self.preprocessor = learn_flow(features[:400000])
+            # Proprocess the input features.
+            U = self.preprocessor(features)
+            # Cache the preprocessed data for next time.
+            np.save(pname, U)
+            print('Cached preprocessed data.')
+        # Load or calculate groups in feature space.
+        method = self.opt['similarity']
         npct = self.opt['npct']
-        nzbin = self.opt['nzbin']
         ngrp = self.opt['ngrp']
-        weighted = self.opt['weighted']
-        # Prepare the training data.
-        X = self.prepare(data)
-        # Calculate redshift slices that are equally spaced in comoving distance.
-        self.zedges = get_zedges_chi(z, nzbin)
-        # Calculate feature-space groups.
-        self.fedges, self.grpid, zhist, zsim = groupbins(
-            X, z, self.zedges, npct, min_groups=ngrp, weighted=weighted)
-        if self.opt['savegroups'] is not None:
-            save_groups(self.opt['groupfile'], self.zedges, self.fedges, self.grpid, self.zhist, zsim)
-        if self.opt['saveplot'] is not None:
-            plotzgrp(self.zhist)
-            plt.savefig(self.opt['saveplot'])
+        fname = f'groups_{method}_{npct}_{ngrp}_{signature}.npz'
+        if not Path(fname).exists():
+            print(f'Calculating {ngrp} feature space groups with npct={npct}...')
+            groupbins(U, z, self.init_data[0], npct, ngrp_save=[ngrp], method=method,
+                      plot_interval=None, savename=fname)
+        _, self.fedges, self.grpid, self.zhist, _ = load_groups(fname)
+        print(f'Loaded {ngrp} groups with npct={npct}.')
+        # Optimize the weights for combining groups into the requested number of nbins
+        # for the specified metric.
+        args = {k: self.opt[k] for k in ('metric', 'ntrial', 'interval', 'seed')}
+        args['nbin'] = self.opt['bins']
+        args['opt_args'] = dict(
+            optimizer=jax.experimental.optimizers.adam(self.opt['eta']),
+            nsteps=self.opt['nsteps'])
+        print(f'Optimizing final bins with {args}...')
+        best_scores, self.weights, self.dndz_bin, _ = optimize(
+            mixing_matrix=self.zhist, init_data=self.init_data, **args)
+        print(f'Best scores after optimization: {best_scores}')
 
     def apply (self, data):
         """Applies training to the data.
@@ -92,12 +132,41 @@ class ZotBin(Tomographer):
           tomographic selection for galaxies return as bin number for
           each galaxy.
         """
-        ngrp = self.opt['ngrp']
-        X = self.prepare(data)
-        sample_bin = fdigitize(X, self.fedges)
-        tomo_sel = np.full(sample_bin, -1)
-        for igrp in range(ngrp):
-            grp_bins = np.where(self.grpid == igrp)[0]
-            grp_samples = np.isin(sample_bin, grp_bins)
-            tomo_sel[grp_samples] = igrp
+        print(f'apply: input data shape is {data.shape}.')
+        features, detected = prepare(data, self.bands)
+        tomo_sel = np.full(len(features), -1, int)
+        # Use cached preprocessed data if available.
+        features = features[detected]
+        signature = get_signature(features)
+        pname = Path('preprocessed_{0}.npy'.format(signature))
+        if pname.exists():
+            print('Using cached preprocessed data.')
+            U = np.load(pname)
+        elif self.preprocessor is None:
+            raise RuntimeError('No preprocessor defined: has the train step been run?')
+        else:
+            # Apply the learned transform.
+            print('Preprocessing...')
+            U = self.preprocessor(features)
+            # Cache the preprocessed data for next time.
+            np.save(pname, U)
+            print('Cached preprocessed data.')
+        # Assign galaxies to feature groups.
+        if self.fedges is None:
+            raise RuntimeError('No groups defined: has the train step been run?')
+        feature_bin = fdigitize(U, self.fedges)
+        feature_grp = self.grpid[feature_bin]
+        nempty = np.count_nonzero(feature_grp == -1)
+        print(f'Found {nempty} galaxies outside the training feature space.')
+        # Assign feature groups to output bins.
+        tomo_sel[detected] = assign_bins(feature_grp, self.weights, self.opt['seed'])
+        # Save results before returning.
+        nbin, ngrp = self.weights.shape
+        metric = self.opt['metric']
+        method = self.opt['similarity']
+        npct = self.opt['npct']
+        fname = f'zotbin_{metric}_{nbin}_{method}_{npct}_{ngrp}_{signature}.npz'
+        np.savez(fname, idx=tomo_sel.astype(np.uint8), weights=self.weights, dndz=self.dndz_bin)
+        print(f'Saved {fname}')
+
         return tomo_sel
