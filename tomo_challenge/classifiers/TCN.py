@@ -1,14 +1,10 @@
 """
 TCN classifier
-
 This is an example tomographic bin generator using a temporal convolutional neural network (TCN).
 We also added a custom data loader we tested.
 This solution was developed by the Brazilian Center for Physics Research AI 4 Astrophysics team.
-
 Authors: Clecio R. Bom, Bernardo M. Fraga, Gabriel Teixeira, Eduardo Cypriano and Elizabeth Gonzalez.
 contact: debom |at |cbpf| dot| br
-
-
 Every classifier module needs to:
  - have construction of the type 
        __init__ (self, bands, options) (see examples below)
@@ -16,7 +12,6 @@ Every classifier module needs to:
         train (self, training_data,training_z)
         apply (self, data).
  - define valid_options class varible.
-
 See Classifier Documentation below.
 """
 
@@ -36,7 +31,7 @@ class TCN(Tomographer):
     valid_options = ['bins']
     # this settings means arrays will be sent to train and apply instead
     # of dictionaries
-    wants_arrays = True
+    wants_arrays = False
     
     def __init__ (self, bands, options):
         """Constructor
