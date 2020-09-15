@@ -1,0 +1,11 @@
+metrics:  [SNR_3x2]
+bands: riz
+training_file: data_buzzard/training.hdf5
+validation_file: data_buzzard/validation.hdf5
+output_file: example/summer_output.txt
+
+run:
+  SummerSlasher:
+    run:
+      outroot: summer_pretrained/summer_riz_1293
+      apply_pickled: True
