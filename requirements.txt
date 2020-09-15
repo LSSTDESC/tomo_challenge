@@ -10,3 +10,4 @@ pyccl
 camb
 click
 progressbar
+jax-cosmo==0.1rc6
