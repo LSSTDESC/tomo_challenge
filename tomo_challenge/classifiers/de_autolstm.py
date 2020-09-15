@@ -6,6 +6,7 @@ import time
 #from tomo_challenge.utils.utils import save_logs
 #from tomo_challenge.utils.utils import calculate_metrics
 #from tomo_challenge.utils.utils import get_available_gpus
+from tensorflow.python.client import device_lib
 
 class Classifier_LSTM:
 
