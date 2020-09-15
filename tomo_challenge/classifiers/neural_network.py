@@ -20,7 +20,7 @@ import tomo_challenge.jax_metrics as metrics
 from .base import Tomographer
 
 # Conviniently stores the number of features
-n_features = {'riz':12, 'griz':10}
+n_features = {'riz':12, 'griz':20}
 
 # Function creating the neural network for a specific number of bins
 def get_classifier(n_bin, n_features):
@@ -47,7 +47,7 @@ class NeuralNetwork(Tomographer):
     """ Neural Network Classifier """
 
     # valid parameter -- see below
-    valid_options = ['bins', 'metric']
+    valid_options = ['bins', 'metric', 'output_dir']
     # this settings means arrays will be sent to train and apply instead
     # of dictionaries
     wants_arrays = True
@@ -75,8 +75,9 @@ class NeuralNetwork(Tomographer):
         self.n_features = n_features[bands]
         self.n_bin = options['bins']
         self.metric = options['metric']
+        self.output_dir = options['output_dir']
         # Build a name for the model based on bands and options
-        self.export_name = f'models/{self.metric}_{bands}_{self.n_bin}.flax'
+        self.export_name = f'{self.output_dir}/{self.metric}_{bands}_{self.n_bin}.flax'
 
         # Create classifier
         self.model = get_classifier(self.n_bin, self.n_features)
@@ -84,7 +85,7 @@ class NeuralNetwork(Tomographer):
         self.features_scaler = RobustScaler()
 
     def train (self, training_data, training_z,
-              batch_size=2000, niter=1000):
+              batch_size=5000, niter=2000):
         """Trains the classifier
 
         Parameters:

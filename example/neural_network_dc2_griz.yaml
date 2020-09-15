@@ -1,17 +1,31 @@
 metrics: [SNR_ww, SNR_gg, SNR_3x2, FOM_3x2, FOM_DETF_3x2]
-bands: riz
+bands: griz
 training_file: data/training.hdf5
 validation_file: data/validation.hdf5
-output_file: example/neural_output_snr.txt
+output_file: example/neural_output_griz.txt
 # Backend implementing the metrics, either: "firecrown" (default), "jax-cosmo"
 metrics_impl: jax-cosmo
 
 run:
+  # hello
   NeuralNetwork:
-    {% for nbins in [2,3,4,6] %}
+    {% for nbins in [5, 10] %}
+    run_{{ nbins}}:
+      bins: {{ nbins }}
+      metric: FOM_DETF
+      output_dir: models
+      # These special settings decide whether the
+      # color and error colums are passed to the classifier
+      # as well as the magnitudes
+      colors: True
+      errors: True
+    {% endfor %}
+
+    {% for nbins in [5, 10] %}
     run_{{ nbins}}:
       bins: {{ nbins }}
       metric: SNR
+      output_dir: models
       # These special settings decide whether the
       # color and error colums are passed to the classifier
       # as well as the magnitudes
