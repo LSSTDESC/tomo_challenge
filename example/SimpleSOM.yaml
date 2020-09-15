@@ -8,7 +8,7 @@ metrics_impl: firecrown
 
 run:
   # This is a class name which will be looked up
-  SimpleSOM:
+  SimpleSOM1:
     run_3:
       # These settings are sent to the classifier
       bins: 10

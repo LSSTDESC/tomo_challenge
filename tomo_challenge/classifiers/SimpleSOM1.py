@@ -41,7 +41,7 @@ devtools=ro.packages.importr("devtools")
 #devtools.install_github("AngusWright/kohonen/kohonen")
 kohonen=ro.packages.importr("kohonen")
 
-class SimpleSOM(Tomographer):
+class SimpleSOM1(Tomographer):
     """ Simplistic SOM Classifier """
     
     # valid parameter -- see below
