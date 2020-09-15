@@ -14,8 +14,8 @@ Every classifier module needs to:
  - define valid_options class varible.
 """
 
-from tomo_challenge.utils.utils import transform_labels
-from tomo_challenge.utils.utils import create_directory
+#from tomo_challenge.utils.utils import transform_labels
+#from tomo_challenge.utils.utils import create_directory
 from sklearn.preprocessing import MinMaxScaler
 import sklearn
 import os
@@ -198,3 +198,48 @@ class ENSEMBLE(Tomographer):
         preds = ensemble.predict(data)
         tomo_bin = np.argmax(preds, axis=1)
         return tomo_bin
+def create_directory(directory_path): 
+    if os.path.exists(directory_path): 
+        return None
+    else: 
+        try: 
+            os.makedirs(directory_path)
+        except: 
+            return None 
+        return directory_path
+def transform_labels(y_train,y_test=np.array([]),y_val=None):
+    """
+    Transform label to min equal zero and continuous 
+    For example if we have [1,3,4] --->  [0,1,2]
+    """
+    if not y_val is None : 
+        # index for when resplitting the concatenation 
+        idx_y_val = len(y_train)
+        idx_y_test = idx_y_val + len(y_val)
+        # init the encoder
+        encoder = LabelEncoder()
+        # concat train and test to fit 
+        y_train_val_test = np.concatenate((y_train,y_val,y_test),axis =0)
+        # fit the encoder 
+        encoder.fit(y_train_val_test)
+        # transform to min zero and continuous labels 
+        new_y_train_val_test = encoder.transform(y_train_val_test)
+        # resplit the train and test
+        new_y_train = new_y_train_val_test[0:idx_y_val]
+        new_y_val = new_y_train_val_test[idx_y_val:idx_y_test]
+        new_y_test = new_y_train_val_test[idx_y_test:]
+        return new_y_train, new_y_val,new_y_test 
+    else: 
+        # no validation split 
+        # init the encoder
+        encoder = LabelEncoder()
+        # concat train and test to fit 
+        y_train_test = np.concatenate((y_train,y_test),axis =0)
+        # fit the encoder 
+        encoder.fit(y_train_test)
+        # transform to min zero and continuous labels 
+        new_y_train_test = encoder.transform(y_train_test)
+        # resplit the train and test
+        new_y_train = new_y_train_test[0:len(y_train)]
+        new_y_test = new_y_train_test[len(y_train):]
+        return new_y_train
