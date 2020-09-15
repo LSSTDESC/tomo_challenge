@@ -21,7 +21,7 @@ def ell_binning():
     delta_ell =(ell_edges[1:]-ell_edges[:-1])
     return ell, delta_ell
 
-def get_probes(weights, labels, kernel_bandwidth=0.05, what='3x2', binned_nz=False):
+def get_probes(weights, labels, kernel_bandwidth=0.02, what='3x2', binned_nz=False):
     """
     JAX function that builds the 3x2pt probes, which can
     then be used within any metric

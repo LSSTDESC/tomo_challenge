@@ -9,7 +9,6 @@ parameters:
   w0: -1.0
   wa: 0.0
 
-
 # Defines options when running one of the samplers
 # through cosmosis
 cosmosis:
@@ -25,6 +24,7 @@ cosmosis:
     h: [0.5, 0.67, 0.9]
     sigma8: [0.74, 0.8404844953840714, 0.94]
     n_s: [0.9,  0.96,  1.02]
+    
     # I'd like to do the proper DETF FoM,
     # but right now our camb config rejects this
     # since it crosses w=-1.  So for now use an
