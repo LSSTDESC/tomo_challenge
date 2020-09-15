@@ -143,7 +143,7 @@ class MineCraft(Tomographer):
         binc=np.bincount(tomo_bin)
         print ('bincount before=',binc/No)
         minobj = int(No*0.03)
-        ## now combined all the samples that are less than 5%:
+        ## now combine all the samples that are less than 3%:
         w=np.where(binc<minobj)[0]
         for j in w[1:]:
             tomo_bin [tomo_bin==j] = w[0]
