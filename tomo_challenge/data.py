@@ -4,12 +4,17 @@ import warnings
 import h5py
 import numpy as np
 
+# Path to original challenge dataset
 nersc_path = '/global/projecta/projectdirs/lsst/groups/WL/users/zuntz/tomo_challenge_data/ugrizy'
 url_root =  'https://portal.nersc.gov/cfs/lsst/txpipe/tomo_challenge_data/ugrizy'
+
+# Path to Buzzard version of the challenge dataset
+nersc_path_buzzard = '/global/projecta/projectdirs/lsst/groups/WL/users/flanusse/tomo_challenge_buzzard'
+url_root_buzzard =  'https://portal.nersc.gov/cfs/lsst/txpipe/tomo_challenge_data/ugrizy_buzzard'
+
 # This is not supposed to be needed - I don't understand why in my shifter env the warning
 # is being repeated.
 warned = False
-
 
 class MyProgressBar:
     def __init__(self):
@@ -36,9 +41,9 @@ class MyProgressBar:
 
 
 def download_data():
-    """Download challenge data (about 4GB) to current directory.
+    """Download challenge data (about 6GB) to current directory.
 
-    This will create a directory ./data with the training
+    This will create directories ./data with the training
     and validation files in.
 
     If on NERSC this will just generate links to the data.
@@ -53,7 +58,8 @@ def download_data():
     """
     if os.environ.get("NERSC_HOST"):
         # If we are on NERSC just make some links
-        os.symlink(nersc_path, 'data')
+        os.symlink(nersc_path, 'data/')
+        os.symlink(nersc_path_buzzard, 'data_buzzard/')
     else:
         # Otherwise actually download both data sets
         os.makedirs('data', exist_ok=True)
@@ -63,6 +69,13 @@ def download_data():
             progress = MyProgressBar()
             urlretrieve(f'{url_root}/{filename}', f'data/{filename}', reporthook=progress)
 
+        os.makedirs('data_buzzard', exist_ok=True)
+        # Download each of the two files for these bands
+        for f in ['validation', 'training']:
+            filename = f'{f}.hdf5'
+            progress = MyProgressBar()
+            urlretrieve(f'{url_root_buzzard}/{filename}', f'data_buzzard/{filename}', reporthook=progress)
+            
 
 def load_mags(filename, bands, errors=False):
 

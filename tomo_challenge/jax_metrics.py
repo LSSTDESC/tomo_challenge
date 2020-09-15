@@ -1,11 +1,14 @@
-import jax.numpy as np
-import jax.random as rand
+import warnings
 import numpy as onp
-from jax import lax, jit, vmap, grad
 from functools import partial
-import jax_cosmo as jc
-import jax
 
+try:
+    import jax.numpy as np
+    from jax import lax, jit, vmap, grad
+    import jax_cosmo as jc
+    import jax
+except:
+    print ("Warning: Couldn't import JAX or jax-cosmo, some metrics may be unavailable.")
 
 def ell_binning():
     # we put this here to make sure it's used consistently
@@ -108,12 +111,14 @@ def compute_snr_score(weights, labels, what='3x2', binned_nz=False):
 
         # Compute mean and covariance
         mu, C = jc.angular_cl.gaussian_cl_covariance_and_mean(cosmo, ell, probes,
-                                                              f_sky=0.25, nonlinear_fn=jc.power.halofit)
+                                                              f_sky=0.25,
+                                                              nonlinear_fn=jc.power.halofit,
+                                                              sparse=True)
 
         # S/N for correlated data, I assume, from generalizing
         # sqrt(sum(mu**2/sigma**2))
-        P = np.linalg.inv(C)
-        score = (mu.T @ P @ mu)**0.5
+        P = jc.sparse.inv(C)
+        score = (mu.T @ jc.sparse.sparse_dot_vec(P, mu))**0.5
         return score
 
     return snr_fn(probes, ell)
@@ -151,12 +156,12 @@ def compute_fom(weights, labels, inds=[0,4], what='3x2', binned_nz=False):
 
         # Compute the covariance matrix
         cl_noise = jc.angular_cl.noise_cl(ell, probes)
-        C = jc.angular_cl.gaussian_cl_covariance(ell, probes, mu, cl_noise)
+        C = jc.angular_cl.gaussian_cl_covariance(ell, probes, mu, cl_noise, sparse=True)
 
-        invCov = np.linalg.inv(C)
+        invCov = jc.sparse.inv(C)
 
         # Compute Fisher matrix for constant covariance
-        F = np.einsum('pa,pq,qb->ab', dmu, invCov, dmu)
+        F = jc.sparse.dot(dmu.T, invCov, dmu)
         return F
 
     F = fisher_fn(probes, ell)

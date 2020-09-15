@@ -1,7 +1,4 @@
 import numpy as np
-import pyccl as ccl
-import sacc
-import firecrown
 import pathlib
 import tempfile
 import yaml
@@ -124,6 +121,7 @@ def compute_mean_covariance(tomo_bin, z, what):
     and signal: the f_sky, ell choices, sigma_e, and n_eff
 
     """
+    import pyccl as ccl
     # 10,000 sq deg
     f_sky = 0.25
     # pretend there is no evolution in measurement error.
@@ -229,7 +227,7 @@ def compute_mean_covariance(tomo_bin, z, what):
     return mu, C, galaxy_galaxy_tracer_bias
 
 
-def plot_distributions(z, tomo_bin, filename, nominal_edges=None):
+def plot_distributions(z, tomo_bin, filename, nominal_edges=None, metadata=None):
     import matplotlib.pyplot as plt
     fig = plt.figure()
     nbin = int(tomo_bin.max()) + 1
@@ -242,11 +240,13 @@ def plot_distributions(z, tomo_bin, filename, nominal_edges=None):
         for x in nominal_edges:
             plt.axvline(x, color='k', linestyle=':')
 
-    plt.savefig(filename)
+    metadata = {k:str(v) for k,v in metadata.items()}
+    plt.savefig(filename, metadata=metadata)
     plt.close()
 
 
 def make_sacc(tomo_bin, z, what, mu, C):
+    import sacc
     # Basic numbers
     nbin = int(tomo_bin.max()) + 1
     tracer_type = get_tracer_type(nbin, what)
@@ -297,6 +297,8 @@ def make_sacc(tomo_bin, z, what, mu, C):
 
 
 def figure_of_merit(sacc_data, what, galaxy_tracer_bias):
+    import firecrown
+
     ntot = len(sacc_data.tracers)
     nbin = ntot//2 if what == "3x2" else ntot
     tracer_type = get_tracer_type(nbin, what)

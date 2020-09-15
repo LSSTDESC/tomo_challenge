@@ -54,10 +54,13 @@ def main(config_yaml):
     training_z = tc.load_redshift(config['training_file'])
     validation_z = tc.load_redshift(config['validation_file'])
 
-    if config['metrics_impl'] == 'jax-cosmo':
+    if (('metrics_impl' not in config) or
+        (config['metrics_impl'] == 'firecrown')):
+         metrics_fn = tc.compute_scores
+    elif config['metrics_impl'] == 'jax-cosmo':
         metrics_fn = tc.jc_compute_scores
     else:
-        metrics_fn = tc.compute_scores
+        raise ValueError('Unknown metrics_impl value')
 
     with open(config['output_file'],'w') as output_file:
         for classifier_name, runs in config['run'].items():
@@ -102,7 +105,8 @@ def run_one(classifier_name, bands, settings, train_data, train_z, valid_data,
 
     print ("Making some pretty plots...")
     name = str(classifier.__name__)
-    tc.metrics.plot_distributions(valid_z, results, f"plots/{name}_{settings}_{bands}.png")
+    code = abs(hash(str(settings)))
+    tc.metrics.plot_distributions(valid_z, results, f"plots/{name}_{code}_{bands}.png", metadata=settings)
 
     print ("Making some pretty plots...")
     name = str(classifier.__name__)
