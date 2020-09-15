@@ -202,7 +202,8 @@ class SummerSlasher(Tomographer):
         self.sof.flush()
         self.som.write("\n")
         self.som.flush()
-        pickle.dump(self.pop[0], open(self.bestfn, "wb"))
+        bestfn = "%s_%g_best.pickle"%(self.opt["outroot"],self.pop[0].score)
+        pickle.dump(self.pop[0], open(bestfn, "wb"))
 
     def apply(self, data):
         """Applies training to the data.

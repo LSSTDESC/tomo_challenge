@@ -241,7 +241,9 @@ def plot_distributions(z, tomo_bin, filename, nominal_edges=None):
         for x in nominal_edges:
             plt.axvline(x, color='k', linestyle=':')
 
-    plt.savefig(filename)
+    # sanitize name
+    filename_sane = filename.replace('/','_') 
+    plt.savefig(filename_sane)
     plt.close()
 
 
