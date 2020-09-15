@@ -75,7 +75,7 @@ def download_data():
             filename = f'{f}.hdf5'
             progress = MyProgressBar()
             urlretrieve(f'{url_root_buzzard}/{filename}', f'data_buzzard/{filename}', reporthook=progress)
-            
+
 
 def load_mags(filename, bands, errors=False):
 

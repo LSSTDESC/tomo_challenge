@@ -40,6 +40,13 @@ You will get two datasets, based on two different simulations, which will allow 
 The first dataset, which can be found under `data` after download is based on the CosmoDC2 simulation. The second dataset, found under
 `data_buzzard` is based on the Buzzard simulations.
 
+## Installing dependencies
+
+From the root folder:
+```
+$ pip install -r requirements.txt
+```
+
 
 ## Metric
 
