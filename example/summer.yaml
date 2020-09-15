@@ -1,17 +1,11 @@
-metrics:  [SNR_ww]
-bands: gri
-training_file: data/training.hdf5
-validation_file: data/validation.hdf5
-output_file: example/example_output.txt
+metrics:  [SNR_3x2]
+bands: riz
+training_file: data_buzzard/training.hdf5
+validation_file: data_buzzard/validation.hdf5
+output_file: example/summer_output.txt
 
 run:
   SummerSlasher:
-    run_3:
-      colors: False
-      errors: False
-      n_cuts: 3
-      pop_size: 4
-      children: 12
-      outroot: testrun
-      letdie: True
+    run:
+      outroot: summer_pretrained/summer_riz_1293
       apply_pickled: True
