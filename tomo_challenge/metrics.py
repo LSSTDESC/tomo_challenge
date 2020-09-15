@@ -227,7 +227,7 @@ def compute_mean_covariance(tomo_bin, z, what):
     return mu, C, galaxy_galaxy_tracer_bias
 
 
-def plot_distributions(z, tomo_bin, filename, nominal_edges=None):
+def plot_distributions(z, tomo_bin, filename, nominal_edges=None, metadata=None):
     import matplotlib.pyplot as plt
     fig = plt.figure()
     nbin = int(tomo_bin.max()) + 1
@@ -239,8 +239,9 @@ def plot_distributions(z, tomo_bin, filename, nominal_edges=None):
     if nominal_edges is not None:
         for x in nominal_edges:
             plt.axvline(x, color='k', linestyle=':')
-
-    plt.savefig(filename)
+    
+    metadata = {k:str(v) for k,v in metadata.items()}
+    plt.savefig(filename, metadata=metadata)
     plt.close()
 
 
