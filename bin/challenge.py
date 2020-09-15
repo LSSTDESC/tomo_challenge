@@ -37,36 +37,53 @@ def main(config_yaml):
 
     bands = config['bands']
 
-    training_data = tc.load_data(
+######## New loader ####################
+    if config['loader'] == 'custom':
+        data_loader = tc.custom_data_loader
+        z_loader = tc.custom_redshift_loader
+    else:
+        data_loader = tc.load_data
+        z_loader = tc.load_redshift
+########################################
+
+    training_data = data_loader(
         config['training_file'],
         bands,
         errors=anyone_wants_errors,
         colors=anyone_wants_colors
     )
 
-    validation_data = tc.load_data(
+    validation_data = data_loader(
         config['validation_file'],
         bands,
         errors=anyone_wants_errors,
         colors=anyone_wants_colors
     )
 
-    training_z = tc.load_redshift(config['training_file'])
-    validation_z = tc.load_redshift(config['validation_file'])
+    training_z = z_loader(config['training_file'])
+    validation_z = z_loader(config['validation_file'])
+    
+    if (('metrics_impl' not in config) or
+        (config['metrics_impl'] == 'firecrown')):
+         metrics_fn = tc.compute_scores
+    elif config['metrics_impl'] == 'jax-cosmo':
+        metrics_fn = tc.jc_compute_scores
+    else:
+        raise ValueError('Unknown metrics_impl value')
 
     with open(config['output_file'],'w') as output_file:
         for classifier_name, runs in config['run'].items():
             for run, settings in runs.items():
                 scores = run_one(classifier_name, bands, settings,
                                  training_data, training_z, validation_data, validation_z,
-                                 config['metrics'])
+                                 config['metrics'], metrics_fn)
 
                 output_file.write (f"{classifier_name} {run} {settings} {scores} \n")
 
 
 
 def run_one(classifier_name, bands, settings, train_data, train_z, valid_data,
-             valid_z, metrics):
+             valid_z, metrics, metrics_fn):
     classifier = tc.Tomographer._find_subclass(classifier_name)
 
     if classifier.wants_arrays:
@@ -74,14 +91,16 @@ def run_one(classifier_name, bands, settings, train_data, train_z, valid_data,
         colors = settings.get('colors')
         train_data = tc.dict_to_array(train_data, bands, errors=errors, colors=colors)
         valid_data = tc.dict_to_array(valid_data, bands, errors=errors, colors=colors)
-
+        #cut = int(0.5 * valid_data.size)
+        #valid_data = valid_data[:cut]
+    mask = (valid_data < 30).all(axis=1)
+    valid_z = valid_z[mask]
     print ("Executing: ", classifier_name, bands, settings)
 
     ## first check if options are valid
-    print (settings, classifier.valid_options)
     for key in settings.keys():
         if key not in classifier.valid_options and key not in ['errors', 'colors']:
-            raise ValueError(f"Key {key} is not recognized by classifier {classifier_name}")
+            raise ValueError(f"Key {key} is not recognized by classifier {name}")
 
     print ("Initializing classifier...")
     C=classifier(bands, settings)
@@ -93,7 +112,7 @@ def run_one(classifier_name, bands, settings, train_data, train_z, valid_data,
     results = C.apply(valid_data)
 
     print ("Getting metric...")
-    scores = tc.compute_scores(results, valid_z, metrics=metrics)
+    scores = metrics_fn(results, valid_z, metrics=metrics)
 
     return scores
 
