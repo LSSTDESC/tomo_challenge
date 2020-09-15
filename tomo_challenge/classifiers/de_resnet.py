@@ -3,9 +3,9 @@ import keras
 import numpy as np
 import time
 
-from tomo_challenge.utils.utils import save_logs
-from tomo_challenge.utils.utils import calculate_metrics
-from tomo_challenge.utils.utils import get_available_gpus
+#from tomo_challenge.utils.utils import save_logs
+#from tomo_challenge.utils.utils import calculate_metrics
+#from tomo_challenge.utils.utils import get_available_gpus
 
 class Classifier_RESNET:
 
@@ -139,4 +139,8 @@ class Classifier_RESNET:
 		model_path = model_path + 'best_model.hdf5'
 		model = keras.models.load_model(model_path)
 		y_pred = model.predict(x_test)
+
+def get_available_gpus():
+    local_device_protos = device_lib.list_local_devices()
+    return [x.name for x in local_device_protos if x.device_type == 'GPU']
 		return  y_pred
