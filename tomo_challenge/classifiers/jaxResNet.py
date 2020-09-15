@@ -115,7 +115,7 @@ class JaxResNet(Tomographer):
         learning_rate = 0.001
         input_shape = (1, training_data.shape[1], 1)
         batch_size = 5000
-        epochs = 2
+        epochs = 200
         
         # Initialize model and optimizer
         def create_model_optimizer(n_bins):
@@ -141,7 +141,7 @@ class JaxResNet(Tomographer):
             # Define loss function as 1 / FOM
             def loss_fn(model):
                 w = model(batch['features'][..., jnp.newaxis])
-                return 1. / jax_metrics.compute_fom(w, batch['labels'])
+                return 1. / jax_metrics.compute_fom(w, batch['labels'], inds=[5,6])
             loss, g = jax.value_and_grad(loss_fn)(optimizer.target)
             optimizer = optimizer.apply_gradient(g)
             return optimizer, loss
