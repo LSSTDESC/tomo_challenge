@@ -8,4 +8,6 @@ class Tomographer:
 
     def __init_subclass__(cls, *args, **kwargs):
         print(f"Found classifier {cls.__name__}")
+        if cls.__name__ in cls._subclasses:
+            raise ValueError(f"Duplicate name: {cls.__name__}")
         cls._subclasses[cls.__name__] = cls
