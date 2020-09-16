@@ -1,4 +1,4 @@
-import jax_metrics as j_metrics
+from .. import jax_metrics as j_metrics
 from flax import nn, optim, serialization, jax_utils
 import jax.random as rand
 import jax.numpy as jnp

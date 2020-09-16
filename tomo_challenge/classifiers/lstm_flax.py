@@ -22,10 +22,10 @@ from tensorflow import keras
 from sklearn.preprocessing import MinMaxScaler
 import h5py
 from flax import nn, optim, jax_utils
-import jax_random as rand
-import jax_numpy as jnp
+import jax.random as rand
+import jax.numpy as jnp
 import jax
-from .tomo_challenge import jax_metrics as j_metrics
+from .. import jax_metrics as j_metrics
 
 def get_classifier(n_bin, n_features):
     class BinningNN(nn.Module):
@@ -147,16 +147,16 @@ class Flax_LSTM(Tomographer):
         train_dataset = train_dataset.shuffle(buffer_size=2048).batch(batch_size)
         return train_dataset
 
-    losses = []
-    for e in range(epochs):
-        for i, (x_train, labels) in enumerate(get_batches().as_numpy_iterator()):
-            optimizer, loss = train_step(optimizer, x_train, labels)
-        losses.append(loss)
+        losses = []
+        for e in range(epochs):
+            for i, (x_train, labels) in enumerate(get_batches().as_numpy_iterator()):
+                optimizer, loss = train_step(optimizer, x_train, labels)
+            losses.append(loss)
 
-    print('Epoch {}\nLoss = {}'.format(e, loss))
+        print('Epoch {}\nLoss = {}'.format(e, loss))
 
-   
-    self.model = optimizer.target
+       
+        self.model = optimizer.target
 
 
     def apply (self, data):
