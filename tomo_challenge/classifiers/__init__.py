@@ -1,4 +1,5 @@
 import os
+import sys
 from .base import Tomographer
 
 def all_python_files():
@@ -11,4 +12,7 @@ def all_python_files():
     return names
 
 for name in all_python_files():
-    __import__(name, globals(), locals(), level=1)
+    try:
+        __import__(name, globals(), locals(), level=1)
+    except Exception as error:
+        sys.stderr.write(f"Failed to import {name}: '{error}'")
