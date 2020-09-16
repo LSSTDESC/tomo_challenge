@@ -1,0 +1,19 @@
+metrics:  [SNR_3x2]
+bands: griz
+training_file: data/training.hdf5
+validation_file: data/validation.hdf5
+output_file: example/jec_MultiClf_10bins_50x2est_JAX_opt9_BEST_DETF.txt
+
+run:
+  # This is a class name which will be looked up
+  myCombinedClassifiers:
+    run_3:
+      savefile: /sps/lsst/users/campagne/tomo_challenge/data/jec__MultiClf-GB+RFNoDepthLimit-StdScaler-10bins-50estim-griz-JAX-Opt9_BEST_DETF.joblib
+      n_estimators: 50
+      # This setting is sent to the classifier
+      bins: 10
+      # These special settings decide whether the
+      # color and error colums are passed to the classifier
+      # as well as the magnitudes
+      colors: True
+      errors: False

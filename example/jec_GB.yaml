@@ -1,0 +1,38 @@
+<<<<<<< HEAD:example/example_cnn.yaml
+metrics:  [SNR_3x2, FOM_3x2]
+bands: griz
+training_file: data/training.hdf5
+validation_file: data/validation.hdf5
+output_file: example/cnn_10bins.txt
+metrics_impl: jax-cosmo
+loader: custom
+=======
+metrics:  [SNR_ww, SNR_3x2, FOM_3x2]
+bands: griz
+training_file: data/training.hdf5
+validation_file: data/validation.hdf5
+output_file: example/my_GB_output-6bins-50estim-griz-testDump.txt
+>>>>>>> pr_18/master:example/jec_GB.yaml
+
+run:
+  # This is a class name which will be looked up
+  #RandomForest:
+  CNN:
+    run_3:
+<<<<<<< HEAD:example/example_cnn.yaml
+=======
+      # to save file
+      savefile: /Users/campagne/Travail/Software/tomo_challenge-orig/data/jec_GB-6bins-50estim-griz-testDump.joblib
+      n_estimators: 50
+>>>>>>> pr_18/master:example/jec_GB.yaml
+      # This setting is sent to the classifier
+      bins: 10
+      # These special settings decide whether the
+      # color and error colums are passed to the classifier
+      # as well as the magnitudes
+      colors: True
+      errors: False
+
+ # IBandOnly:
+ #   run_3:
+ #     bins: 3
