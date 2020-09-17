@@ -23,7 +23,7 @@ import subprocess
 
 
 
-class ENSEMBLE(Tomographer):
+class ENSEMBLE2(Tomographer):
     """ ENSEMBLE Classifier """
 
     # valid parameter -- see below

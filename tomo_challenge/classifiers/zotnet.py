@@ -14,7 +14,7 @@ try:
     from zotbin.util import prepare, get_signature, get_file
     from zotbin.flow import learn_flow
     from zotbin.binned import load_binned
-    from zotbin.nnet import learn_nnet, apply_nnet
+    from zotbin.nnet import learn_nnet
 except ImportError:
     print('The ZotNet classifierr needs the zotbin package:\n  pip install git+https://github.com/dkirkby/zotbin.git')
 

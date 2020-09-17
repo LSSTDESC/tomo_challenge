@@ -25,7 +25,7 @@ import sys
 
 
 
-class ENSEMBLE(Tomographer):
+class ENSEMBLE1(Tomographer):
     """ ENSEMBLE Classifier """
 
     # valid parameter -- see below

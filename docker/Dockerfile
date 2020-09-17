@@ -103,6 +103,7 @@ RUN cd /opt && python rpy_installer.py && rm /opt/rpy_installer.py
 
 RUN pip install --no-cache-dir keras-tcn==3.1.1
 RUN pip install --no-cache-dir git+https://github.com/dkirkby/zotbin@2d290e198b3baaf3bebd6292045e2f691748210d
+RUN pip install --no-cache-dir lightgbm==2.3.1
 
 
 # These prevent errors all over the place on NERSC
