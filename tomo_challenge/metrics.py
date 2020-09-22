@@ -9,33 +9,43 @@ default_config_path = this_directory.parent / 'tomo_challenge' / 'config.yml'
 
 def compute_scores(tomo_bin, z, metrics='all'):
     """Compute a set of score metrics.
+
     Metric 1
     ========
     Score metric based on the total spectrum S/N
+
     This is given by sqrt(mu^T . C^{-1} . mu) - baseline
     where mu is the theory prediction and C the Gaussian covariance
     for this set of bins. The baseline is the score for no tomographic binning.
+
     Metric 2
     ========
     WL FoM in (currently) Omega_c - sigma_8.
+
     Generated using a Fisher matrix calculation
+
     Parameters
     ----------
     tomo_bin: array
         Tomographic bin choice (0 .. bin_max) for each object in the survey
     z: array
         True redshift for each object
+
     metrics: str or list of str
         Which metrics to compute. If all it will return all metrics,
         otherwise just those required (see below)
+
     Returns
     -------
     scores: dict
          A dictionary of scores. The following dict keys are present
+
         "SNR_ww", "SNR_gg", "SNR_3x2": float
         SNR scores for shear-shear, galaxy clustering and full 3x2pt
+
         "FOM_ww", "FOM_gg", "FOM_3x2": float
         FOM metric derived from SNR above
+
     """
 
     scores = {}
@@ -104,10 +114,12 @@ def get_tracer_type(nbin, what):
 
 def compute_mean_covariance(tomo_bin, z, what):
     """Compute a mean and covariance for the chosen distribution of objects.
+
     value can be 'ww' for shear-shear only, 'gg' for galaxy clustering and
     '3x2' for full '3x2pt'
     This assumes a cosmology, and the varions parameters affecting the noise
     and signal: the f_sky, ell choices, sigma_e, and n_eff
+
     """
     import pyccl as ccl
     # 10,000 sq deg
@@ -227,7 +239,7 @@ def plot_distributions(z, tomo_bin, filename, nominal_edges=None, metadata=None)
     if nominal_edges is not None:
         for x in nominal_edges:
             plt.axvline(x, color='k', linestyle=':')
-    
+
     metadata = {k:str(v) for k,v in metadata.items()}
     plt.savefig(filename, metadata=metadata)
     plt.close()
