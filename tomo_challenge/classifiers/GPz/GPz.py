@@ -12,17 +12,17 @@ def sample(n, trainSample, validSample, testSample):
         validSample = ceil(n * validSample)
         testSample = ceil(n * testSample)
         trainSample = min([ceil(n * trainSample), n - testSample - validSample])
-
+    
     r = random.permutation(n)
-
+    
     validation = zeros(n, dtype=bool)
     testing = zeros(n, dtype=bool)
     training = zeros(n, dtype=bool)
-
-    validation[r[0:validSample]] = True
-    testing[r[validSample:validSample + testSample]] = True
-    training[r[validSample + testSample:validSample + testSample + trainSample]] = True
-
+    
+    validation[r[0:int(validSample)]] = True
+    testing[r[int(validSample):int(validSample + testSample)]] = True
+    training[r[int(validSample + testSample):int(validSample + testSample + trainSample)]] = True
+    
     return training, validation, testing
 
 
