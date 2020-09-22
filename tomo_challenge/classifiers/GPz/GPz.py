@@ -418,7 +418,7 @@ class GP:
 
         grad = zeros(ind[-1])
 
-        for i in list(reversed(range(n_layers))):
+        for i in list(reversed(list(range(n_layers)))):
             dW = dot(PHI[i].T,dPHI)
             dbias = sum(dPHI,0)
 
@@ -718,26 +718,26 @@ class GP:
 
         if (self.iter==1):
             if self.validLL is None:
-                print  '{0:4s}\t{1:9s}\t\t{2:9s}\t\t{3:9s}\t\t{4:9s}'.format('Iter', ' logML/n', ' Train RMSE', ' Train MLL', ' Time')
+                print('{0:4s}\t{1:9s}\t\t{2:9s}\t\t{3:9s}\t\t{4:9s}'.format('Iter', ' logML/n', ' Train RMSE', ' Train MLL', ' Time'))
             else:
-                print  '{0:4s}\t{1:9s}\t\t{2:9s}\t\t{3:9s}\t\t{4:9s}\t\t{5:9s}\t\t{6:9s}'.format('Iter', ' logML/n', ' Train RMSE',
-                                                                                   ' Train RMSE/n', ' Valid RMSE', ' Valid MLL', ' Time')
+                print('{0:4s}\t{1:9s}\t\t{2:9s}\t\t{3:9s}\t\t{4:9s}\t\t{5:9s}\t\t{6:9s}'.format('Iter', ' logML/n', ' Train RMSE',
+                                                                                   ' Train RMSE/n', ' Valid RMSE', ' Valid MLL', ' Time'))
         if self.validLL is None:
-            print '{0:4d}\t{1: 1.7e}\t{2: 1.7e}\t{3: 1.7e}\t{4: 1.7e}'.format(self.iter, -self.nlogML, self.trainRMSE,self.trainLL,time.time()-self.timer)
+            print('{0:4d}\t{1: 1.7e}\t{2: 1.7e}\t{3: 1.7e}\t{4: 1.7e}'.format(self.iter, -self.nlogML, self.trainRMSE,self.trainLL,time.time()-self.timer))
             self.best_theta = theta
             self.best_valid = self.trainLL
         else:
 
             if self.iter==1 or self.validLL >= self.best_valid:
-                print '{0:4d}\t{1: 1.7e}\t{2: 1.7e}\t{3: 1.7e}\t{4: 1.7e}\t[{5: 1.7e}]\t{6: 1.7e}'.format(self.iter, -self.nlogML, self.trainRMSE, self.trainLL, self.validRMSE, self.validLL,time.time()-self.timer)
+                print('{0:4d}\t{1: 1.7e}\t{2: 1.7e}\t{3: 1.7e}\t{4: 1.7e}\t[{5: 1.7e}]\t{6: 1.7e}'.format(self.iter, -self.nlogML, self.trainRMSE, self.trainLL, self.validRMSE, self.validLL,time.time()-self.timer))
                 self.best_theta = theta
                 self.best_valid = self.validLL
                 self.attempts = 0
             else:
-                print '{0:4d}\t{1: 1.7e}\t{2: 1.7e}\t{3: 1.7e}\t{4: 1.7e}\t {5: 1.7e} \t{6: 1.7e}'.format(self.iter, -self.nlogML, self.trainRMSE, self.trainLL, self.validRMSE, self.validLL,time.time()-self.timer)
+                print('{0:4d}\t{1: 1.7e}\t{2: 1.7e}\t{3: 1.7e}\t{4: 1.7e}\t {5: 1.7e} \t{6: 1.7e}'.format(self.iter, -self.nlogML, self.trainRMSE, self.trainLL, self.validRMSE, self.validLL,time.time()-self.timer))
                 self.attempts = self.attempts+1
 
         if(self.attempts>self.maxAttempts):
-            print 'No improvment after maximum number of attempts'
+            print('No improvment after maximum number of attempts')
         self.timer = time.time()
         self.iter += 1
