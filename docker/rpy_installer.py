@@ -23,6 +23,7 @@ packnames = [
     "devtools",
     "matrixStats",
     "kohonen",
+    "RANN"
 ]
 base = ro.packages.importr("base")
 utils = ro.packages.importr("utils")
@@ -44,3 +45,5 @@ devtools.install_github("AngusWright/kohonen/kohonen")
 
 devtools = ro.packages.importr("devtools")
 kohonen = ro.packages.importr("kohonen")
+rann=ro.packages.importr("RANN")
+
