@@ -24,6 +24,7 @@ See Classifier Documentation below.
 
 from .base import Tomographer
 import numpy as np
+from . import GPz
 
 import subprocess
 
@@ -59,17 +60,17 @@ class GPzBinning(Tomographer):
         self.bands = bands
         self.opt = options
 
-    def train (self, training_data, training_z,file_prefix):
+    def train (self, training_data, training_z):
 
         
         X_train = training_data
         n_train,d = X_train.shape
         
-        np.savetxt('train_data.csv',training_data)
-        np.savetxt('training_z.csv',training_z)
+        # np.savetxt('train_data.csv',training_data)
+        # np.savetxt('training_z.csv',training_z)
         
-        subprocess.run(["python2", file_prefix+"classifier_train_GPz.py"])
-        
+        # subprocess.run(["python2", file_prefix+"classifier_train_GPz.py"])
+        self.model = GPz.train(training_data, training_z)
 
 
         # Sort out bin edges
@@ -101,7 +102,7 @@ class GPzBinning(Tomographer):
         self.z_edges = z_edges
 
 
-    def apply (self, testing_data,file_prefix):
+    def apply (self, testing_data):
         """Applies training to the data.
         
         Parameters:
@@ -117,14 +118,15 @@ class GPzBinning(Tomographer):
         """
         
         # Save data
-        np.savetxt('test_data.csv',testing_data)
+        # np.savetxt('test_data.csv',testing_data)
 
         # Run GPz for predictions
-        subprocess.run(["python2", file_prefix+"classifier_predict_GPz.py"])
+        # subprocess.run(["python2", file_prefix+"classifier_predict_GPz.py"])
+        data = GPz.predict(self.model, testing_data)
 
         
 
-        data= np.genfromtxt('prediction_data.csv')
+        # data= np.genfromtxt('prediction_data.csv')
         mu=data[:,0]
         sigma=data[:,1]
         modelV=data[:,2]

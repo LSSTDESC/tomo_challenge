@@ -26,16 +26,16 @@ from rpy2.robjects.conversion import localconverter
 #Check that all the needed packages are installed
 # R package nameo
 packnames = ('RANN','RANN')
-base=ro.packages.importr("base")
-utils=ro.packages.importr("utils")
-stats=ro.packages.importr("stats")
-gr=ro.packages.importr("graphics")
-dev=ro.packages.importr("grDevices")
-utils.chooseCRANmirror(ind=1)
+# base=ro.packages.importr("base")
+# utils=ro.packages.importr("utils")
+# stats=ro.packages.importr("stats")
+# gr=ro.packages.importr("graphics")
+# dev=ro.packages.importr("grDevices")
+# utils.chooseCRANmirror(ind=1)
 # Selectively install what needs to be installed.
-names_to_install = [x for x in packnames if not rpack.isinstalled(x)]
-if len(names_to_install) > 0:
-    utils.install_packages(StrVector(names_to_install))
+# names_to_install = [x for x in packnames if not rpack.isinstalled(x)]
+# if len(names_to_install) > 0:
+#     utils.install_packages(StrVector(names_to_install))
 rann=ro.packages.importr("RANN")
 
 class UTOPIA(Tomographer):
