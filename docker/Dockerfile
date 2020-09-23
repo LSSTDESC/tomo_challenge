@@ -105,6 +105,8 @@ RUN pip install --no-cache-dir keras-tcn==3.1.1
 RUN pip install --no-cache-dir git+https://github.com/dkirkby/zotbin@2d290e198b3baaf3bebd6292045e2f691748210d
 RUN pip install --no-cache-dir lightgbm==2.3.1
 
+RUN pip uninstall -y jax-cosmo
+RUN pip install git+https://github.com/DifferentiableUniverseInitiative/jax_cosmo
 
 # These prevent errors all over the place on NERSC
 ENV LC_ALL C.UTF-8
