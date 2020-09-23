@@ -26,22 +26,20 @@ from rpy2.robjects.conversion import localconverter
 
 #Check that all the needed packages are installed
 # R package nameo
-packnames = ('data.table','itertools','foreach','doParallel','RColorBrewer','devtools','matrixStats')
-base=ro.packages.importr("base")
-utils=ro.packages.importr("utils")
-stats=ro.packages.importr("stats")
-gr=ro.packages.importr("graphics")
-dev=ro.packages.importr("grDevices")
-utils.chooseCRANmirror(ind=1)
-# Selectively install what needs to be installed.
-names_to_install = [x for x in packnames if not rpack.isinstalled(x)]
-if len(names_to_install) > 0:
-    utils.install_packages(StrVector(names_to_install))
-base.Sys_setenv(TAR=base.system("which tar",intern=True))
-devtools=ro.packages.importr("devtools")
-#devtools.install_github("AngusWright/helpRfuncs")
-#devtools.install_github("AngusWright/kohonen/kohonen")
-kohonen=ro.packages.importr("kohonen")
+base = None
+stats = None
+gr = None
+dev = None
+kohonen = None
+
+def init_r_packages():
+    global base, stats, gr, dev, kohonen
+    base=ro.packages.importr("base")
+    stats=ro.packages.importr("stats")
+    gr=ro.packages.importr("graphics")
+    dev=ro.packages.importr("grDevices")
+    base.Sys_setenv(TAR=base.system("which tar",intern=True))
+    kohonen=ro.packages.importr("kohonen")
 
 class SimpleSOM2(Tomographer):
     """ Simplistic SOM Classifier """
@@ -76,6 +74,7 @@ class SimpleSOM2(Tomographer):
             'data_threshold' - number of threads to use
 
         """
+        init_r_packages()
         self.bands = bands
         self.opt = options
 
