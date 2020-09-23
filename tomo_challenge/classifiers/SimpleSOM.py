@@ -41,7 +41,7 @@ def init_r_packages():
     base.Sys_setenv(TAR=base.system("which tar",intern=True))
     kohonen=ro.packages.importr("kohonen")
 
-class SimpleSOM2(Tomographer):
+class SimpleSOM(Tomographer):
     """ Simplistic SOM Classifier """
     
     # valid parameter -- see below
