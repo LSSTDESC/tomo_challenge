@@ -131,7 +131,7 @@ def add_size(data, filename):
         data['mcal_T'] = f[f'mcal_T'][:]
 
 
-def dict_to_array(data, bands, errors=False, colors=False):
+def dict_to_array(data, bands, errors=False, colors=False, size=False):
     nobj = data[bands[0]].size
     nband = len(bands)
     ncol = nband
@@ -139,6 +139,8 @@ def dict_to_array(data, bands, errors=False, colors=False):
         ncol += nband * (nband - 1) // 2
     if errors:
         ncol *= 2
+    if size:
+        ncol += 1
 
     arr = np.empty((ncol, nobj))
     i = 0
@@ -160,6 +162,8 @@ def dict_to_array(data, bands, errors=False, colors=False):
         for b, c in colors_for_bands(bands):
             arr[i] = data[f'{b}{c}_err']
             i += 1
+    if size:
+        arr[i] = data['mcal_T']
 
     return arr.T
 
