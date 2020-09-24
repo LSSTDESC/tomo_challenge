@@ -1,0 +1,6 @@
+run:
+  MineCraft:
+    run_0:
+      blocks: 62
+      zbins: 11
+        

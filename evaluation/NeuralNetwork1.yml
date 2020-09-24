@@ -1,0 +1,8 @@
+run:
+  NeuralNetwork:
+    run_1:
+      bins: 3
+      metric: FOM_DETF
+      output_dir: models
+      colors: True
+      errors: True

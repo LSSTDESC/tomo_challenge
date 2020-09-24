@@ -1,0 +1,7 @@
+run:
+  UTOPIA:
+    run_5b:
+      bins: 5
+      sparse_frac: 1.0
+      colors: True
+      errors: False

@@ -1,0 +1,4 @@
+run:
+  IBandOnly:
+    run_3:
+      bins: 3

@@ -1,0 +1,15 @@
+run:
+  PQNLD:
+    run_5:
+      bins: 5
+      som_dim: [101,101]
+      num_groups: 10000
+      num_threads: 32
+      group_type: 'redshift'
+      data_threshold: [0,30]
+      sparse_frac: 1.0
+      plots: False
+      plot_dir: 'plots' 
+      colors: False
+      errors: True
+

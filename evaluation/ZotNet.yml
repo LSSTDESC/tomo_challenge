@@ -1,0 +1,38 @@
+run:
+  # This is a class name which will be looked up
+  ZotNet:
+    run_4:
+      # This setting is sent to the classifier
+      bins: 4
+      # These special settings decide whether the
+      # color and error colums are passed to the classifier
+      # as well as the magnitudes
+      colors: False
+      errors: False
+      # ZotBin initialization data used for fast metric calculations.
+      # Available from https://portal.nersc.gov/cfs/lsst/dkirkby/zotbin/
+      # and /global/cfs/cdirs/lsst/www/dkirkby/zotbin at nersc.
+      init: binned_3_80.npz
+      # ZotNet training parameters...
+      # Number of nodes per hidden layer.
+      nhidden: 64
+      # Number of hidden layers.
+      nlayer: 2
+      # Maximum number of samples to use.
+      ndata: 500000
+      # Fraction of samples to use for training vs validation.
+      trainfrac: 0.9
+      # Batch size for SGD.
+      batchsize: 10000
+      # Which metric to optimize, must be one of FOM_DETF_3x2, FOM_3x2, SNR_3x2.
+      metric: FOM_DETF_3x2
+      # Number of trials with different random initializations.
+      ntrial: 1
+      # Number of training epochs per trial.
+      nepoch: 20
+      # Print progress every interval steps of each trial.
+      interval: 5
+      # Initial learning rate for the Adam optimizer.
+      eta: 0.02
+      # Seed for random initializations.
+      seed: 123

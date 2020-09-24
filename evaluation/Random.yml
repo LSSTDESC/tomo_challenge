@@ -1,0 +1,6 @@
+run:
+  Random:
+    run_3:
+      bins: 3
+      colors: True
+      errors: False

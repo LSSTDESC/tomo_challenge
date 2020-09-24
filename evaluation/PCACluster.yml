@@ -1,0 +1,8 @@
+run:
+  PCACluster:
+    run_3:
+      bins: 3
+      metric: FOM
+      verbose: False
+      colors: True
+      errors: True

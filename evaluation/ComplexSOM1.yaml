@@ -1,0 +1,26 @@
+run:
+  # This is a class name which will be looked up
+  ComplexSOM:
+    run_5:
+      # These settings are sent to the classifier
+      testing: False
+      bins: 5
+      som_dim: [51,51]
+      num_groups: 200
+      num_threads: 32
+      group_type: 'redshift'
+      whiten: False
+      redshift_propset: 2
+      data_threshold: [0,30]
+      sparse_frac: 1.0
+      plots: True 
+      plot_dir: 'plots' 
+      metric: "SNR_3x2"
+      use_inbin: False
+      use_outbin: False
+      # These special settings decide whether the
+      # color and error colums are passed to the classifier
+      # as well as the magnitudes
+      colors: False
+      errors: False
+      sizes: True

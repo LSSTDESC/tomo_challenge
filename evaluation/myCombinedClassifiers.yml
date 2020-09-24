@@ -1,0 +1,8 @@
+run:
+  myCombinedClassifiers:
+    run_3:
+      savefile: tomo_challenge/classifiers/jec__MultiClf-GB+RFNoDepthLimit-StdScaler-10bins-50estim-griz-JAX-Opt9_BEST_DETF.joblib
+      n_estimators: 50
+      bins: 10
+      colors: True
+      errors: False

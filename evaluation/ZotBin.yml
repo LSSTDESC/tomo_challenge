@@ -1,0 +1,39 @@
+run:
+  # This is a class name which will be looked up
+  ZotBin:
+    run_4:
+      # This setting is sent to the classifier
+      bins: 4
+      # These special settings decide whether the
+      # color and error colums are passed to the classifier
+      # as well as the magnitudes
+      colors: False
+      errors: False
+      # ZotBin initialization data used for fast metric calculations.
+      # Available from https://portal.nersc.gov/cfs/lsst/dkirkby/zotbin/
+      # and /global/cfs/cdirs/lsst/www/dkirkby/zotbin at nersc.
+      init: binned_3_80.npz
+      # ZotBin grouping parameters...
+      # The number of percentile bins to use along each feature axis.
+      # Use ncpt=10 for a quick test or npct=20 for a better result.
+      npct: 10
+      # The number of groups to build from the initial lattice of ncpt ** nband cells.
+      # Groups are built iteratively by maximizing the joint similarity of cells
+      # in feature and redshift distribution space.
+      ngrp: 150
+      # The similarity measure to use for redshift distributions.
+      # Must be one of: cosine, weighted, EMD (Earth mover's distance = Wasserstein W1 metric)
+      similarity: cosine
+      # ZotBin optimization parameters...
+      # Which metric to optimize, must be one of FOM_DETF_3x2, FOM_3x2, SNR_3x2.
+      metric: FOM_DETF_3x2
+      # Number of trials with different random initializations.
+      ntrial: 1
+      # Number of optimization steps per trial.
+      nsteps: 500
+      # Print progress every interval steps of each trial.
+      interval: 250
+      # Initial learning rate for the Adam optimizer.
+      eta: 0.02
+      # Seed for random initializations.
+      seed: 123

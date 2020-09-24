@@ -1,0 +1,19 @@
+run:
+  # This is a class name which will be looked up
+  funbins:
+    run_4:
+      # This setting is sent to the classifier
+      bins: 4
+      #if no seed is present or None, the default seed is 123
+      seed: 123 
+      #acceptable methods: 'log', 'random', 'chi', 'linear'
+      method: 'chi' 
+      #to combine bins, list 2 bins to be combined as a list. Ex) [0,2] 
+      #for example, running 4 bins you can combine any 2 of bins 0, 1, 2, or 3.
+      #if nothing here or None, no bins will be combined.
+      combinebins: 
+      # These special settings decide whether the
+      # color and error colums are passed to the classifier
+      # as well as the magnitudes
+      colors: True
+      errors: True

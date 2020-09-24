@@ -1,0 +1,14 @@
+metrics:  [SNR_3x2, FOM_3x2]
+bands: griz
+training_file: data/training.hdf5
+validation_file: data/validation.hdf5
+output_file: example/bidirectional_lstm_10bins.txt
+metrics_impl: jax-cosmo
+loader: custom
+
+run:
+  LSTM:
+    run_3:
+      bins: 10
+      colors: True
+      errors: False
