@@ -24,6 +24,7 @@ class Random(Tomographer):
 
     ## see constructor below
     valid_options = ['bins','seed']
+    wants_arrays = True
     
     def __init__ (self, bands, options):
         """Constructor
