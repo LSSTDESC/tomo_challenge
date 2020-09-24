@@ -30,7 +30,8 @@ class LSTM(Tomographer):
     valid_options = ['bins']
     # this settings means arrays will be sent to train and apply instead
     # of dictionaries
-    wants_arrays = False
+    wants_arrays = True
+    skips_zero_flux = True
     
     def __init__ (self, bands, options):
         """Constructor

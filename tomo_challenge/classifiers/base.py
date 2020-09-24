@@ -1,6 +1,7 @@
 class Tomographer:
     _subclasses = {}
     wants_arrays = False
+    skips_zero_flux = False
 
     @classmethod
     def _find_subclass(cls, name):

@@ -4,6 +4,7 @@ import os
 import click
 import yaml
 import jinja2
+import numpy as np
 
 ## get root dir, one dir above this script
 root_dir=os.path.join(os.path.split(sys.argv[0])[0],"..")
@@ -75,11 +76,29 @@ def main(config_yaml):
 
                 output_file.write (f"{classifier_name} {run} {settings} {scores} \n")
 
+def skip_zero_flux(data, z, bands):
+    n = len(z)
+    bad = np.zeros(n, dtype=bool)
+    for b in bands:
+        bad |= data[b] >= 30
+    good = ~bad
+    data_out = {name:col[good] for name, col in data.items()}
+    z_out = z[good]
+
+    return data_out, z_out, good
 
 
 def run_one(classifier_name, bands, settings, train_data, train_z, valid_data,
              valid_z, metrics, metrics_fn):
     classifier = tc.Tomographer._find_subclass(classifier_name)
+
+    # Some teams say their classifiers do better when objects with zero flux
+    # in some bands (which are tagged as mag=30).  To support this we strip down
+    # to just the objects where this is not true, and later put all the other
+    # objects into a junk bin
+    if classifier.skips_zero_flux:
+        train_data, train_z, _ = skip_zero_flux(train_data, train_z, bands)
+        valid_data, _, valid_index = skip_zero_flux(valid_data, valid_z, bands)
 
     if classifier.wants_arrays:
         errors = settings.get('errors')
@@ -103,6 +122,12 @@ def run_one(classifier_name, bands, settings, train_data, train_z, valid_data,
 
     print ("Applying...")
     results = C.apply(valid_data)
+
+    if classifier.skips_zero_flux:
+        junk_bin = results.max() + 1
+        new_results = np.repeat(junk_bin, valid_z.size)
+        new_results[valid_index] = results
+        results = new_results
 
     print ("Getting metric...")
     scores = metrics_fn(results, valid_z, metrics=metrics)
