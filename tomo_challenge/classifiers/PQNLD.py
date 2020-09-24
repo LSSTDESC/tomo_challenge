@@ -52,6 +52,11 @@ gr = None
 dev = None
 kohonen = None
 
+training_cat_file = "training_bpz.cat"
+training_col_file = "training_bpz.columns"
+#validation_cat_file = "validato" # not used
+validation_col_file = "validation_bpz.columns"
+
 def init_r_packages():
     global base, stats, gr, dev, kohonen
     base=ro.packages.importr("base")
@@ -61,6 +66,11 @@ def init_r_packages():
     base.Sys_setenv(TAR=base.system("which tar",intern=True))
     kohonen=ro.packages.importr("kohonen")
 
+def remove(filename):
+    try:
+        os.remove(filename)
+    except OSError:
+        pass
 
 class PQNLD(Tomographer):
     """ Combined Template and SOM Classifier """
@@ -111,7 +121,11 @@ class PQNLD(Tomographer):
           true redshift for the training sample
 
         """
-
+        remove("training_bpz.asc")
+        remove("training_bpz.bpz")
+        remove(training_col_file)
+        remove(training_cat_file)
+        remove(validation_col_file)
         print("Initialising")
         #Number of tomographic bins 
         n_bin = self.opt['bins']
@@ -156,12 +170,12 @@ class PQNLD(Tomographer):
                                    ["0.01","0.01","0.01"],
                                    ["0.00","0.00","0.00"]])))
             #Output the columns file 
-            columns.to_csv(r"training_bpz.columns",sep=' ',index=None,header=None,mode='w')
+            columns.to_csv(training_col_file,sep=' ',index=None,header=None,mode='w')
             columns = pd.DataFrame(np.transpose(
                                   np.array([["M_0","Z_S"],
                                             ["5","7"]])))
             #Output the columns file 
-            columns.to_csv(r"training_bpz.columns",sep=' ',index=None,header=None,mode='a')
+            columns.to_csv(training_col_file,sep=' ',index=None,header=None,mode='a')
         elif self.bands == 'griz':
             #griz bands
             expressions = ("g-r","g-i",
@@ -175,11 +189,11 @@ class PQNLD(Tomographer):
                                    ["0.01","0.01","0.01","0.01"],
                                    ["0.000001","0.000001","0.000001","0.000001"])
             #Output the columns file 
-            columns.to_csv(r"training_bpz.columns",sep=' ',index=None,header=None,mode='w')
+            columns.to_csv(training_col_file,sep=' ',index=None,header=None,mode='w')
             columns = pd.DataFrame(["M_0","Z_S"],
                                    ["7","9"])
             #Output the columns file 
-            columns.to_csv(r"training_bpz.columns",sep=' ',index=None,header=None,mode='a')
+            columns.to_csv(training_col_file,sep=' ',index=None,header=None,mode='a')
         elif self.bands == 'grizy':
             #grizy bands
             expressions = ("g-r","g-i",
@@ -193,11 +207,11 @@ class PQNLD(Tomographer):
                                    ["0.01","0.01","0.01","0.01","0.01"],
                                    ["0.000001","0.000001","0.000001","0.000001","0.000001"])
             #Output the columns file 
-            columns.to_csv(r"training_bpz.columns",sep=' ',index=None,header=None,mode='w')
+            columns.to_csv(training_col_file,sep=' ',index=None,header=None,mode='w')
             columns = pd.DataFrame(["M_0","Z_S"],
                                    ["7","11"])
             #Output the columns file 
-            columns.to_csv(r"training_bpz.columns",sep=' ',index=None,header=None,mode='a')
+            columns.to_csv(training_col_file,sep=' ',index=None,header=None,mode='a')
         elif self.bands == 'ugriz':
             #ugrizy bands
             expressions = ("u-g","u-r","u-i","u-z","g-r","g-i",
@@ -211,11 +225,11 @@ class PQNLD(Tomographer):
                                    ["0.01","0.01","0.01","0.01","0.01"],
                                    ["0.000001","0.000001","0.000001","0.000001","0.000001"])
             #Output the columns file 
-            columns.to_csv(r"training_bpz.columns",sep=' ',index=None,header=None,mode='w')
+            columns.to_csv(training_col_file,sep=' ',index=None,header=None,mode='w')
             columns = pd.DataFrame(["M_0","Z_S"],
                                    ["9","11"])
             #Output the columns file 
-            columns.to_csv(r"training_bpz.columns",sep=' ',index=None,header=None,mode='a')
+            columns.to_csv(training_col_file,sep=' ',index=None,header=None,mode='a')
         elif self.bands == 'ugrizy':
             #ugrizy bands
             expressions = ("u-g","u-r","u-i","u-z","u-y","g-r","g-i",
@@ -229,21 +243,21 @@ class PQNLD(Tomographer):
                                    ["0.01","0.01","0.01","0.01","0.01","0.01"],
                                    ["0.000001","0.000001","0.000001","0.000001","0.000001","0.000001"])
             #Output the columns file 
-            columns.to_csv(r"training_bpz.columns",sep=' ',index=None,header=None,mode='w')
+            columns.to_csv(training_col_file,sep=' ',index=None,header=None,mode='w')
             columns = pd.DataFrame(["M_0","Z_S"],
                                    ["9","13"])
             #Output the columns file 
-            columns.to_csv(r"training_bpz.columns",sep=' ',index=None,header=None,mode='a')
+            columns.to_csv(training_col_file,sep=' ',index=None,header=None,mode='a')
 
         print("Preparing the data for BPZ")
         #Output the BPZ input catalogue 
         training_data = pd.DataFrame.from_dict(training_data)
         print("Adding redshift info to training data")
         training_data['redshift_true'] = training_z
-        if os.path.exists("training_bpz.cat"):
+        if os.path.exists(training_cat_file):
             print("Read the BPZ inputs")
             cols = training_data.columns
-            training_data = pd.read_csv("training_bpz.cat",sep=' ',header=None)
+            training_data = pd.read_csv(training_cat_file,sep=' ',header=None)
             training_data.columns = cols
             training_z = training_data[['redshift_true']]
         else:
@@ -253,20 +267,20 @@ class PQNLD(Tomographer):
                 training_data = training_data[cut]
 
             print("Outputting the BPZ input cat")
-            np.savetxt(f"training_bpz.cat",training_data,fmt='%3.5f')
+            np.savetxt(training_cat_file,training_data,fmt='%3.5f')
 
-        if not os.path.exists("bpz-1.99.3/"): 
+        if not os.path.exists("bpz-1.99.3-py3/"): 
             os.system("bash INSTALL.sh")
         
         if not os.path.exists("training_bpz.bpz"): 
             print("Running BPZ on the training data")
             curdir=os.getcwd()
-            os.chdir('bpz-1.99.3/')
+            os.chdir('bpz-1.99.3-py3')
             os.system("echo '#NEW' > bpz_run.py")
             os.system("echo import sys >> bpz_run.py")
             os.system("echo import os >> bpz_run.py")
             os.system("echo 'os.environ[\"HOME\"]=\""+curdir+"\"' >>bpz_run.py")
-            os.system("echo 'os.environ[\"BPZPATH\"]=\""+curdir+"/bpz-1.99.3/\"' >> bpz_run.py")
+            os.system("echo 'os.environ[\"BPZPATH\"]=\""+curdir+"/bpz-1.99.3-py3/\"' >> bpz_run.py")
             os.system("echo 'os.environ[\"NUMERIX\"]=\"numpy\"' >> bpz_run.py")
             argv = ["\'bpz.py\'", "\'../training_bpz.cat\'",
                 "-PRIOR", "NGVS", "-SPECTRA", "CWWSB_capak.list",
@@ -277,11 +291,13 @@ class PQNLD(Tomographer):
                 "-VERBOSE", "yes",
                 "-CHECK", "no"]
             os.system("echo 'sys.argv=[\""+"\",\"".join(argv)+"\"]' >> bpz_run.py")
-            os.system("echo 'exec(open(\"bpz.py\").read())' >> bpz_run.py")
-            os.system("cp ../BPZ_SEDs/prior_NGVS.py .")
-            os.system("cp ../BPZ_SEDs/*.sed SED/")
-            os.system("cp ../BPZ_SEDs/CWWSB_capak.list SED/")
-            res = os.system("python2 bpz_run.py")
+            # os.system("echo 'exec(open(\"bpz.py\").read())' >> bpz_run.py")
+            os.system("echo 'import bpz' >> bpz_run.py")
+            # os.system("cp ../BPZ_SEDs/prior_NGVS.py .")
+            # os.system("cp ../BPZ_SEDs/*.sed SED/")
+            # os.system("cp ../BPZ_SEDs/CWWSB_capak.list SED/")
+            os.system('cat bpz_run.py')
+            res = os.system("python bpz_run.py")
             os.chdir('../')
 
         print("Read the BPZ results")
@@ -462,12 +478,12 @@ class PQNLD(Tomographer):
                                    ["0.01","0.01","0.01"],
                                    ["0.00","0.00","0.00"]])))
             #Output the columns file 
-            columns.to_csv(r"validation_bpz.columns",sep=' ',index=None,header=None,mode='w')
+            columns.to_csv(validation_col_file,sep=' ',index=None,header=None,mode='w')
             columns = pd.DataFrame(np.transpose(
                                   np.array([["M_0"],
                                             ["5"]])))
             #Output the columns file 
-            columns.to_csv(r"validation_bpz.columns",sep=' ',index=None,header=None,mode='a')
+            columns.to_csv(validation_col_file,sep=' ',index=None,header=None,mode='a')
         elif self.bands == 'griz':
             #griz bands
             expressions = ("g-r","g-i",
@@ -481,11 +497,11 @@ class PQNLD(Tomographer):
                                    ["0.01","0.01","0.01","0.01"],
                                    ["0.000001","0.000001","0.000001","0.000001"])
             #Output the columns file 
-            columns.to_csv(r"validation_bpz.columns",sep=' ',index=None,header=None,mode='w')
+            columns.to_csv(validation_col_file,sep=' ',index=None,header=None,mode='w')
             columns = pd.DataFrame(["M_0"],
                                    ["7"])
             #Output the columns file 
-            columns.to_csv(r"validation_bpz.columns",sep=' ',index=None,header=None,mode='a')
+            columns.to_csv(validation_col_file,sep=' ',index=None,header=None,mode='a')
         elif self.bands == 'grizy':
             #grizy bands
             expressions = ("g-r","g-i",
@@ -499,11 +515,11 @@ class PQNLD(Tomographer):
                                    ["0.01","0.01","0.01","0.01","0.01"],
                                    ["0.000001","0.000001","0.000001","0.000001","0.000001"])
             #Output the columns file 
-            columns.to_csv(r"validation_bpz.columns",sep=' ',index=None,header=None,mode='w')
+            columns.to_csv(validation_col_file,sep=' ',index=None,header=None,mode='w')
             columns = pd.DataFrame(["M_0"],
                                    ["7"])
             #Output the columns file 
-            columns.to_csv(r"validation_bpz.columns",sep=' ',index=None,header=None,mode='a')
+            columns.to_csv(validation_col_file,sep=' ',index=None,header=None,mode='a')
         elif self.bands == 'ugriz':
             #ugrizy bands
             expressions = ("u-g","u-r","u-i","u-z","g-r","g-i",
@@ -517,11 +533,11 @@ class PQNLD(Tomographer):
                                    ["0.01","0.01","0.01","0.01","0.01"],
                                    ["0.000001","0.000001","0.000001","0.000001","0.000001"])
             #Output the columns file 
-            columns.to_csv(r"validation_bpz.columns",sep=' ',index=None,header=None,mode='w')
+            columns.to_csv(validation_col_file,sep=' ',index=None,header=None,mode='w')
             columns = pd.DataFrame(["M_0"],
                                    ["9"])
             #Output the columns file 
-            columns.to_csv(r"validation_bpz.columns",sep=' ',index=None,header=None,mode='a')
+            columns.to_csv(validation_col_file,sep=' ',index=None,header=None,mode='a')
         elif self.bands == 'ugrizy':
             #ugrizy bands
             expressions = ("u-g","u-r","u-i","u-z","u-y","g-r","g-i",
@@ -535,11 +551,11 @@ class PQNLD(Tomographer):
                                    ["0.01","0.01","0.01","0.01","0.01","0.01"],
                                    ["0.000001","0.000001","0.000001","0.000001","0.000001","0.000001"])
             #Output the columns file 
-            columns.to_csv(r"validation_bpz.columns",sep=' ',index=None,header=None,mode='w')
+            columns.to_csv(validation_col_file,sep=' ',index=None,header=None,mode='w')
             columns = pd.DataFrame(["M_0"],
                                    ["9"])
             #Output the columns file 
-            columns.to_csv(r"validation_bpz.columns",sep=' ',index=None,header=None,mode='a')
+            columns.to_csv(validation_col_file,sep=' ',index=None,header=None,mode='a')
 
             
         #Number of tomographic bins 

@@ -645,8 +645,8 @@ def ABflux(sed,filter,madau='yes'):
     wl_2=x_res[-1]/(1.+z_ab)
     #print 'wl', wl_1, wl_2
     #print 'x_res', x_res
-    print('x_res[0]', x_res[0])
-    print('x_res[-1]', x_res[-1])
+    # print('x_res[0]', x_res[0])
+    # print('x_res[-1]', x_res[-1])
     n1=clip(searchsorted(x_sed,wl_1)-1,0,100000)
     n2=clip(searchsorted(x_sed,wl_2)+1,0,nsed-1)
 
@@ -704,7 +704,7 @@ def ABflux(sed,filter,madau='yes'):
             if madau!='no': ys_z=etau_madau(x_r,z_ab[i])*ys_z
             f[i]=trapz(ys_z*r,x_r)*const        
 
-    ABoutput=ab_dir+split(sed,'/')[-1][:-4]+'.'+split(filter,'/')[-1][:-4]+'.AB'
+    ABoutput=ab_dir+sed.split('/')[-1][:-4]+'.'+filter.split('/')[-1][:-4]+'.AB'
 
     #print "Clipping the AB file"
     #fmax=max(f)
@@ -1057,9 +1057,9 @@ class p_bayes:
         self.p=dummy[:,1:]
         del(dummy)
         header=get_header(file)
-        header=split(header,'(')[2]
-        header=split(header,')')[0]
-        zmin,zmax,dz=list(map(float,tuple(split(header,','))))
+        header=header.split('(')[2]
+        header=header.split(')')[0]
+        zmin,zmax,dz=list(map(float,tuple(header.split(','))))
         self.z=arange(zmin,zmax,dz)
 
     def plot_p(self,id,limits=None):

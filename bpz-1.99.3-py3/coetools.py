@@ -98,7 +98,7 @@ def cdmk(dir):
 def splitparagraphs(txt):
     paragraphs = ['']
     for line in txt:
-        line = string.strip(line)
+        line = line.strip()
         if not line:
             line = '\n'
         if line[-1] != '\n':
@@ -185,7 +185,7 @@ def str2num(str, rf=0):
             num = string.atof(str)
             format = 'f'
         except:
-            if not string.strip(str):
+            if not str.strip():
                 num = None
                 format = ''
             else:
@@ -284,12 +284,12 @@ def stringsplitatof(str, separator=''):
 def stringsplitstrip(str, separator=''):
     # SPLITS BUT ALSO STRIPS EACH ITEM OF WHITESPACE
     if separator:
-        words = string.split(str, separator)
+        words = str.split(separator)
     else:
-        words = string.split(str)
+        words = str.split()
     vals = []
     for word in words:
-        vals.append(string.strip(word))
+        vals.append(word.strip())
     return vals
 
 def strbegin(str, phr):

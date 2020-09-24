@@ -134,3 +134,21 @@ dmypy.json
 
 *.hdf5
 notebooks/dev/
+bpz-1.99.3-py3/AB/El_cww_capak.i_SDSS.AB
+bpz-1.99.3-py3/AB/El_cww_capak.r_SDSS.AB
+bpz-1.99.3-py3/AB/El_cww_capak.z_SDSS.AB
+bpz-1.99.3-py3/AB/Im_cww_capak.i_SDSS.AB
+bpz-1.99.3-py3/AB/Im_cww_capak.r_SDSS.AB
+bpz-1.99.3-py3/AB/Im_cww_capak.z_SDSS.AB
+bpz-1.99.3-py3/AB/SB2_kin_capak.i_SDSS.AB
+bpz-1.99.3-py3/AB/SB2_kin_capak.r_SDSS.AB
+bpz-1.99.3-py3/AB/SB2_kin_capak.z_SDSS.AB
+bpz-1.99.3-py3/AB/SB3_kin_capak.i_SDSS.AB
+bpz-1.99.3-py3/AB/SB3_kin_capak.r_SDSS.AB
+bpz-1.99.3-py3/AB/SB3_kin_capak.z_SDSS.AB
+bpz-1.99.3-py3/AB/Sbc_cww_capak.i_SDSS.AB
+bpz-1.99.3-py3/AB/Sbc_cww_capak.r_SDSS.AB
+bpz-1.99.3-py3/AB/Sbc_cww_capak.z_SDSS.AB
+bpz-1.99.3-py3/AB/Scd_cww_capak.i_SDSS.AB
+bpz-1.99.3-py3/AB/Scd_cww_capak.r_SDSS.AB
+bpz-1.99.3-py3/AB/Scd_cww_capak.z_SDSS.AB
