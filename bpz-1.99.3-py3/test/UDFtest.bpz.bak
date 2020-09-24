@@ -1,0 +1,62 @@
+## File test/UDFtest.bpz  Thu Sep 24 12:58:39 2020
+##
+##Parameters used to run BPZ:
+##
+##AB_DIR=/Users/jaz/src/tomo_challenge/bpz-1.99.3/AB/
+##ADD_CONTINUOUS_PROB=None
+##ADD_SPEC_PROB=None
+##CHECK=test/UDFtest.flux_comparison
+##COLOR=no
+##COLUMNS=test/UDFtest.columns
+##CONVOLVE_P=yes
+##DELTA_M_0=0.0
+##DZ=0.01
+##EXCLUDE=none
+##FC=None
+##FILTER_DIR=/Users/jaz/src/tomo_challenge/bpz-1.99.3/FILTER/
+##GET_Z=yes
+##INPUT=test/UDFtest.cat
+##INTERACTIVE=yes
+##INTERP=0
+##MADAU=yes
+##MAG=yes
+##MERGE_PEAKS=no
+##MIN_MAGERR=0.001
+##MIN_RMS=0.05
+##NEW_AB=no
+##NMAX=None
+##NTYPES=None
+##N_PEAKS=1
+##ODDS=0.95
+##ONLY_TYPE=no
+##OUTPUT=test/UDFtest.bpz
+##PHOTO_ERRORS=no
+##PLOTS=no
+##PRIOR=hdfn_gen
+##PROBS=no
+##PROBS2=no
+##PROBS_LITE=test/UDFtest.probs
+##P_MIN=0.01
+##SED_DIR=/Users/jaz/src/tomo_challenge/bpz-1.99.3/SED/
+##SPECTRA=CWWSB4.list
+##VERBOSE=yes
+##ZC=None
+##ZMAX=10.0
+##ZMIN=0.01
+##ZP_OFFSETS=0.0
+##Z_THR=0
+##
+##Column information
+##
+# 1 ID
+# 2 Z_B
+# 3 Z_B_MIN
+# 4 Z_B_MAX
+# 5 T_B
+# 6 ODDS    
+# 7 Z_ML
+# 8 T_ML
+# 9 CHI-SQUARED
+# 10 Z_S
+# 11 M_0
+##

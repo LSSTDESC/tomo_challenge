@@ -1,0 +1,10 @@
+# Filter            columns  AB/Vega  zp_error  zp_offset
+HST_ACS_WFC_F435W    23,24   AB        0.01      0.0
+HST_ACS_WFC_F606W    25,26   AB        0.01      0.0
+HST_ACS_WFC_F775W    27,28   AB        0.01      0.0
+HST_ACS_WFC_F850LP   29,30   AB        0.01      0.0
+nic3_f110w	     31,32   AB        0.01     -0.247
+nic3_f160w	     33,34   AB        0.01     -0.102
+M_0                  27
+Z_S 		      8
+ID                    1

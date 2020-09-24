@@ -1,0 +1,66 @@
+## File UDFtest.bpz  Sun May  2 17:00:23 2010
+##
+##Parameters used to run BPZ:
+##
+##AB_DIR=/Users/coe/bpz-1.99.3release/AB/
+##ADD_CONTINUOUS_PROB=None
+##ADD_SPEC_PROB=None
+##CHECK=UDFtest.flux_comparison
+##COLOR=no
+##COLUMNS=UDFtest.columns
+##CONVOLVE_P=yes
+##DELTA_M_0=0.0
+##DZ=0.01
+##EXCLUDE=none
+##FC=None
+##FILTER_DIR=/Users/coe/bpz-1.99.3release/FILTER/
+##GET_Z=yes
+##INPUT=UDFtest.cat
+##INTERACTIVE=no
+##INTERP=2
+##MADAU=yes
+##MAG=yes
+##MERGE_PEAKS=no
+##MIN_MAGERR=0.001
+##MIN_RMS=0.05
+##NEW_AB=no
+##NMAX=None
+##NTYPES=None
+##N_PEAKS=1
+##ODDS=0.95
+##ONLY_TYPE=no
+##OUTPUT=UDFtest.bpz
+##PHOTO_ERRORS=no
+##PLOTS=no
+##PRIOR=hdfn_gen
+##PROBS=no
+##PROBS2=no
+##PROBS_LITE=UDFtest.probs
+##P_MIN=0.01
+##SED_DIR=/Users/coe/bpz-1.99.3release/SED/
+##SPECTRA=CWWSB4.list
+##VERBOSE=yes
+##ZC=None
+##ZMAX=10.0
+##ZMIN=0.01
+##ZP_OFFSETS=0.0
+##Z_THR=0
+##
+##Column information
+##
+# 1 ID
+# 2 Z_B
+# 3 Z_B_MIN
+# 4 Z_B_MAX
+# 5 T_B
+# 6 ODDS    
+# 7 Z_ML
+# 8 T_ML
+# 9 CHI-SQUARED
+# 10 Z_S
+# 11 M_0
+##
+ 3088 0.190 0.073  0.440 3.333 0.83919 0.130 3.000      0.510  0.127  22.484
+ 8810 0.720 0.551  0.889 3.667 1.00000 0.720 3.667      5.089  0.736  22.375
+ 8461 1.510 1.040  1.756 3.000 0.76521 1.510 3.000      1.886  1.426  23.703
+ 2225 5.760 5.098  6.422 6.667 1.00000 5.760 6.667      0.172  5.820  26.691

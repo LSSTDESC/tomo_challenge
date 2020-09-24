@@ -1,0 +1,2 @@
+from coeplot import *
+thick()
