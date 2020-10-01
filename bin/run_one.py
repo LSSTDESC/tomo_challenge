@@ -12,8 +12,13 @@ import traceback
 
 name = sys.argv[1]
 
-training_file = 'data/mini_training.hdf5'
-validation_file = 'data/mini_validation.hdf5'
+if len(sys.argv) > 2:
+    index = sys.argv[2]
+else:
+    index = ""
+
+training_file = 'data/training.hdf5'
+validation_file = 'data/validation.hdf5'
 bands = 'riz'
 
 training_data = tc.load_data(
@@ -39,16 +44,17 @@ metrics = ['SNR_3x2']
 
 with open('status.txt', 'a') as status_file:
     try:
-        full_config = yaml.safe_load(open(f'evaluation/{name}.yml'))['run'][name]
+        fn = f'evaluation/{name}{index}.yml'
+        full_config = yaml.safe_load(open(fn))['run'][name]
         settings = list(full_config.values())[0]
     except FileNotFoundError:
-        status_file.write(f'{name} - no config\n')
+        status_file.write(f'{name} - no config {fn}\n')
         sys.exit(1)
     except KeyError:
-        status_file.write(f'{name} - config malformed\n')
+        status_file.write(f'{name}{index} - config malformed\n')
         sys.exit(1)
     except Exception as error:
-        status_file.write(f'{name} - (load) {error}\n')
+        status_file.write(f'{name}{index} - (load) {error}\n')
         sys.exit(1)
 
     try:
@@ -58,10 +64,10 @@ with open('status.txt', 'a') as status_file:
     except Exception as error:
         t = time.time() - t0
         tb = traceback.format_exc()
-        status_file.write(f'{name} - (run, {t:.2f}) {error}\n')
+        status_file.write(f'{name}{index} - (run, {t:.2f}) {error}\n')
         status_file.write(tb + '\n')
-        continue
+        sys.exit(1)
 
     t = time.time() - t0
     score = scores['SNR_3x2']
-    status_file.write(f'{name} - (success, {t:.2f}) {score}\n')
+    status_file.write(f'{name}{index} - (success, {t:.2f}) {score}\n')

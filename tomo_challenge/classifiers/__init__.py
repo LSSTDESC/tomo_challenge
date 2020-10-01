@@ -1,6 +1,48 @@
 import os
 import sys
 from .base import Tomographer
+import glob
+import ctypes
+
+# Initialization for GPus
+# Set up what JAX needs to load
+cuda_dir = os.environ['CUDA_DIR']
+os.environ['XLA_FLAGS'] = f'--xla_gpu_cuda_data_dir={cuda_dir}'
+
+os.environ["LD_LIBRARY_PATH"] += ":/home/jzuntz/tomo_challenge/cuda/cuda/lib64"
+os.environ["XLA_PYTHON_CLIENT_MEM_FRACTION"] = ".50"
+
+def try_load_lib(fn):
+    if os.path.exists(fn):
+        ctypes.cdll.LoadLibrary(fn)
+
+import ctypes
+# hack until global installation on cuillin
+for fn in glob.glob("/home/jzuntz/tomo_challenge/cuda/cuda/lib64/lib*.so.8"):
+    print(fn)
+    try_load_lib(fn)
+
+
+
+
+# Tell JAX not to steal all the GPU memory, because tensorflow needs
+# it too
+#os.environ['XLA_PYTHON_CLIENT_PREALLOCATE']='false'
+
+from jax.lib import xla_bridge
+print("Running JAX on: ", xla_bridge.get_backend().platform)
+
+# Tell tensorflow not to steal all the memory too
+import tensorflow as tf
+gpus = tf.config.experimental.list_physical_devices('GPU')
+for gpu in gpus:
+    tf.config.experimental.set_memory_growth(gpu, True)
+    
+if gpus:
+    print("Running tensorflow on GPU")
+else:
+    print("Running tensorflow on CPU")
+
 
 def all_python_files():
     root_dir = os.path.dirname(__file__)
