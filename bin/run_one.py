@@ -49,12 +49,15 @@ with open('status.txt', 'a') as status_file:
         settings = list(full_config.values())[0]
     except FileNotFoundError:
         status_file.write(f'{name} - no config {fn}\n')
+        traceback.print_exc()
         sys.exit(1)
     except KeyError:
         status_file.write(f'{name}{index} - config malformed\n')
+        traceback.print_exc()
         sys.exit(1)
     except Exception as error:
         status_file.write(f'{name}{index} - (load) {error}\n')
+        traceback.print_exc()
         sys.exit(1)
 
     try:
@@ -64,6 +67,7 @@ with open('status.txt', 'a') as status_file:
     except Exception as error:
         t = time.time() - t0
         tb = traceback.format_exc()
+        traceback.print_exc()
         status_file.write(f'{name}{index} - (run, {t:.2f}) {error}\n')
         status_file.write(tb + '\n')
         sys.exit(1)

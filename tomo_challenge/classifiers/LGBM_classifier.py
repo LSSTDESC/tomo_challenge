@@ -83,7 +83,7 @@ class LGBM(Tomographer):
         #training_bin = training_bin[cut]
 
 
-        model = LGBMClassifier
+        model = LGBMClassifier()
         # Can be replaced with any classifier
 
 
@@ -93,7 +93,7 @@ class LGBM(Tomographer):
 
         self.classifier = model
         self.z_edges = z_edges
-        self.scaler = scaler
+
 
 
     def apply (self, data):
@@ -111,6 +111,5 @@ class LGBM(Tomographer):
         """
 
 
-        preds = self.classifier.predict(data)
-        tomo_bin = np.argmax(preds, axis=1)
+        tomo_bin = self.classifier.predict(data).astype(int)
         return tomo_bin

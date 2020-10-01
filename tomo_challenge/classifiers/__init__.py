@@ -10,7 +10,7 @@ cuda_dir = os.environ.get('CUDA_DIR', '.')
 os.environ['XLA_FLAGS'] = f'--xla_gpu_cuda_data_dir={cuda_dir}'
 
 os.environ["LD_LIBRARY_PATH"] = os.environ.get("LD_LIBRARY_PATH", "") + ":/home/jzuntz/tomo_challenge/cuda/cuda/lib64"
-os.environ["XLA_PYTHON_CLIENT_MEM_FRACTION"] = ".50"
+#os.environ["XLA_PYTHON_CLIENT_MEM_FRACTION"] = ".50"
 
 def try_load_lib(fn):
     if os.path.exists(fn):

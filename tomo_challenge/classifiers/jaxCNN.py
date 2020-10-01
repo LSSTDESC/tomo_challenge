@@ -126,13 +126,13 @@ class JaxCNN(Tomographer):
         
         
         # Plotting the loss curve
-        figure = plt.figure(figsize=(10, 6))
-        plt.plot(range(epochs), losses)
-        plt.xlabel('Epoch')
-        plt.ylabel('1 / FOM')
-        plt.yscale('log')
-        plt.savefig(f'../../{n_bins}-bins_{self.bands}.png')
-        plt.close()
+#        figure = plt.figure(figsize=(10, 6))
+#        plt.plot(range(epochs), losses)
+#        plt.xlabel('Epoch')
+#        plt.ylabel('1 / FOM')
+#        plt.yscale('log')
+#        plt.savefig(f'../../{n_bins}-bins_{self.bands}.png')
+#        plt.close()
         
         self.model = optimizer.target
         

@@ -5,6 +5,7 @@ import click
 import yaml
 import jinja2
 import numpy as np
+import gc
 
 ## get root dir, one dir above this script
 root_dir=os.path.join(os.path.split(sys.argv[0])[0],"..")
@@ -123,6 +124,10 @@ def run_one(classifier_name, bands, settings, train_data, train_z, valid_data,
     print ("Applying...")
     results = C.apply(valid_data)
 
+    del C
+    gc.collect()
+
+    
     if classifier.skips_zero_flux:
         junk_bin = results.max() + 1
         new_results = np.repeat(junk_bin, valid_z.size)
