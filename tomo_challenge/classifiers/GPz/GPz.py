@@ -2,7 +2,7 @@ from sklearn.decomposition import PCA
 from scipy.optimize import minimize
 from numpy.linalg import inv,cholesky
 from numpy import *
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 import time
 
 
@@ -40,7 +40,7 @@ def getOmega(y, method='normal', binWidth=0):
 
         bins = ceil((maxY-minY)/binWidth)
         centers = minY+[i*binWidth for i in range(0, bins+1)]
-        h = plt.hist(y,centers)
+        # h = plt.hist(y,centers)
         counts = h[0]
         D = Dxy(y,centers[0:int(bins)].reshape(bins,1)+binWidth/2)
 

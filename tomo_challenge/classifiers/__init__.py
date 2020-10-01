@@ -6,10 +6,10 @@ import ctypes
 
 # Initialization for GPus
 # Set up what JAX needs to load
-cuda_dir = os.environ['CUDA_DIR']
+cuda_dir = os.environ.get('CUDA_DIR', '.')
 os.environ['XLA_FLAGS'] = f'--xla_gpu_cuda_data_dir={cuda_dir}'
 
-os.environ["LD_LIBRARY_PATH"] += ":/home/jzuntz/tomo_challenge/cuda/cuda/lib64"
+os.environ["LD_LIBRARY_PATH"] = os.environ.get("LD_LIBRARY_PATH", "") + ":/home/jzuntz/tomo_challenge/cuda/cuda/lib64"
 os.environ["XLA_PYTHON_CLIENT_MEM_FRACTION"] = ".50"
 
 def try_load_lib(fn):
@@ -34,27 +34,30 @@ print("Running JAX on: ", xla_bridge.get_backend().platform)
 
 # Tell tensorflow not to steal all the memory too
 import tensorflow as tf
-gpus = tf.config.experimental.list_physical_devices('GPU')
-for gpu in gpus:
-    tf.config.experimental.set_memory_growth(gpu, True)
-    
+try:
+    gpus = tf.config.experimental.list_physical_devices('GPU')
+    for gpu in gpus:
+        tf.config.experimental.set_memory_growth(gpu, True)
+except AttributeError:
+    gpus = []
+
 if gpus:
     print("Running tensorflow on GPU")
 else:
     print("Running tensorflow on CPU")
 
 
-def all_python_files():
-    root_dir = os.path.dirname(__file__)
-    names = []
-    for filename in os.listdir(root_dir):
-        if filename.endswith('.py') and filename != '__init__.py':
-            name = filename[:-3]
-            names.append(name)
-    return names
+# def all_python_files():
+#     root_dir = os.path.dirname(__file__)
+#     names = []
+#     for filename in os.listdir(root_dir):
+#         if filename.endswith('.py') and filename != '__init__.py':
+#             name = filename[:-3]
+#             names.append(name)
+#     return names
 
-for name in all_python_files():
-    try:
-        __import__(name, globals(), locals(), level=1)
-    except Exception as error:
-        sys.stderr.write(f"Failed to import {name}: '{error}'")
+# for name in all_python_files():
+#     try:
+#         __import__(name, globals(), locals(), level=1)
+#     except Exception as error:
+#         sys.stderr.write(f"Failed to import {name}: '{error}'")
