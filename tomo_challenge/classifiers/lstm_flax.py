@@ -83,7 +83,7 @@ class Flax_LSTM(Tomographer):
         self.model = get_classifier(self.n_features, self.n_bins)
         self.scaler = MinMaxScaler()
     
-    def load_data(fname, take_colors=True, cutoff=0.0):
+    def load_data(self, fname, take_colors=True, cutoff=0.0):
         
         data = h5py.File(fname, 'r')
         r_mag = data['r_mag']
@@ -123,8 +123,7 @@ class Flax_LSTM(Tomographer):
 
 
          
-    def train(training_data, training_z, batch_size=512, epochs=20):
-
+    def train(self, training_data, training_z, batch_size=512, epochs=20):
         x_train = self.scaler.fit_transform(training_data)
         x_train = np.expand_dims(x_train, axis=1)
         lr = 0.001
