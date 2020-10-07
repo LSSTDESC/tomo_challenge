@@ -20,7 +20,7 @@ import numpy as np
 import tensorflow as tf
 from tensorflow import keras
 from sklearn.preprocessing import MinMaxScaler
-from tcn import TCN
+from tcn import TCN as TCN_
 import h5py
 
 
@@ -129,7 +129,7 @@ class TCN(Tomographer):
         
 
         inp = keras.layers.Input(shape=(training_data.shape[1], 1))
-        x = TCN(nb_filters=[128, 128], kernel_size=2, dilations=[1, 2], nb_stacks=2, activation='relu', return_sequences=False, use_batch_norm=True, use_skip_connections=True)(inp) 
+        x = TCN_(nb_filters=[128, 128], kernel_size=2, dilations=[1, 2], nb_stacks=2, activation='relu', return_sequences=False, use_batch_norm=True, use_skip_connections=True)(inp) 
     
         x = keras.layers.Dense(n_bin, activation='softmax')(x)
     

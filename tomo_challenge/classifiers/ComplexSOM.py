@@ -402,7 +402,7 @@ class ComplexSOM(Tomographer):
         cumul_f = interp1d(z_cen, cumulative_fraction, bounds_error=False,
                            fill_value=(0, 1))
         edges_0 = np.array([brentq(lambda z : cumul_f(z) - q, 0, 2)
-                            for q in (np.arange(o.n_bins-1)+1.)/o.n_bins])
+                            for q in (np.arange(n_bin-1)+1.)/n_bin])
         
         # Finally, let's write the function to minimize and optimize for a 4-bin case.
         def minus_sn(edges, calc):

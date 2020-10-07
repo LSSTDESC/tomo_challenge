@@ -4,7 +4,7 @@ run:
       bins: 5
       som_dim: [101,101]
       num_groups: 10000
-      num_threads: 32
+      num_threads: 8
       group_type: 'colour'
       data_threshold: [0,30]
       sparse_frac: 1.00

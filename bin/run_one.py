@@ -9,11 +9,14 @@ import yaml
 import time
 import sys
 import traceback
+import faulthandler
+faulthandler.enable()
 
-name = sys.argv[1]
+status_file = sys.argv[1]
+name = sys.argv[2]
 
-if len(sys.argv) > 2:
-    index = sys.argv[2]
+if len(sys.argv) > 3:
+    index = sys.argv[3]
 else:
     index = ""
 
@@ -42,7 +45,7 @@ validation_z = tc.load_redshift(validation_file)
 metrics_fn = tc.jc_compute_scores
 metrics = ['SNR_3x2']
 
-with open('status.txt', 'a') as status_file:
+with open(status_file, 'a') as status_file:
     try:
         fn = f'evaluation/{name}{index}.yml'
         full_config = yaml.safe_load(open(fn))['run'][name]
@@ -60,6 +63,19 @@ with open('status.txt', 'a') as status_file:
         traceback.print_exc()
         sys.exit(1)
 
+
+    # hack because this code is extra special and
+    # can't just load the data like everyone else
+    if name == "Flax_LSTM":
+        n = settings['bins']
+        if settings['colors']:
+            n += n * (n - 1) // 2
+        if settings['errors']:
+            n *= 2
+        settings['n_feats'] = n
+        print(f"Set Flax_LSTM n_feats to {n}")
+        
+        
     try:
         t0 = time.time()
         scores = run_one(name, bands, settings, training_data, training_z, validation_data,

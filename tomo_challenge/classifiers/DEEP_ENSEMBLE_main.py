@@ -16,7 +16,7 @@ Every classifier module needs to:
 
 #from tomo_challenge.utils.utils import transform_labels
 #from tomo_challenge.utils.utils import create_directory
-from sklearn.preprocessing import MinMaxScaler
+from sklearn.preprocessing import MinMaxScaler, LabelEncoder
 import sklearn
 import os
 from .base import Tomographer

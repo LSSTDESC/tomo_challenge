@@ -152,7 +152,7 @@ class CNN(Tomographer):
         # Lots of data, so this will take some time
         x_train = np.expand_dims(x_train, axis=-1)
         y_train = np.expand_dims(training_bin, axis=-1)
-        model.fit(x_train, y_train, epochs=15, verbose=0)
+        model.fit(x_train, y_train, epochs=15, verbose=1)
 
         self.classifier = model
         self.z_edges = z_edges

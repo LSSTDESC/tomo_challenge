@@ -1,38 +1,50 @@
 import os
-open("status.txt", "w").close()
-os.environ["LD_LIBRARY_PATH"] += ":/home/jzuntz/tomo_challenge/cuda/cuda/lib64"
+import sys
 
-for name in [
-    "ComplexSOM 1",
-    "ComplexSOM 2",
-    "JaxResNet",
-    "SummerSlasher",
-    "JaxCNN",
-    "Flax_LSTM",
-    "UTOPIA 1",
-    "UTOPIA 1",
-    "LSTM",
-    "ZotBin",
-    "funbins",
-    "SimpleSOM",
-    "ENSEMBLE2",
-    "LGBM",
-    "ENSEMBLE1",
-    "myCombinedClassifiers",
-    "RandomForest",
-    "PQNLD",
-    "CNN",
-    "Autokeras_LSTM",
-    "TCN",
-    "PCACluster",
-    "Random",
-    "MineCraft",
-    "GPzBinning",
-    "IBandOnly",
-    "mlpqna",
-    "NeuralNetwork 1",
-    "NeuralNetwork 2",
-    "ZotNet",
-    ]:
-    s = os.system(f"python bin/run_one.py {name}")
+mode = sys.argv[1]
+if mode not in ['cpu', 'gpu']:
+    raise ValueError("set cpu or gpu")
+
+status_file = f"{mode}-status.txt"
+open(status_file, "w").close()
+
+if mode == 'gpu':
+    os.environ["LD_LIBRARY_PATH"] += ":/home/jzuntz/tomo_challenge/cuda/cuda/lib64"
+
+if mode == "gpu":
+    names = [
+#        "Flax_LSTM",
+#        "JaxResNet",
+#        "JaxCNN",
+#        "LSTM",
+#        "ZotBin",
+        "ENSEMBLE1",
+        "ENSEMBLE2",
+        "CNN",
+        "Autokeras_LSTM",
+        "TCN",
+        "NeuralNetwork 1",
+        "NeuralNetwork 2",
+        "ZotNet",
+    ]
+else:
+    names = [
+        "myCombinedClassifiers",
+        "LGBM",
+        "funbins",
+        "RandomForest",
+        "PQNLD",
+        "PCACluster",
+        "MineCraft",
+        "GPzBinning",
+        "IBandOnly",
+        "mlpqna",
+        "SummerSlasher",
+        "ComplexSOM",
+        "UTOPIA",
+        "SimpleSOM",
+    ]
+
+for name in names:
+    s = os.system(f"python bin/run_one.py {status_file} {name}")
     print(f"{name} status = {s}")
