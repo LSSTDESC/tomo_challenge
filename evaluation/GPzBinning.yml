@@ -1,0 +1,7 @@
+run:
+  # This is a class name which will be looked up
+  GPzBinning:
+    run_3:
+      bins: 3
+      colors: True
+      errors: False
