@@ -43,7 +43,7 @@ class Tomographer:
         try:
             module = modules[name.lower()]
             importlib.import_module(f'tomo_challenge.classifiers.{module}')
-        except:
+        except KeyError:
             raise ValueError(f"Unknown module {module}")
         return cls._subclasses[name]
 

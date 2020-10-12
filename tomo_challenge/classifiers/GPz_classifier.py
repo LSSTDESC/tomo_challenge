@@ -68,7 +68,15 @@ class GPzBinning(Tomographer):
         
         # np.savetxt('train_data.csv',training_data)
         # np.savetxt('training_z.csv',training_z)
-        
+
+
+        # for speed, cut down to 5% of original size
+        # GP scales as N**3
+        cut = np.random.uniform(0, 1, training_z.size) < 0.05
+        training_z = training_z[cut]
+        training_data = training_data[cut]
+
+
         # subprocess.run(["python2", file_prefix+"classifier_train_GPz.py"])
         self.model = GPz.train(training_data, training_z)
 
@@ -79,7 +87,7 @@ class GPzBinning(Tomographer):
         # Now put the training data into redshift bins.
         # Use zero so that the one object with minimum
         # z in the whole survey will be in the lowest bin
-        training_bin = np.zeros(training_z.size)
+        #training_bin = np.zeros(training_z.size)
 
         # Find the edges that split the redshifts into n_z bins of
         # equal number counts in each
@@ -87,16 +95,10 @@ class GPzBinning(Tomographer):
         z_edges = np.percentile(training_z, p)
 
         # Now find all the objects in each of these bins
-        for i in range(n_bin):
-            z_low = z_edges[i]
-            z_high = z_edges[i + 1]
-            training_bin[(training_z > z_low) & (training_z < z_high)] = i
-
-        # for speed, cut down to 5% of original size
-        cut = np.random.uniform(0, 1, training_z.size) < 0.05
-        training_bin = training_bin[cut]
-        training_data = training_data[cut]
-
+        #for i in range(n_bin):
+        #    z_low = z_edges[i]
+        #    z_high = z_edges[i + 1]
+        #    training_bin[(training_z > z_low) & (training_z < z_high)] = i
 
         #self.photoz_predictor = model
         self.z_edges = z_edges

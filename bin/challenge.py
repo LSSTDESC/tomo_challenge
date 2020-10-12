@@ -116,13 +116,28 @@ def run_one(classifier_name, bands, settings, train_data, train_z, valid_data,
             raise ValueError(f"Key {key} is not recognized by classifier {classifier_name}")
 
     print ("Initializing classifier...")
+    os.system('nvidia-smi')
     C=classifier(bands, settings)
-
+    gc.collect()
+    
     print ("Training...")
+    os.system('nvidia-smi')
     C.train(train_data,train_z)
-
+    gc.collect()
+    
     print ("Applying...")
-    results = C.apply(valid_data)
+    os.system('nvidia-smi')
+    nchunk = 10
+    results_chunks = []
+    for i in range(nchunk):
+        print(f"Getting results chunk {i}")
+        valid_data_chunk = get_chunk(valid_data, nchunk, i)
+        result_chunk = np.array(C.apply(valid_data_chunk))
+        results_chunks.append(result_chunk)
+        print(result_chunk.shape)
+    results = np.concatenate(results_chunks)
+    print(results.shape)
+#    results = C.apply(valid_data)
 
     del C
     gc.collect()
@@ -135,6 +150,7 @@ def run_one(classifier_name, bands, settings, train_data, train_z, valid_data,
         results = new_results
 
     print ("Getting metric...")
+    os.system('nvidia-smi')
     scores = metrics_fn(results, valid_z, metrics=metrics)
 
     print ("Making some pretty plots...")
@@ -142,6 +158,22 @@ def run_one(classifier_name, bands, settings, train_data, train_z, valid_data,
     code = abs(hash(str(settings)))
     tc.metrics.plot_distributions(valid_z, results, f"plots/{name}_{code}_{bands}.png", metadata=settings)
     return scores
+
+def get_chunk(valid_data, chunks, i):
+    if isinstance(valid_data, np.ndarray):
+        n = len(valid_data)
+        s = n // chunks
+        if i == chunks - 1:
+            d = valid_data[i * s : ]
+        else:
+            d = valid_data[i * s : (i + 1) * s]
+    else:
+        d = {}
+        for name, col in d.items():
+            d[name] = get_chunk(col, chunks, i)
+
+    return d
+
 
 if __name__=="__main__":
     main()

@@ -105,6 +105,11 @@ class Autokeras_LSTM(Tomographer):
 
         """
 
+        cut  = np.random.uniform(0, 1, training_z.size) < 0.05
+        training_data = training_data[cut]
+        training_z = training_z[cut]
+        print(training_z.size)
+        
         n_bin = self.opt['bins']
         print("Finding bins for training data")
         # Now put the training data into redshift bins.
@@ -153,7 +158,7 @@ class Autokeras_LSTM(Tomographer):
         y_train = np.expand_dims(training_bin, axis=-1)
         print("Fitting classifier")
         # Lots of data, so this will take some time
-        model.fit(x_train, y_train, epochs=30, verbose=0)
+        model.fit(x_train, y_train, epochs=30, verbose=2)
 
         self.classifier = model
         self.z_edges = z_edges

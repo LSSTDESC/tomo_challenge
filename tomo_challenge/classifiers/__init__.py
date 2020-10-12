@@ -7,7 +7,9 @@ import ctypes
 # Initialization for GPus
 # Set up what JAX needs to load
 cuda_dir = os.environ.get('CUDA_DIR', '.')
-no_gpu = os.environ.get('TOMO_NO_GPU', 0)
+no_gpu = int(os.environ.get('TOMO_NO_GPU', 0))
+no_tf = int(os.environ.get('TOMO_NO_TF', 0))
+tf_mem = int(os.environ.get('TOMO_TF_MEM_LIMIT', 1))
 
 #os.environ["XLA_PYTHON_CLIENT_MEM_FRACTION"] = ".50"
 
@@ -19,8 +21,10 @@ import ctypes
 
 # hack until global installation on cuillin
 if no_gpu:
+    print("Disabled GPU using TOMO_NO_GPU env var")
     gpus = []
 else:
+    print("Trying to use env vars")
     os.environ['XLA_FLAGS'] = f'--xla_gpu_cuda_data_dir={cuda_dir}'
     os.environ["LD_LIBRARY_PATH"] = os.environ.get("LD_LIBRARY_PATH", "") + ":/home/jzuntz/tomo_challenge/cuda/cuda/lib64"
     for fn in glob.glob("/home/jzuntz/tomo_challenge/cuda/cuda/lib64/lib*.so.8"):
@@ -30,19 +34,22 @@ else:
     from jax.lib import xla_bridge
     print("Running JAX on: ", xla_bridge.get_backend().platform)
 
-    # Tell tensorflow not to steal all the memory too
-    import tensorflow as tf
-    try:
-        gpus = tf.config.experimental.list_physical_devices('GPU')
-        for gpu in gpus:
-            tf.config.experimental.set_memory_growth(gpu, True)
-    except AttributeError:
-        gpus = []
+    if not no_tf:
+        # Tell tensorflow not to steal all the memory too
+        import tensorflow as tf
+        try:
+            gpus = tf.config.experimental.list_physical_devices('GPU')
+            for gpu in gpus:
+                if tf_mem:
+                    tf.config.experimental.set_memory_growth(gpu, True)
+                    print("Setting memory_growth=True")
+        except AttributeError:
+            gpus = []
 
-if gpus:
-    print("Running tensorflow on GPU")
-else:
-    print("Running tensorflow on CPU")
+            if gpus:
+                print("Running tensorflow on GPU")
+            else:
+                print("Running tensorflow on CPU")
 
 
 # def all_python_files():
