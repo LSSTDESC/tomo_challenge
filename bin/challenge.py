@@ -169,7 +169,7 @@ def get_chunk(valid_data, chunks, i):
             d = valid_data[i * s : (i + 1) * s]
     else:
         d = {}
-        for name, col in d.items():
+        for name, col in valid_data.items():
             d[name] = get_chunk(col, chunks, i)
 
     return d

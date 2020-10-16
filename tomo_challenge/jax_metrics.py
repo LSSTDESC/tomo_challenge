@@ -55,7 +55,7 @@ def get_probes(weights, labels, kernel_bandwidth=0.02, what='3x2', binned_nz=Fal
     for i in range(nbins):
         if binned_nz:
             # In this case, we use a histogram instead of a KDE, to make things a lot faster
-            h, he = onp.histogram(labels, bins=512, range=[0,4], weights=weights[:,i], density=True)
+            h, he = np.histogram(labels, bins=512, range=[0,4], weights=weights[:,i], density=True)
             he = 0.5*(he[1:]+he[:-1])
             nz = jc.redshift.kde_nz(he, h, bw=4./512, gals_per_arcmin2=n_eff[i], zmax=4.)
         else:
