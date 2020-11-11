@@ -23,15 +23,18 @@ from .base import Tomographer
 from tomo_challenge import compute_scores, compute_mean_covariance
 
 # try:
-import mpi4py
-from mpi4py import MPI
+# import mpi4py
+# from mpi4py import MPI
 
-have_mpi = True
+have_mpi = False
 
 # except:
 #     have_mpi = False
 #     print ("No MPI available.")
 
+def task(el, training_z):
+    el.get_score(training_z, self.opt["target_metric"])
+    return el
 
 class SummerSlasher(Tomographer):
     """
@@ -49,6 +52,7 @@ class SummerSlasher(Tomographer):
         "letdie",
         "downsample",
         "apply_pickled",
+        "processes",
     ]
 
     def __init__(self, bands, options):
@@ -78,6 +82,7 @@ class SummerSlasher(Tomographer):
             "outroot": "cuter",
             "letdie": False,
             "downsample": 2,
+            "processes": 0,
         }
         self.opt.update(options)
         self.bands = bands
@@ -118,7 +123,11 @@ class SummerSlasher(Tomographer):
             # if (self.mpi_rank==0):
             #    print ([t.score for t in tlist])
             #    sys.stdout.flush()
-
+        elif self.opt['processes'] > 1:
+            import multiprocessing
+            with multiprocessing.Pool(self.opt['processes']) as pool:
+                args = [(el, training_z) for el in tlist]
+                tlist = pool.map(task, args)
         else:
             for cuter in tlist:
                 cuter.get_score(training_z, self.opt["target_metric"])
@@ -147,6 +156,8 @@ class SummerSlasher(Tomographer):
             self.mpi_size = self.mpi_comm.Get_size()
             self.mpi_rank = self.mpi_comm.Get_rank()
             print("mpi rank = ", self.mpi_rank, "/", self.mpi_size)
+        else:
+            self.mpi_rank = 0
 
         ## first let's get train data into a nice array
         data = np.vstack([training_data[band] for band in self.bands]).T
