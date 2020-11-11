@@ -9,6 +9,6 @@ loader: custom
 run:
   Autokeras_LSTM:
     run_3:
-      bins: 10
+      bins: 3
       colors: True
       errors: False
