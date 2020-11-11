@@ -119,7 +119,8 @@ def run_one(classifier_name, bands, settings, train_data, train_z, valid_data,
     os.system('nvidia-smi')
     C=classifier(bands, settings)
     gc.collect()
-    
+
+                
     print ("Training...")
     os.system('nvidia-smi')
     C.train(train_data,train_z)
@@ -134,14 +135,18 @@ def run_one(classifier_name, bands, settings, train_data, train_z, valid_data,
         valid_data_chunk = get_chunk(valid_data, nchunk, i)
         result_chunk = np.array(C.apply(valid_data_chunk))
         results_chunks.append(result_chunk)
+        print(result_chunk[:20])
         print(result_chunk.shape)
     results = np.concatenate(results_chunks)
     print(results.shape)
-#    results = C.apply(valid_data)
+
 
     del C
     gc.collect()
 
+    if 'tensorflow.keras' in sys.modules:
+        import tensorflow.keras.backend
+        tensorflow.keras.backend.clear_session()
     
     if classifier.skips_zero_flux:
         junk_bin = results.max() + 1
@@ -149,6 +154,8 @@ def run_one(classifier_name, bands, settings, train_data, train_z, valid_data,
         new_results[valid_index] = results
         results = new_results
 
+    np.save('results-tmp.npy', results)
+    print("saved thing")
     print ("Getting metric...")
     os.system('nvidia-smi')
     scores = metrics_fn(results, valid_z, metrics=metrics)

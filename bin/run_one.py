@@ -20,7 +20,7 @@ if len(sys.argv) > 3:
 else:
     index = ""
 
-training_file = 'data/training.hdf5'
+training_file = 'data-train/training-cut.hdf5'
 validation_file = 'data/validation.hdf5'
 bands = 'riz'
 
