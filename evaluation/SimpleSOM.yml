@@ -1,7 +1,7 @@
 run:
   SimpleSOM:
     run_5:
-      bins: 5
+      bins: 3
       som_dim: [101,101]
       num_groups: 10000
       num_threads: 32
