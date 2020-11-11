@@ -29,6 +29,8 @@ modules = {
     "random": "trivial",
     "zotbin": "zotbin",
     "zotnet": "zotnet",
+    "tensorflow_ffnn": "tensorflow",
+    "tensorflow_dbn": "tensorflow",
 }
 
 
