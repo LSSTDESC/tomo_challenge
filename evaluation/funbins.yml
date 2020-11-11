@@ -3,7 +3,7 @@ run:
   funbins:
     run_4:
       # This setting is sent to the classifier
-      bins: 4
+      bins: 3
       #if no seed is present or None, the default seed is 123
       seed: 123 
       #acceptable methods: 'log', 'random', 'chi', 'linear'

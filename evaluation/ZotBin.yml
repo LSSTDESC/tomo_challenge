@@ -1,9 +1,9 @@
 run:
   # This is a class name which will be looked up
   ZotBin:
-    run_4:
+    run_3:
       # This setting is sent to the classifier
-      bins: 4
+      bins: 3
       # These special settings decide whether the
       # color and error colums are passed to the classifier
       # as well as the magnitudes

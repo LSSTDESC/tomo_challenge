@@ -4,7 +4,7 @@ run:
     run_10:
       # These settings are sent to the classifier
       testing: False
-      bins: 10
+      bins: 3
       som_dim: [51,51]
       num_groups: 200
       num_threads: 8
