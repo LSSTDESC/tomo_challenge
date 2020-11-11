@@ -70,13 +70,6 @@ class GPzBinning(Tomographer):
         # np.savetxt('training_z.csv',training_z)
 
 
-        # for speed, cut down to 5% of original size
-        # GP scales as N**3
-        cut = np.random.uniform(0, 1, training_z.size) < 0.05
-        training_z = training_z[cut]
-        training_data = training_data[cut]
-
-
         # subprocess.run(["python2", file_prefix+"classifier_train_GPz.py"])
         self.model = GPz.train(training_data, training_z)
 
