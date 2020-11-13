@@ -2,4 +2,6 @@ run:
   SummerSlasher:
     run:
       outroot: summer_pretrained/summer_riz_1293
-      apply_pickled: True
+      apply_pickled: False
+      processes: 16
+      generations: 1

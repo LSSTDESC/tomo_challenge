@@ -32,8 +32,10 @@ have_mpi = False
 #     have_mpi = False
 #     print ("No MPI available.")
 
-def task(el, training_z):
-    el.get_score(training_z, self.opt["target_metric"])
+def task(arg):
+    el, training_z, i, n, target_metric = arg
+    print(f"Running {i}/{n}")
+    el.get_score(training_z, target_metric)
     return el
 
 class SummerSlasher(Tomographer):
@@ -53,6 +55,7 @@ class SummerSlasher(Tomographer):
         "downsample",
         "apply_pickled",
         "processes",
+        "generations",
     ]
 
     def __init__(self, bands, options):
@@ -83,6 +86,7 @@ class SummerSlasher(Tomographer):
             "letdie": False,
             "downsample": 2,
             "processes": 0,
+            "generations": 50,
         }
         self.opt.update(options)
         self.bands = bands
@@ -126,7 +130,8 @@ class SummerSlasher(Tomographer):
         elif self.opt['processes'] > 1:
             import multiprocessing
             with multiprocessing.Pool(self.opt['processes']) as pool:
-                args = [(el, training_z) for el in tlist]
+                n = len(tlist)
+                args = [(el, training_z, i, n, self.opt['target_metric']) for i, el in enumerate(tlist)]
                 tlist = pool.map(task, args)
         else:
             for cuter in tlist:
@@ -178,7 +183,8 @@ class SummerSlasher(Tomographer):
             self.write_status()
         ## now the main genetic algorithgm:
         NP = self.opt["pop_size"]
-        while True:
+        for gen in range(self.opt['generations']):
+            print("Generation {} of {}".format(gen+1, self.opt['generations']))
             children = []
             for nc in range(self.opt["children"]):
                 i, j = np.random.randint(0, NP, 2)
