@@ -175,12 +175,12 @@ def create_initial_db(database):
         gpu boolean NOT NULL,
         classifier varchar(64) NOT NULL,
         nbin integer NOT NULL,
-        index integer NOT NULL
+        index1 integer NOT NULL
     );
     """
     cur.execute(sql)
 
-    sql = """INSERT INTO all_jobs(name, gpu, classifier, nbin, index) VALUES(?,?,?,?,?)""" 
+    sql = """INSERT INTO all_jobs(name, gpu, classifier, nbin, index1) VALUES(?,?,?,?,?)"""
     for name in cpu_classifiers:
         for nbin in [3,5,7,9]:
             print(name, nbin)
