@@ -186,17 +186,22 @@ def create_initial_db(database):
             print(name, nbin)
             if name in indices:
                 for index in indices[name]:
-                    cur.execute(sql, (f"{name}_{nbin}", False, name, nbin, index))
+                    cur.execute(sql, (f"{name}_{nbin}_{index}", False, name, nbin, index))
             else:
-                cur.execute(sql, (f"{name}_{nbin}", False, name, nbin, 0))
+                cur.execute(sql, (f"{name}_{nbin}_0", False, name, nbin, 0))
 
     for name in gpu_classifiers:
         for nbin in [3,5,7,9]:
             print(name, nbin)
-            cur.execute(sql, (f"{name}_{nbin}", True, name, nbin))
+            if name in indices:
+                for index in indices[name]:
+                    cur.execute(sql, (f"{name}_{nbin}_{index}", True, name, nbin, index))
+            else:
+                cur.execute(sql, (f"{name}_{nbin}_0", True, name, nbin, 0))
+
     for name in no_nbin_classifiers:
         print(name, 0)
-        cur.execute(sql, (f"{name}_0", True, name, 0))
+        cur.execute(sql, (f"{name}_0", True, name, 0, 0))
 
 
     sql = """
