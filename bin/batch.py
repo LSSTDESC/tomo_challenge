@@ -124,8 +124,7 @@ def choose_next_job(database, gpu):
 
 def create_initial_db(database):
     gpu_classifiers = [
-        "NeuralNetwork1",
-        "NeuralNetwork2",
+        "NeuralNetwork",
         "Autokeras_LSTM",
         "CNN",
         "ENSEMBLE1",
@@ -162,6 +161,10 @@ def create_initial_db(database):
         "MineCraft",
     ]
 
+    indices = {
+        'NeuralNetwork': [1,2],
+    }
+
 
 
     con = sqlite3.connect(database)
@@ -171,16 +174,22 @@ def create_initial_db(database):
         name varchar(64) PRIMARY KEY,
         gpu boolean NOT NULL,
         classifier varchar(64) NOT NULL,
-        nbin integer NOT NULL
+        nbin integer NOT NULL,
+        index integer NOT NULL
     );
     """
     cur.execute(sql)
 
-    sql = """INSERT INTO all_jobs(name, gpu, classifier, nbin) VALUES(?,?,?,?)""" 
+    sql = """INSERT INTO all_jobs(name, gpu, classifier, nbin, index) VALUES(?,?,?,?,?)""" 
     for name in cpu_classifiers:
         for nbin in [3,5,7,9]:
             print(name, nbin)
-            cur.execute(sql, (f"{name}_{nbin}", False, name, nbin))
+            if name in indices:
+                for index in indices[name]:
+                    cur.execute(sql, (f"{name}_{nbin}", False, name, nbin, index))
+            else:
+                cur.execute(sql, (f"{name}_{nbin}", False, name, nbin, 0))
+
     for name in gpu_classifiers:
         for nbin in [3,5,7,9]:
             print(name, nbin)
@@ -216,10 +225,10 @@ def create_initial_db(database):
 
 
 def execute_job(job):
-    name, _, classifier, nbin = job
+    name, _, classifier, nbin, index = job
     f = open(f"logs/{name}_log.txt", "w")
     print("Running",name, classifier, nbin)
-    cmd = f"python bin/run_one_batch.py {name} {classifier} {nbin}"
+    cmd = f"python bin/run_one_batch.py {name} {classifier} {nbin} {index}"
     status = subprocess.call(cmd.split(), stderr=subprocess.STDOUT, stdout=f)
     print(f"Job {name} finished with status {status}")
     return status
@@ -251,7 +260,12 @@ def main(db, gpu):
 
 if __name__ == '__main__':
     db = 'db.sqlite3'
-    gpu = False
+    if sys.argv[1] == 'gpu':
+        gpu = True
+    elif sys.argv[1] == 'cpu':
+        gpu = False
+    else:
+        raise ValueError("say gpu or cpu")
     main(db, gpu)
     # create_initial_db(db)
 
@@ -262,6 +276,7 @@ if __name__ == '__main__':
 #   - cpu_or_gpu
 #   - classifier
 #   - nbin
+#   - index
 # started jobs
 #   - name
 #   - job_id

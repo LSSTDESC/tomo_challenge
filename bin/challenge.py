@@ -154,8 +154,11 @@ def run_one(classifier_name, bands, settings, train_data, train_z, valid_data,
         new_results[valid_index] = results
         results = new_results
 
-    np.save('results-tmp.npy', results)
-    print("saved thing")
+    if metrics_fn is None:
+        return results
+
+    # np.save('results-tmp.npy', results)
+    # print("saved thing")
     print ("Getting metric...")
     os.system('nvidia-smi')
     scores = metrics_fn(results, valid_z, metrics=metrics)

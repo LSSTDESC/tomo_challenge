@@ -1,0 +1,14 @@
+#!/bin/bash
+#SBATCH --constraint=gpu
+#SBATCH --nodes=1
+#SBATCH --gpus=1
+#SBATCH --time=04:00:00
+#SBATCH --array=0-4
+#SBATCH --account=des
+# GPU on cori is not charged
+
+
+# module load esslurm before submitting this
+
+source setup
+python bin/batch.py gpu

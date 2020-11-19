@@ -1,0 +1,12 @@
+#!/bin/bash
+#SBATCH --qos=debug
+#SBATCH --constraint=haswell
+#SBATCH --nodes=1
+#SBATCH --time=8:00:00
+#SBATCH --array=0-7
+#SBATCH --account=mp1727
+
+# module load esslurm before submitting
+
+source setup-cpu
+python bin/batch.py cpu
