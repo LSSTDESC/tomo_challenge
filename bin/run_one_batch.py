@@ -2,6 +2,7 @@ import os
 dir_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), os.path.pardir)
 import sys
 sys.path.append(dir_path)
+import numpy as np
 
 task_name, classifier, nbin, index = sys.argv[1:]
 nbin = int(nbin)
@@ -23,8 +24,8 @@ faulthandler.enable()
 if index == 0:
     index = ""
 
-fn = f'evaluation/{name}{index}.yml'
-full_config = yaml.safe_load(open(fn))['run'][name]
+fn = f'evaluation/{classifier}{index}.yml'
+full_config = yaml.safe_load(open(fn))['run'][classifier]
 settings = list(full_config.values())[0]
 
 

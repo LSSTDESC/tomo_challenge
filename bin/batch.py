@@ -43,7 +43,7 @@ def is_running(job_id):
 def choose_next_job(database, gpu):
     my_job_id = get_my_job_id()
     my_time_left = check_job_time_left(my_job_id)
-    con = sqlite3.connect(database)
+    con = sqlite3.connect(database, timeout=30)
     con.isolation_level = 'EXCLUSIVE'
     con.execute('BEGIN EXCLUSIVE')
     # Exclusive access starts here.
@@ -107,7 +107,7 @@ def choose_next_job(database, gpu):
 
     if job:
         # add start information
-        q = "insert into started_jobs(name, job_id, remaining_job_time) values(?, ?, ?);"
+        q = "replace into started_jobs(name, job_id, remaining_job_time) values(?, ?, ?);"
         print(q)
         cur.execute(q, (job[0], my_job_id, my_time_left))
 
@@ -139,6 +139,8 @@ def create_initial_db(database):
     ]
 
     cpu_classifiers = [
+        "IBandOnly",
+        "Random",
         "mlpqna",
         "ComplexSOM",
         "SimpleSOM",
@@ -148,8 +150,6 @@ def create_initial_db(database):
         "UTOPIA",
         "LGBM",
         "RandomForest",
-        "IBandOnly",
-        "Random",
     ]
 
         # "PQNLD",
@@ -230,6 +230,7 @@ def create_initial_db(database):
 
 
 def execute_job(job):
+    print('execute', job)
     name, _, classifier, nbin, index = job
     f = open(f"logs/{name}_log.txt", "w")
     print("Running",name, classifier, nbin)
@@ -239,9 +240,10 @@ def execute_job(job):
     return status
 
 def write_completed_job(db, job, status):
-    name, _, classifier, nbin = job
+    print('complete', job)
+    name, _, classifier, nbin, index = job
     job_id = get_my_job_id()
-    con = sqlite3.connect(db)
+    con = sqlite3.connect(db, timeout=30)
     con.isolation_level = 'EXCLUSIVE'
     con.execute('BEGIN EXCLUSIVE')
     cur = con.cursor()
@@ -255,11 +257,12 @@ def write_completed_job(db, job, status):
 def main(db, gpu):
     while True:
         job = choose_next_job(db, gpu)
-
+        sys.stdout.flush()
         if not job:
             break
 
         status = execute_job(job)
+        sys.stdout.flush()
         write_completed_job(db, job, status)
 
 
