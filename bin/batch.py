@@ -40,7 +40,7 @@ def is_running(job_id):
     r = subprocess.run(cmd.split(), capture_output=True)
     return r.returncode == 0
 
-def choose_next_job(database, gpu):
+def choose_next_job(database, gpu, dry_run):
     my_job_id = get_my_job_id()
     my_time_left = check_job_time_left(my_job_id)
     con = sqlite3.connect(database, timeout=30)
@@ -109,7 +109,10 @@ def choose_next_job(database, gpu):
         # add start information
         q = "replace into started_jobs(name, job_id, remaining_job_time) values(?, ?, ?);"
         print(q)
-        cur.execute(q, (job[0], my_job_id, my_time_left))
+        if dry_run:
+            print("not actually writing")
+        else:
+            cur.execute(q, (job[0], my_job_id, my_time_left))
 
     else:
         print("No jobs could be found to start")
@@ -254,27 +257,29 @@ def write_completed_job(db, job, status):
     con.commit()
     con.close()
 
-def main(db, gpu):
+def main(db, gpu, dry_run):
     while True:
-        job = choose_next_job(db, gpu)
+        job = choose_next_job(db, gpu, dry_run)
         sys.stdout.flush()
         if not job:
+            break
+        if dry_run:
             break
 
         status = execute_job(job)
         sys.stdout.flush()
         write_completed_job(db, job, status)
 
+import argparse
+parser = argparse.ArgumentParser(description='Batch run jobs')
+parser.add_argument('gpu_or_cpu', choices=['gpu', 'cpu'], help='gpu or cpu')
+parser.add_argument('--dry-run', action='store_true', help='do not run just print next job')
 
 if __name__ == '__main__':
     db = 'db.sqlite3'
-    if sys.argv[1] == 'gpu':
-        gpu = True
-    elif sys.argv[1] == 'cpu':
-        gpu = False
-    else:
-        raise ValueError("say gpu or cpu")
-    main(db, gpu)
+    args = parser.parse_args()
+
+    main(db, args.gpu_or_cpu, args.dry_run)
     # create_initial_db(db)
 
 
