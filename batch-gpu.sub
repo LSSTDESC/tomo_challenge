@@ -3,10 +3,10 @@
 #SBATCH --nodes=1
 #SBATCH --gpus=1
 #SBATCH --time=04:00:00
-#SBATCH --array=3-4
+#SBATCH --array=13
 #SBATCH --account=des
 # GPU on cori is not charged
-#SBATCH --output=logs/gpu.%s.txt
+#SBATCH --output=logs/gpu.%a.txt
 
 # module load esslurm before submitting this
 

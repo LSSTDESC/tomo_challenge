@@ -137,6 +137,7 @@ def run_one(classifier_name, bands, settings, train_data, train_z, valid_data,
         results_chunks.append(result_chunk)
         print(result_chunk[:20])
         print(result_chunk.shape)
+        sys.stdout.flush()
     results = np.concatenate(results_chunks)
     print(results.shape)
 

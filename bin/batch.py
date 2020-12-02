@@ -25,7 +25,7 @@ def parse_time_listing(time_str):
         t += int(parts[-2]) * 60 # minutes
 
     if len(parts) > 2:
-        t += int(parts[-3]) * 3060 # hours
+        t += int(parts[-3]) * 3600 # hours
 
     return t
 
@@ -40,7 +40,7 @@ def is_running(job_id):
     r = subprocess.run(cmd.split(), capture_output=True)
     return r.returncode == 0
 
-def choose_next_job(database, gpu, dry_run):
+def choose_next_job(database, gpu, dry_run, force_job="_not_a_real_job"):
     my_job_id = get_my_job_id()
     my_time_left = check_job_time_left(my_job_id)
     con = sqlite3.connect(database, timeout=30)
@@ -64,6 +64,10 @@ def choose_next_job(database, gpu, dry_run):
 
     job = None
     for name in all_jobs.keys():
+        if name == force_job:
+            job = all_jobs[name]
+            break
+
         if name in completed_jobs:
             print("Skip completed ", name)
             continue
@@ -95,6 +99,7 @@ def choose_next_job(database, gpu, dry_run):
         # if we have at least 30% more time than it used
         # then give it a go
         min_time_needed = job_start[2]
+        print(my_time_left, min_time_needed, min_time_needed*1.3)
         if my_time_left > min_time_needed * 1.3:
             job = all_jobs[name]
             print("Using previously outrun", name)
@@ -257,9 +262,9 @@ def write_completed_job(db, job, status):
     con.commit()
     con.close()
 
-def main(db, gpu, dry_run):
+def main(db, gpu, dry_run, force):
     while True:
-        job = choose_next_job(db, gpu, dry_run)
+        job = choose_next_job(db, gpu, dry_run, force)
         sys.stdout.flush()
         if not job:
             break
@@ -274,12 +279,13 @@ import argparse
 parser = argparse.ArgumentParser(description='Batch run jobs')
 parser.add_argument('gpu_or_cpu', choices=['gpu', 'cpu'], help='gpu or cpu')
 parser.add_argument('--dry-run', action='store_true', help='do not run just print next job')
+parser.add_argument('--job', default="_not_a_real_job", help='Force this job')
 
 if __name__ == '__main__':
     db = 'db.sqlite3'
     args = parser.parse_args()
 
-    main(db, args.gpu_or_cpu, args.dry_run)
+    main(db, args.gpu_or_cpu == 'gpu', args.dry_run, args.job)
     # create_initial_db(db)
 
 

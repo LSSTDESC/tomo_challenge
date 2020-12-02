@@ -5,3 +5,5 @@ run:
       bins: 3
       colors: True
       errors: False
+      edge_strictness: 0.0
+      extrapolate_threshold: 1.0
