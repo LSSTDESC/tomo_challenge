@@ -73,7 +73,11 @@ def task(name):
         sys.stdout.flush()
         return 0
 
-    bins = np.load(result_file).astype(int)
+    try:
+        bins = np.load(result_file).astype(int)
+    except FileNotFoundError:
+        print("Missing ", result_file)
+        return 1
     unique_bins = np.unique(bins)
     
     if -1 in unique_bins:
