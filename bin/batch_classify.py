@@ -4,6 +4,12 @@ import subprocess
 CPU=0
 GPU=1
 
+off_by_one = {
+    "LSTM",
+    "LGBM",
+    "CNN",
+    "GPzBinning"
+}
 
 def setup(queue):
 
@@ -43,22 +49,25 @@ def setup(queue):
 
 
     for (classifier, gpu_or_cpu, config_index) in classifiers:
-        if classifier in no_nbin:
-            bins = [0]
-        else:
-            bins = [3, 5, 7, 9]
+        for bands in ['riz', 'griz']:
+            if classifier in no_nbin:
+                bins = [0]
+            else:
+                bins = [3, 5, 7, 9]
 
-        for nbin in bins:
-            name = f"{classifier}_{nbin}_{config_index}"
-            print(name, gpu_or_cpu)
-            task = {"classifier":classifier, "nbin":nbin, "config_index":config_index}
-            queue.add_job(name, task, subset=gpu_or_cpu)
+            for nbin in bins:
+                name = f"{classifier}_{nbin}_{bands}_{config_index}"
+                print(name)
+                task = {"classifier":classifier, "bands":bands, "nbin":nbin, "config_index":config_index}
+                queue.add_job(name, task, subset=gpu_or_cpu)
 
 
-def task(name, classifier, nbin, config_index):
+def task(name, bands, classifier, nbin, config_index):
     f = open(f"logs/{name}_log.txt", "w")
     print("Running",name, classifier, nbin)
-    cmd = f"python bin/run_one_batch.py {name} {classifier} {nbin} {config_index}"
+    if classifier in off_by_one:
+        nbin -= 1
+    cmd = f"python bin/run_one_batch.py {name} {bands} {classifier} {nbin} {config_index}"
     status = subprocess.call(cmd.split(), stderr=subprocess.STDOUT, stdout=f)
     return status
 
@@ -72,7 +81,7 @@ parser.add_argument('--setup', action='store_true', help='Set up the DB and exit
 def main():
     args = parser.parse_args()
     db = "classify.db"
-    queue = task_queue.TaskQueue(db, task, {"classifier": str, "nbin": int, "config_index":int})
+    queue = task_queue.TaskQueue(db, task, {"classifier": str, "bands":str, "nbin": int, "config_index":int})
     if args.setup:
         setup(queue)
     else:

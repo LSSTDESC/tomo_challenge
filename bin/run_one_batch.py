@@ -4,7 +4,7 @@ import sys
 sys.path.append(dir_path)
 import numpy as np
 
-task_name, classifier, nbin, index = sys.argv[1:]
+task_name, bands, classifier, nbin, index = sys.argv[1:]
 nbin = int(nbin)
 index = int(index)
 
@@ -31,8 +31,7 @@ settings = list(full_config.values())[0]
 
 
 training_file = 'data-train/training-cut.hdf5'
-validation_file = 'data/validation.hdf5'
-bands = 'riz'
+validation_file = 'secret/testing.hdf5'
 
 training_data = tc.load_data(
     training_file,

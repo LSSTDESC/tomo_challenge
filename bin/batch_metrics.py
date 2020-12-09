@@ -55,13 +55,14 @@ def setup(queue):
 
         for nbin in bins:
             name = f"{classifier}_{nbin}_{config_index}"
-            print(name)
+            plot_distributionsnt(name)
             queue.add_job(name, {})
 
 
 
 def task(name):
     print(name)
+    sys.stdout.flush()
     results_dir = "/global/cscratch1/sd/zuntz/tomo_challenge_results"
     result_file = f'{results_dir}/{name}.npy'
     img_file = f'{results_dir}/plots/{name}.png'
@@ -69,6 +70,7 @@ def task(name):
 
     if os.path.exists(img_file) and os.path.exists(metric_file):
         print("Done already")
+        sys.stdout.flush()
         return 0
 
     bins = np.load(result_file).astype(int)
@@ -113,7 +115,7 @@ def main():
         setup(queue)
     else:
         global truth_z
-        with h5py.File("data/validation.hdf5", "r") as f:#change later
+        with h5py.File("secret/testing.hdf5", "r") as f:#change later
             truth_z = f["redshift_true"][:]
         queue.run_loop()
 

@@ -9,7 +9,7 @@ import glob
 import h5py
 import yaml
 
-with h5py.File("data/validation.hdf5", "r") as f:#change later
+with h5py.File("secret/testing.hdf5", "r") as f:#change later
     truth_z = f["redshift_true"][:]
 print("Loaded truth data")
 
