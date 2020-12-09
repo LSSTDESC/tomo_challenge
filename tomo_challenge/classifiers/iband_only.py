@@ -19,6 +19,6 @@ class IBandOnly(Tomographer):
         iband = data['i']
         nbin = self.opt['bins']
         # edges should be just beyond the limits of the data
-        tomo_bin = np.digitize(iband, np.linspace(iband.min()-1e-6, iband.max()+1e-6, nbin))
+        tomo_bin = np.digitize(iband, np.linspace(iband.min()-1e-6, iband.max()+1e-6, nbin + 1))
         tomo_bin -= 1 # we need start with 0; digitize starts at 1
         return tomo_bin
