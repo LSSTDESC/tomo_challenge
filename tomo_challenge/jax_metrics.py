@@ -224,9 +224,12 @@ def compute_scores(tomo_bin, z, metrics='all'):
     for what in ["ww", "gg", "3x2"]:
         if ("SNR_"+what in metrics) or ("FOM_"+what in metrics):
             scores['SNR_'+what] = float(compute_snr_score(tomo_bin, z, what=what, binned_nz=True))
+            print("Done SNR_"+what)
             if "FOM_"+what in metrics:
                 scores['FOM_'+what] = float(compute_fom(tomo_bin, z, what=what, binned_nz=True))
+                print("Done FOM_"+what)
             if "FOM_DETF_"+what in metrics:
                 scores['FOM_DETF_'+what] = float(compute_fom(tomo_bin, z, inds=[5,6],
                                                         what=what, binned_nz=True))
+                print("Done FOM_DETF_"+what)
     return scores
