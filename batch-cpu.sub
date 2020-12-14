@@ -2,11 +2,11 @@
 #SBATCH --qos=regular
 #SBATCH --constraint=haswell
 #SBATCH --nodes=1
-#SBATCH --time=8:00:00
-#SBATCH --array=13-20
+#SBATCH --time=12:00:00
+#SBATCH --array=11-12
 #SBATCH --account=m1727
 #SBATCH --output=logs/cpu.%a.txt
 
 
 source setup-cpu
-python bin/batch.py cpu
+srun -u -n 1 -c 32 python bin/batch_classify.py 0

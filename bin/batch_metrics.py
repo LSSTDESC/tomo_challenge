@@ -114,7 +114,7 @@ parser.add_argument('--setup', action='store_true', help='Set up the DB and exit
 def main():
     args = parser.parse_args()
     db = "metrics.db"
-    queue = task_queue.TaskQueue(db, task, {})
+    queue = task_queue.SlurmTaskQueue(db, task, {})
     if args.setup:
         setup(queue)
     else:

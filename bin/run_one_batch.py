@@ -54,8 +54,8 @@ validation_z = tc.load_redshift(validation_file)
 metrics_fn = None
 metrics = None
 
-
-settings['bins'] = nbin
+if nbin != 0:
+    settings['bins'] = nbin
 
 # hack because this code is extra special and
 # can't just load the data like everyone else

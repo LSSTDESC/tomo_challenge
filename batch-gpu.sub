@@ -3,7 +3,7 @@
 #SBATCH --nodes=1
 #SBATCH --gpus=1
 #SBATCH --time=04:00:00
-#SBATCH --array=13
+#SBATCH --array=13-14
 #SBATCH --account=des
 # GPU on cori is not charged
 #SBATCH --output=logs/gpu.%a.txt
@@ -11,4 +11,4 @@
 # module load esslurm before submitting this
 
 source setup
-python bin/batch.py gpu
+srun -u -n 1 python bin/batch_classify.py 1

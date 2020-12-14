@@ -77,7 +77,7 @@ class TaskQueue:
     def choose_next_job(self, subset=0, dry_run=False, force_job="_not_a_real_job"):
         my_process_id = self.get_my_process_id()
         my_time_left = self.get_process_time_remaining(my_process_id)
-
+        print("Choosing task")
         with database_lock(self.database) as cursor:
             # find all jobs which:
             # are not finished
@@ -230,7 +230,7 @@ class SlurmTaskQueue(TaskQueue):
         cmd = f"squeue -o %L -j {process_id}"
         r = subprocess.run(cmd.split(), capture_output=True)
         time_str = r.stdout.decode('ascii').split('\n')[1]
-        return parse_time_listing(time_str)
+        return self.parse_time_listing(time_str)
 
     @staticmethod
     def is_running(process_id):

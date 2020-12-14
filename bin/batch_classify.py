@@ -81,7 +81,7 @@ parser.add_argument('--setup', action='store_true', help='Set up the DB and exit
 def main():
     args = parser.parse_args()
     db = "classify.db"
-    queue = task_queue.TaskQueue(db, task, {"classifier": str, "bands":str, "nbin": int, "config_index":int})
+    queue = task_queue.SlurmTaskQueue(db, task, {"classifier": str, "bands":str, "nbin": int, "config_index":int})
     if args.setup:
         setup(queue)
     else:
