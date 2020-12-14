@@ -74,6 +74,16 @@ class TaskQueue:
             cursor.executescript(q)
             cursor.connection.commit()
 
+    def list_all_remaining(self, subset=0):
+        with database_lock(self.database) as cursor:
+            q = "select * from all_jobs where subset=?"
+            all_jobs = {j['name']: j for j in cursor.execute(q, [subset])}
+            q = "select * from completed_jobs"
+            completed_jobs = {j['name']: j for j in cursor.execute(q)}
+            jobs = [j for j in all_jobs if j not in completed_jobs]
+        return jobs
+
+
     def choose_next_job(self, subset=0, dry_run=False, force_job="_not_a_real_job"):
         my_process_id = self.get_my_process_id()
         my_time_left = self.get_process_time_remaining(my_process_id)
@@ -185,8 +195,8 @@ class TaskQueue:
     def get_my_process_id():
         return os.getpid()
 
-    @staticmethod
-    def get_process_time_remaining(process_id):
+    @classmethod
+    def get_process_time_remaining(cls, process_id):
         return 1_000_000_000
 
     @staticmethod
@@ -225,12 +235,12 @@ class SlurmTaskQueue(TaskQueue):
 
         return t
 
-    @staticmethod
-    def get_process_time_remaining(process_id):
+    @classmethod
+    def get_process_time_remaining(cls, process_id):
         cmd = f"squeue -o %L -j {process_id}"
         r = subprocess.run(cmd.split(), capture_output=True)
         time_str = r.stdout.decode('ascii').split('\n')[1]
-        return self.parse_time_listing(time_str)
+        return cls.parse_time_listing(time_str)
 
     @staticmethod
     def is_running(process_id):
@@ -250,7 +260,7 @@ def test():
             return n
 
     new = not os.path.exists("./test.db")
-    t = TaskQueue("./test.db", task, {"potato": str, "n": int, "x":float})
+    t = SlurmTaskQueue("./test.db", task, {"potato": str, "n": int, "x":float})
 
     if new:
         for i in range(5, 15):

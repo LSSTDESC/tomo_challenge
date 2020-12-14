@@ -76,6 +76,8 @@ import argparse
 parser = argparse.ArgumentParser(description='Batch run jobs')
 parser.add_argument('cpu_or_gpu', type=int, choices=[GPU, CPU], help='Run jobs for CPU (0) or GPU (1)')
 parser.add_argument('--setup', action='store_true', help='Set up the DB and exit')
+parser.add_argument('--query', action='store_true', help='Display next job')
+parser.add_argument('--list', action='store_true', help='List remaining jobs')
 
 
 def main():
@@ -84,6 +86,12 @@ def main():
     queue = task_queue.SlurmTaskQueue(db, task, {"classifier": str, "bands":str, "nbin": int, "config_index":int})
     if args.setup:
         setup(queue)
+    elif args.query:
+        job = queue.choose_next_job(subset=args.cpu_or_gpu, dry_run=True)
+        print(job)
+    elif args.list:
+        for j in queue.list_all_remaining(args.cpu_or_gpu):
+            print(j)
     else:
         queue.run_loop(subset=args.cpu_or_gpu)
 
