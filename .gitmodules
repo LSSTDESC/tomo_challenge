@@ -1,0 +1,3 @@
+[submodule "paper/desc-tex"]
+	path = paper/desc-tex
+	url = https://github.com/LSSTDESC/desc-tex.git

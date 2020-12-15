@@ -1,0 +1,7 @@
+paper/*.pdf
+paper/*.bbl
+paper/*.log
+paper/*.html
+paper/*.blg
+paper/*.aux
+paper/*.out
