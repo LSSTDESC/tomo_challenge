@@ -18,6 +18,11 @@
 \linenumbers
 \modulolinenumbers[2]
 
+
+
+\newcommand{\placeholder}[1]{\textit{PLACEHOLDER: #1}}
+
+
 % header settings
 \shorttitle{Tomographic binning optimization}
 \shortauthors{Author A et al.\ (LSST~DESC)}
@@ -29,13 +34,14 @@
 \input{authors}
 
 \begin{abstract}
-Here is the abstract.
+The tomo challenge aims to compare methods for assigning photometrically observed galaxies to bins for a tomographic 3x2pt cosmological analysis, especially in cases where only restricted photometry can be used.
+We present this challenge, and the results of different methods when applied to the problem.
 \end{abstract}
 
 \keywords{methods: numerical -- methods: statistical -- dark energy  -- large-scale structure of the universe}
 
-\accepted{June ??, 2020}
-\submitjournal{the Astrophysical Journal Supplement}
+%\accepted{}
+%\submitjournal{the Astrophysical Journal Supplement}
 
 
 %\tableofcontents%-----------------------------
@@ -43,11 +49,97 @@ Here is the abstract.
 % BEGINNING OF THE MAIN TEXT
 %===========================
 
-\section{Introduction}
-\label{sec:intro}
+\section{Introduction \& Motivation}
+
+\begin{itemize}
+    \item Lensing/clustering/3x2pt 
+    \item Why bin galaxies for 3x2pt
+    \item Current binning standards
+    \item Constraints on potential binning methods
+    \item Goal of challenge: identify binning method(s) leading to best cosmology constraints 
+\end{itemize}
+
+\url{https://arxiv.org/abs/1901.06495}
+
+\url{https://arxiv.org/abs/astro-ph/0609338}
+
+\section{Challenge Design}
+
+\subsection{Philosophy}
+\begin{itemize}
+    \item Simplest challenge (optimistic data)
+    \item Openness?
+    \item Science-relevant metrics
+    \item Performance at scale
+\end{itemize}
+
+\subsection{Data}
+
+\begin{itemize}
+    \item CosmoDC2 - description
+    \item CosmoDC2 - discussion
+    \item Noise properties
+    \item Pre-selection 
+    \item Metacal as a limitation
+\end{itemize}
+
+\subsection{Metrics}
+\label{sec:metrics}
 
 
+\begin{itemize}
+    \item S/N of spectra, CCL
+    \item DETF Figure of merit, FireCrown(?)
+    \item mutual information
+\end{itemize}
 
+
+\placeholder{want to check performance at multiple stages of a cosmology analysis}
+
+\subsection{Infrastructure}
+\begin{itemize}
+    \item Pull request submissions
+    \item Data at NERSC
+\end{itemize}
+
+
+\subsection{Control Methods}
+\begin{itemize}
+    \item single bin
+    \item one galaxy per bin?
+    \item sanity check: random selection should be same as single bin
+\end{itemize}
+
+
+\section{Methods}
+\begin{itemize}
+    \item Gradient Boosting \@ jecampagne
+    \item Neural Network \@EiffL
+    \item Random Forest
+    \item \placeholder{cuts in photometry space without redshift estimation \@barber?}
+\end{itemize}
+
+\section{Results}
+\begin{itemize}
+    \item Big table of results
+    \item fisher matrix ellipses overplotted for top N methods
+    \item Plots of n(z)
+\end{itemize}
+
+\section{Discussion}
+\begin{itemize}
+    \item Overall effectiveness of method classes
+    \item Individual winner
+    \item Largest number of bins that proves workable
+\end{itemize}
+
+\subsection{Future directions}
+
+\begin{itemize}
+    \item spectroscopic incompleteness
+\end{itemize}
+
+\section{Conclusions}
 
 
 
