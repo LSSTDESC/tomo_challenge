@@ -16,9 +16,7 @@
 
 \usepackage{lineno}
 \linenumbers
-\modulolinenumbers[2]
-
-
+%\modulolinenumbers[2]
 
 \newcommand{\placeholder}[1]{\textit{PLACEHOLDER: #1}}
 
@@ -30,15 +28,14 @@
 % ======================================================================
 
 \begin{document}
-\title{The DESC Tomographic 3x2pt Optimization challenge}
+\title{The LSST DESC 3x2pt Tomography Optimization Challenge}
 \input{authors}
 
 \begin{abstract}
-The tomo challenge aims to compare methods for assigning photometrically observed galaxies to bins for a tomographic 3x2pt cosmological analysis, especially in cases where only restricted photometry can be used.
-We present this challenge, and the results of different methods when applied to the problem.
+In this paper we present the results of the DESC 3x2pt tomography challenge, which aims to compare strategies for optimizing the photometric binning required for the main LSST 3x2pt analysis. This task is made particularly delicate in the context of a metacalibrated lensing survey, as only the photometry from the bands  included in the metacalibration process (riz and potentially g) can be used to define this tomographic binning. Using a set of realistic simulations including true galaxy redshifts and simulated photometry, the goal of the challenge is to propose a bin assignment strategy that maximizes the overall Figure of Merit of a 3x2pt analysis. This setting is idealized as it ignores spectroscopic completeness  issues for the training sample, but complex enough to address the main question of binning optimization. Based on the challenge dataset, we review and compare the different methods that have been proposed by participants. We find that even from this limited photometry information, various methods are able to yield binning schemes that achieve high FoM scores.
 \end{abstract}
 
-\keywords{methods: numerical -- methods: statistical -- dark energy  -- large-scale structure of the universe}
+\keywords{methods: statistical -- dark energy  -- large-scale structure of the universe}
 
 %\accepted{}
 %\submitjournal{the Astrophysical Journal Supplement}
