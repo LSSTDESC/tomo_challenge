@@ -88,7 +88,7 @@ specifically the impact
 of using a limited set of color bands to make those assignments, motivated by requirements of using the
 metacalibration method for galaxy shape measurement to limit biases.  Tomographic methods have been 
 explored before in \citet{jain} and \citet{kitching2019}.  In this paper we describe the results of a 
-challenge using simulated Rubin-like data with a range of methods submitted by different teams.
+challenge using simulated Rubin-like data with a range of methods submitted by different teams.  We explore how many tomographic bins we can effectively generate using only a subset of bins, and compare methods submitted to the challenge.
 
 In \autoref{sec:motivation} we explain the need for methods that work on limited sets of bands in the context of upcoming lensing surveys.  \textbf{Complete structure...}
 
@@ -135,21 +135,53 @@ factor.  Widening the prior on this factor decreases the overall constraining po
     \item Goal of challenge: identify binning method(s) leading to best cosmology constraints 
 \end{itemize}
 
-\url{https://arxiv.org/abs/1901.06495}
-
-\url{https://arxiv.org/abs/astro-ph/0609338}
 
 \section{Challenge Design}
 
+The Dark Energy Science Collaboration (DESC) Tomographic Challenge was launched in May 2019 and 
+advertised among the LSST cosmology community, though it was open to outside entrants.
+
+In the challenge, participants assigned simulated galaxies to tomographic bins,
+using only their (g)riz bands and associated errors.  Their goal was to maximize the cosmological
+information in the final split data set; this is generally acheived by separating different bins by 
+redshift as much as possible.  Particpants were free to optimize or simply select nominal (target) 
+redshift bin edges from their training sample, but in either case had to classify galaxies into the 
+different bins.
+
 \subsection{Philosophy}
+
+Since this was a preliminary challenge designed to explore whether it is possible \emph{in theory}
+to use only (g)riz for tomography, we chose to simplify several aspects of the data.  In realistic 
+situations we will have access to limited sized training sets for WL photometric redshifts, since 
+spectra are time-consuming to obtain.  These training sets will also be highly incomplete compared
+to full catalogs, especially at faint magnitudes where spectroscopic coverage is sparse.  In this
+challenge we avoided both these issues -- the training samples we provided (see below) were comparable
+in size to the testing sample, and drawn from the same population.  Given this, the challenge
+represents a best-case scenario -- if no method succeeded on this easier case then more realistic
+cases would probably be impossible.
+
+Despite these simplifications, the other aspects of the challenge and process were designed to be
+as directly relevant as possible to the particular WL science case we focus on.  The data set
+was chosen to mimic the population, noise, and cuts we will use in real data (see \autoref{sec:data}, 
+and the metrics were designed to be as close to the science goals as possible, rather than a lower
+level representation (see \autoref{sec:metrics}). The data set was also large enough to pose a 
+reasonably realistic test of methods at the large data volume required for upcoming surveys, where
+$10^9$ -- $10^{10}$ galaxies will be measured.
+
+The challenge was open to any entrants, not just those already involved in DESC, but it was
+advertised primarily through Rubin, and so is perhaps best described as semi-public.
+Participants tested and ran their methods locally, but submitted code to be run as part of a central
+combined analysis.  No prize was offered apart from recognition.
+
+
+
 \begin{itemize}
-    \item Simplest challenge (optimistic data)
-    \item Openness?
-    \item Science-relevant metrics
     \item Performance at scale
 \end{itemize}
 
 \subsection{Data}
+\label{sec:data}
+
 
 \begin{itemize}
     \item CosmoDC2 - description
@@ -162,6 +194,10 @@ factor.  Widening the prior on this factor decreases the overall constraining po
 \subsection{Metrics}
 \label{sec:metrics}
 
+
+
+In this challenge we use only a source (background) population, since the metacal requirements
+do not apply to the foreground lens sample. We do, however, calculate 
 
 \begin{itemize}
     \item S/N of spectra, CCL
@@ -217,7 +253,18 @@ factor.  Widening the prior on this factor decreases the overall constraining po
 
 \section{Conclusions}
 
+\appendix{Mistakes}
+The challenge organizers made a number of mistakes when building and running the challenge.
+These do not invalidate the process in any way, but we describe them here in the hope of
+being useful for future challenge designers.
 
+\begin{itemize}
+    \item Infrastructure for checking submissions
+    \item Guidance for users regarding caching and batch processing
+    \item Timing
+    \item Training set size
+    \item Advertisement
+\end{itemize}
 
 %=====================
 % END OF THE MAIN TEXT
