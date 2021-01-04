@@ -4,10 +4,17 @@ import sys
 sys.path.append(dir_path)
 import numpy as np
 
-task_name, bands, classifier, nbin, index = sys.argv[1:]
+task_name, bands, classifier, nbin, index = sys.argv[1:6]
 nbin = int(nbin)
 index = int(index)
 
+if len(sys.argv) > 6:
+    if sys.argv[6] == "--buzzard":
+        buzzard=True
+    else:
+        raise ValueError(f"Unknown cmd {sys.argv}")
+else:
+    buzzard=False
 
 scratch = os.environ['SCRATCH']
 
@@ -29,9 +36,14 @@ full_config = yaml.safe_load(open(fn))['run'][classifier]
 settings = list(full_config.values())[0]
 
 
-
-training_file = 'data-train/training-cut.hdf5'
-validation_file = 'secret/testing.hdf5'
+if buzzard:
+    training_file = 'buzzard/training-cut.hdf5'
+    validation_file = 'buzzard/testing.hdf5'
+    output_file = f'{scratch}/tomo_challenge_results_buzzard/{task_name}.npy'
+else:
+    training_file = 'data-train/training-cut.hdf5'
+    validation_file = 'secret/testing.hdf5'
+    output_file = f'{scratch}/tomo_challenge_results/{task_name}.npy'
 
 training_data = tc.load_data(
     training_file,
@@ -73,4 +85,4 @@ results = run_one(classifier, bands, settings, training_data, training_z, valida
              validation_z, metrics, metrics_fn)
 
 
-np.save(f'{scratch}/tomo_challenge_results/{task_name}.npy', results)
+np.save(output_file, results)

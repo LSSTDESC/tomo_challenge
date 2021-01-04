@@ -62,15 +62,19 @@ def setup(queue):
                 queue.add_job(name, task, subset=gpu_or_cpu)
 
 
-def task(name, bands, classifier, nbin, config_index):
+def task(name, bands, classifier, nbin, config_index, buzzard=False):
     f = open(f"logs/{name}_log.txt", "w")
     print("Running",name, classifier, nbin)
     if classifier in off_by_one:
         nbin -= 1
     cmd = f"python bin/run_one_batch.py {name} {bands} {classifier} {nbin} {config_index}"
+    if buzzard:
+        cmd += " --buzzard"
     status = subprocess.call(cmd.split(), stderr=subprocess.STDOUT, stdout=f)
     return status
 
+def buzzard_task(name, bands, classifier, nbin, config_index):
+    return task(name, bands, classifier, nbin, config_index, buzzard=True)
 
 import argparse
 parser = argparse.ArgumentParser(description='Batch run jobs')
@@ -78,12 +82,18 @@ parser.add_argument('cpu_or_gpu', type=int, choices=[GPU, CPU], help='Run jobs f
 parser.add_argument('--setup', action='store_true', help='Set up the DB and exit')
 parser.add_argument('--query', action='store_true', help='Display next job')
 parser.add_argument('--list', action='store_true', help='List remaining jobs')
+parser.add_argument('--buzzard', action='store_true', help='Run on Buzzard')
 
 
 def main():
     args = parser.parse_args()
-    db = "classify.db"
-    queue = task_queue.SlurmTaskQueue(db, task, {"classifier": str, "bands":str, "nbin": int, "config_index":int})
+    if args.buzzard:
+        db = "classify_buzzard.db"
+        f = buzzard_task
+    else:
+        db = "classify.db"
+        f = task
+    queue = task_queue.SlurmTaskQueue(db, f, {"classifier": str, "bands":str, "nbin": int, "config_index":int})
     if args.setup:
         setup(queue)
     elif args.query:
