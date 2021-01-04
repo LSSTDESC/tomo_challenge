@@ -46,13 +46,92 @@ In this paper we present the results of the DESC 3x2pt tomography challenge, whi
 % BEGINNING OF THE MAIN TEXT
 %===========================
 
-\section{Introduction \& Motivation}
+\section{Introduction}
+Weak gravitational lensing (WL) has emerged over the last decade as a powerful
+cosmological probe \citep{cfhtlens,des,kids,hsc}.  WL
+uses measurements of coherent shear distortion to the observed shapes of galaxies
+to track the evolution of large-scale gravitational fields.  It measures the integrated
+gravitational potential along lines of sight to source galaxies, and can thence constrain
+the laws of gravity, the expansion history of the Universe, and the history and growth
+of cosmic structure.
+
+WL has proven especially powerful in combination with galaxy clustering measurements,
+which can measure the density of matter up to an unknown bias function.  The high signal
+to noise of such measurements and the relative certainty of the redshift of these foreground
+samples breaks degeneracies in the systematic errors that affect WL.
+
+The \emph{3x2pt} method has become the standard method for performing this combination.
+In this method, two-point correlations are computed among and between two samples, the shapes of 
+background (source) galaxies and the locations of foreground galaxies, which trace foreground
+dark matter haloes.  The three combinations (source-source, source-lens, and lens-lens) are
+measured in either Fourier or configuration space, and can be predicted from a combination of 
+perturbation theory and simulation results.  The method has been used in the Dark Energy Survey, DES
+\citep{des-3x2pt}, and to combine Baryon Oscillation Spectroscopic Survey, BOSS, with the Kilo-Degree 
+Survey, KiDS \citep{kids-3x2pt}.
+
+Most lensing and 3x2pt analyses have been performed \emph{tomographically}, 
+binning galaxies by redshift.
+This approach captures almost all the available information in lensing data, since it measures
+an integrated effect and so galaxies nearby in redshift probe very similar fields.  For photometric
+foreground samples it is similarly near-lossless, since redshift estimates of such galaxies have
+large uncertainties\footnote{Spectroscopic foreground samples may be more likely to see significant 
+gains from moving beyond spectroscopic methods.}.  Binning galaxies by approximate redshift lets us 
+model galaxy bias, intrinsic alignments, and other systematic errors en masse in a more tractable way.
+While fully 3D methods have been proposed and prototyped \citep{kitching,more}, the tomographic 
+approach remains the standard within the field.
+
+Tomographic 3x2pt measurements will be a key science goal in the upcoming \emph{Stage IV} surveys,
+including the Rubin Observatory \citep{rubin} and the Euclid and Roman space telescopes \citep{euclid,roman}.
+
+In this paper we discuss and evaluate methods for assigning objects to tomographic bins, and 
+specifically the impact
+of using a limited set of color bands to make those assignments, motivated by requirements of using the
+metacalibration method for galaxy shape measurement to limit biases.  Tomographic methods have been 
+explored before in \citet{jain} and \citet{kitching2019}.  In this paper we describe the results of a 
+challenge using simulated Rubin-like data with a range of methods submitted by different teams.
+
+In \autoref{sec:motivation} we explain the need for methods that work on limited sets of bands in the context of upcoming lensing surveys.  \textbf{Complete structure...}
+
+\section{Motivation}
+\label{sec:motivation}
+
+The methodology used to assign galaxies to bins faces special challenges when we use a particularly
+effective approach for measuring galaxy shear, called \emph{metacalibration} (metacal),
+which was introduced in \citet{sheldonhuff} and developed further in \citet{sheldon}.
+In metacal, galaxy images are deconvolved from the point-spread function (PSF), sheared, and
+reconvolved before measurement, allowing one to directly compute the response of a metric
+to underlying shear and correct for it when computing two-point measurements.  This can
+almost completely remove errors due to model and estimator (noise) bias from WL data, at least
+when PSFs are well-measured and oversampled by the pixel grid.
+
+Furthermore, metacal provides a solution to the pernicious and general problem of
+\emph{selection biases} in WL.  Measurements of galaxy shear are known to have noise-induced errors
+that are
+highly covariant with those on other galaxy properties, including size and, most importantly, flux/
+magnitude.  It follows that a cut (or re-weighting) on galaxy magnitudes, or on any quantity derived
+from  them, will induce a shear bias since galaxies will preferentially fall either side of the cut
+depending on their shear.  Within metacal, we can solve this problem by performing the cut on both
+sheared variants of the catalog, and measuring the difference between the post-cut shear in the two
+variants.  In DES the corrected biases were found up to around 3\%, far larger than
+the requirements for the current generation of surveys \cite{des-y1-cat}.
+
+In summary: metacal allows us to correct for significant selection biases, but only if all selections
+are performed using only bands in which the PSF is measured well enough for deconvolution to be
+performed.  For Rubin, this means using only the $r$, $i$, $z$, and perhaps $g$ bands.  In this work we
+therefore study how well we can perform tomography using only this limited photometric information.  In
+particular, this limitation prevent us from using the most obvious method for tomography,
+and computnig a complete photometric probability density function (PDF) for each galaxy and assigning
+a bin using the mean or peak of that PDF.
+
+Simulation methods can also be used to correct for selection biases, provided that they match the
+real data to high accuracy.  If we determine that limiting the bands we can use for tomography results
+in a significant decrease in our overall signal-to-noise, outweighing the gain from the improved shape
+calibration then this might suggest moving to rely more on such methods\footnote{One can account for
+residual shear estimation uncertainty during parameter estimation by marginalizing over an unknown
+factor.  Widening the prior on this factor decreases the overall constraining power of the analysis.}.
+
 
 \begin{itemize}
-    \item Lensing/clustering/3x2pt 
-    \item Why bin galaxies for 3x2pt
-    \item Current binning standards
-    \item Constraints on potential binning methods
     \item Goal of challenge: identify binning method(s) leading to best cosmology constraints 
 \end{itemize}
 
