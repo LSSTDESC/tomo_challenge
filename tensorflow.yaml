@@ -1,0 +1,60 @@
+metrics:  ['SNR_ww', 'SNR_gg', 'SNR_3x2', 'FOM_ww', 'FOM_gg', 'FOM_3x2']
+bands: griz
+training_file: data/training.hdf5 # change it to data_buzzard/training.hdf5 to run with the buzzard sim
+validation_file: data/validation.hdf5 # change it to data_buzzard/validation.hdf5 to run with the buzzard sim
+output_file: example/tensorflow_output.txt
+# Backend implementing the metrics, either: "firecrown" (default), "jax-cosmo"
+metrics_impl: firecrown
+
+run:
+  # This is a class name which will be looked up
+  TensorFlow_FFNN:
+    {% for nbins in [2,3,4,5,6,7,8,9,10] %}
+    run_{{nbins}}:
+      # This setting is sent to the classifier
+      heal_undetected: True # needs `errors: True`
+      data_scaler: 'StandardScaler' # 'MinMaxScaler'
+      bins: {{nbins}}
+      # cutting down to a fraction of original training and test sets
+      train_percent: 100
+      epochs: 100
+      activation: 'relu'
+      optimizer: 'adam'
+      # excess_prob_percent: False
+      # These special settings decide whether the
+      # color and error columns are passed to the classifier
+      # as well as the magnitudes
+      colors: True
+      errors: True # include errors for mags and potentially colors etc.
+      band_triplets: True
+      band_triplets_errors: True # needs `errors: True`
+    {% endfor %}
+
+  # This is a class name which will be looked up
+  TensorFlow_DBN:
+    {% for nbins in [2,3,4,5,6,7,8,9,10] %}
+    run_{{nbins}}:
+      # This setting is sent to the classifier
+      heal_undetected: True
+      data_scaler: 'StandardScaler' # works best with 'MinMaxScaler'
+      bins: {{nbins}}
+      # cutting down to a fraction of original training and test sets
+      train_percent: 100
+      activation: 'relu'
+      hidden_layers_structure: [32] #[16] [2,32]
+      learning_rate_rbm: 0.05
+      learning_rate: 0.1
+      n_epochs_rbm: 15
+      n_iter_backprop: 100
+      batch_size: 32
+      dropout_p: 0.2
+      # These special settings decide whether the
+      # color and error columns are passed to the classifier
+      # as well as the magnitudes
+      colors: True
+      errors: True # include errors for mags and potentially colors etc.
+      band_triplets: True
+      band_triplets_errors: True
+    {% endfor %}
+
+
