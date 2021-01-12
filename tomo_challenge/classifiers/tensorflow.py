@@ -51,7 +51,7 @@ def add_colors(data, bands, errors=False, band_triplets_errors=False):
         if errors or band_triplets_errors:
             data[f'{b}{c}_err'] = np.sqrt(data[f'{b}_err']**2 + data[f'{c}_err']**2)
 
-def load_mags(filename, bands, errors=False, band_triplets_errors=False, heal_undetected=False):
+def load_mags(input_data, bands, errors=False, band_triplets_errors=False, heal_undetected=False):
 
     # Warn about non-detections being set mag=30.
     # The system is only supposed to warn once but on
@@ -62,23 +62,16 @@ def load_mags(filename, bands, errors=False, band_triplets_errors=False, heal_un
     else:
         warnings.warn("Setting inf (undetected) bands to mag=30 and mag_err=30")
 
-    data = {}
-
-    with h5py.File(filename, 'r') as f:
-        # load all bands
-        for b in bands:
-            data[b] = f[f'{b}_mag'][:]
-
-            if errors or band_triplets_errors:
-                data[f'{b}_err'] = f[f'{b}_mag_err'][:]
+    data = input_data
 
     # Set undetected objects to S/N=1 mags and errors if heal_undetected=True, otherwise to mag 30 +/- 30
-    print(f'Analyzing sample from {filename}')
+    print(f'Checking the data') #sample from {filename}')
     # fig = plt.figure()
     # ax = fig.add_subplot(111)
     for ib, b in enumerate(bands):
-        bad = ~np.isfinite(data[b])
+        bad = (data[b]==30.0) | (~np.isfinite(data[b]))
         if heal_undetected:
+            print(f'Healing {sum(bad)} non-detects in band {b}')
             magerr_snr1=2.5*np.log10(2)
             mag_snr1 = my_npinterp(magerr_snr1, data[f'{b}_err'][~bad], data[b][~bad]) # mag_snr1, (A,B) = ...
             data[b][bad] = mag_snr1
@@ -99,7 +92,7 @@ def load_mags(filename, bands, errors=False, band_triplets_errors=False, heal_un
             #     plt.savefig(f'./errormodel-{sample_name}.png')
             #     plt.close(fig)
         else:
-            data[b][bad] = 30.0
+            data[b][bad] = 30.0 # redundant but ok
 
         if errors or band_triplets_errors:
             if heal_undetected:
@@ -121,10 +114,10 @@ def my_npinterp(x0,x,y, model='log'):
         A, B = np.polyfit(np.log10(x), y, 1) # y = A log(x) + B
         return A*np.log10(x0)+B #, (A,B)
 
-def load_data(filename, bands, colors=False,
+def load_data(input_data, bands, colors=False,
               errors=False, band_triplets=False, band_triplets_errors=False,
-              array=False, heal_undetected=False):
-    data = load_mags(filename, bands, errors=errors, band_triplets_errors=band_triplets_errors, heal_undetected=heal_undetected)
+              array=True, heal_undetected=False):
+    data = load_mags(input_data, bands, errors=errors, band_triplets_errors=band_triplets_errors, heal_undetected=heal_undetected)
 
     if colors:
         add_colors(data, bands, errors=errors, band_triplets_errors=band_triplets_errors)
@@ -141,32 +134,24 @@ def load_redshift(filename):
     f.close()
     return z
 
-def get_valueadded_data(training_file, validation_file, bands, errors, colors, band_triplets,
+def get_valueadded_data(input_data, bands, errors, colors, band_triplets,
                         band_triplets_errors, heal_undetected, wants_arrays):
     """Make a value-added sample from training and validation files"""
-    training_data = load_data(
-        training_file,
+    output_data = load_data(
+        input_data,
         bands,
-        array=wants_arrays,
+        array=False, # has to be False since we plan to use dictionaries
         errors=errors,
         colors=colors,
         band_triplets=band_triplets,
         band_triplets_errors=band_triplets_errors,
         heal_undetected=heal_undetected
     )
-    validation_data = load_data(
-        validation_file,
-        bands,
-        array=wants_arrays,
-        errors=errors,
-        colors=colors,
-        band_triplets=band_triplets,
-        band_triplets_errors=band_triplets_errors,
-        heal_undetected=heal_undetected
-    )
-    training_z = load_redshift(training_file)
-    validation_z = load_redshift(validation_file)
-    return training_data, validation_data, training_z, validation_z
+
+    if wants_arrays:
+        output_data = dict_to_array(output_data, bands, errors=errors, colors=colors, band_triplets=band_triplets, band_triplets_errors=band_triplets_errors)
+
+    return output_data
 
 def dict_to_array(data, bands, errors=False, colors=False, band_triplets=False, band_triplets_errors=False):
     nobj = data[bands[0]].size
@@ -216,13 +201,10 @@ def dict_to_array(data, bands, errors=False, colors=False, band_triplets=False, 
 class TensorFlow_FFNN(Tomographer):
     """ TensorFlow Deep Neural Network Classifier """
 
-    # valid parameter -- see below
-    valid_options = ['bins','train_percent','test_percent','epochs','activation','optimizer',
-                     'data_scaler','heal_undetected','band_triplets','band_triplets_errors',
-                     'training_file','validation_file'] #, 'excess_prob_percent']
-    # this settings means arrays will be sent to train and apply instead
-    # of dictionaries
-    wants_arrays = True # redundant in this line for this method
+    # valid extra parameters ('colors' and 'errors' are not extra)
+    valid_options = ['bins','train_percent','epochs','activation','optimizer',
+                     'data_scaler','heal_undetected','band_triplets',
+                     'band_triplets_errors'] #, 'excess_prob_percent']
     
     def __init__ (self, bands, options):
         """Constructor
@@ -238,34 +220,46 @@ class TensorFlow_FFNN(Tomographer):
         -----
         Valiad options are:
             'bins' - number of tomographic bins
+            'train_percent' - percentage of the training set to load
+            'epochs' 
+            'activation'
+            'optimizer'
+            'data_scaler'
+            'heal_undetected'
+            'band_triplets'
+            'band_triplets_errors'
         """
 
-        wants_arrays = True
+        # this settings means arrays will be sent to train and apply instead
+        # of dictionaries
+        self.wants_arrays = True
+
         self.bands = bands
         # self.excess_prob_percent = options['excess_prob_percent']
         self.opt = options
         np.random.seed(1905)
         
-        # Create value-added data
-        print("Creating value-added data")
-        self.training_data, self.validation_data, self.training_z, self.validation_z = get_valueadded_data(
-             options['training_file'], options['validation_file'], bands, options['errors'], options['colors'],
-             options['band_triplets'], options['band_triplets_errors'], options['heal_undetected'], wants_arrays
-        )
-
-    def train (self, *args, **kwargs):
+    def train (self, training_data, training_z):
         """Trains the classifier
         
         Parameters:
         -----------
-        training_data: numpy array, size Ngalaxes x Nbands
+        training_data: numpy array, size Ngalaxies x Nbands
           training data, each row is a galaxy, each column is a band as per
           band defined above
         training_z: numpy array, size Ngalaxies
           true redshift for the training sample
         """
 
-        del args, kwargs # we already loaded our value-added data in __init__
+        self.training_z = training_z
+
+        # Create value-added data
+        print("Creating value-added training data")
+        self.training_data = get_valueadded_data(
+             training_data, self.bands, self.opt['errors'], self.opt['colors'],
+             self.opt['band_triplets'], self.opt['band_triplets_errors'], self.opt['heal_undetected'], self.wants_arrays
+        )
+
         data_scaler = self.opt['data_scaler'] if 'data_scaler' in self.opt else 'MinMaxScaler'
         n_bin = self.opt['bins']
         train_percent = self.opt['train_percent'] if 'train_percent' in self.opt else 2
@@ -283,7 +277,7 @@ class TensorFlow_FFNN(Tomographer):
 
         print("Finding bins for training data")
 
-        # apply transform to get rescaled values
+        # Apply transform to get rescaled values
         self.training_data = self.scaler.transform(self.training_data) # inverse: data_original = scaler.inverse_transform(data_rescaled)
         
         # Now put the training data into redshift bins.
@@ -343,12 +337,12 @@ class TensorFlow_FFNN(Tomographer):
         self.classifier = classifier
         self.z_edges = z_edges
 
-    def apply (self, *args, **kwargs):
+    def apply (self, testing_data):
         """Applies training to the data.
         
         Parameters:
         -----------
-        Data: numpy array, size Ngalaxes x Nbands
+        testing_data: numpy array, size Ngalaxes x Nbands
           testing data, each row is a galaxy, each column is a band as per
           band defined above
         Returns:
@@ -357,17 +351,22 @@ class TensorFlow_FFNN(Tomographer):
           each galaxy.
         """
         
-        del args, kwargs # we already loaded our value-added data in __init__
+        # Create value-added data
+        print("Creating value-added test data")
+        self.testing_data = get_valueadded_data(
+             testing_data, self.bands, self.opt['errors'], self.opt['colors'],
+             self.opt['band_triplets'], self.opt['band_triplets_errors'], self.opt['heal_undetected'], self.wants_arrays
+        )
 
         # Apply transform to get rescaled values using the scaler we already fit to the training data
-        self.validation_data = self.scaler.transform(self.validation_data)
+        self.testing_data = self.scaler.transform(self.testing_data)
 
         # Make predictions
         probability_model = tf.keras.Sequential([self.classifier, 
                                                  tf.keras.layers.Softmax()])
 
         # Get the probabilities
-        probs = probability_model.predict(self.validation_data)
+        probs = probability_model.predict(self.testing_data)
         
         # Find the index of the most probable ones
         tomo_bin = np.argmax(probs, axis=1)
@@ -382,14 +381,10 @@ class TensorFlow_FFNN(Tomographer):
 class TensorFlow_DBN(Tomographer):
     """ TensorFlow Deep Belief Network Classifier """
     
-    # valid parameter -- see below
-    valid_options = ['bins','train_percent','test_percent','n_epochs_rbm','hidden_layers_structure',
+    # valid extra parameters ('colors' and 'errors' are not extra)
+    valid_options = ['bins','train_percent','n_epochs_rbm','hidden_layers_structure',
                      'activation','learning_rate_rbm','learning_rate','n_iter_backprop','batch_size',
-                     'dropout_p','data_scaler','heal_undetected','band_triplets','band_triplets_errors',
-                     'training_file','validation_file']
-    # this settings means arrays will be sent to train and apply instead
-    # of dictionaries
-    wants_arrays = True # redundant in this line for this method
+                     'dropout_p','data_scaler','heal_undetected','band_triplets','band_triplets_errors']
 
     def __init__ (self, bands, options):
         """Constructor
@@ -405,21 +400,30 @@ class TensorFlow_DBN(Tomographer):
         -----
         Valiad options are:
             'bins' - number of tomographic bins
+            'train_percent' - percentage of the training set to load
+            'n_epochs_rbm'
+            'hidden_layers_structure'
+            'activation'
+            'learning_rate_rbm'
+            'learning_rate'
+            'n_iter_backprop'
+            'batch_size'
+            'dropout_p'
+            'data_scaler'
+            'heal_undetected'
+            'band_triplets'
+            'band_triplets_errors'
         """
-    
-        wants_arrays = True
+        
+        # this settings means arrays will be sent to train and apply instead
+        # of dictionaries
+        self.wants_arrays = True
+
         self.bands = bands
         self.opt = options
         np.random.seed(1905)
         
-        # Create value-added data
-        print("Creating value-added data")
-        self.training_data, self.validation_data, self.training_z, self.validation_z = get_valueadded_data(
-             options['training_file'], options['validation_file'], bands, options['errors'], options['colors'],
-             options['band_triplets'], options['band_triplets_errors'], options['heal_undetected'], wants_arrays
-        )
-        
-    def train (self, *args, **kwargs):
+    def train (self, training_data, training_z):
         """Trains the classifier
         
         Parameters:
@@ -431,9 +435,17 @@ class TensorFlow_DBN(Tomographer):
           true redshift for the training sample
         """
 
-        del args, kwargs # we already loaded our value-added data in __init__
         from dbn.tensorflow import SupervisedDBNClassification
-            
+       
+        self.training_z = training_z
+
+        # Create value-added data
+        print("Creating value-added training data")
+        self.training_data = get_valueadded_data(
+             training_data, self.bands, self.opt['errors'], self.opt['colors'],
+             self.opt['band_triplets'], self.opt['band_triplets_errors'], self.opt['heal_undetected'], self.wants_arrays
+        )
+
         data_scaler = self.opt['data_scaler'] if 'data_scaler' in self.opt else 'MinMaxScaler'
         n_bin = self.opt['bins']
         train_percent = self.opt['train_percent'] if 'train_percent' in self.opt else 1
@@ -504,12 +516,12 @@ class TensorFlow_DBN(Tomographer):
         self.classifier = classifier
         self.z_edges = z_edges
 
-    def apply (self, *args, **kwargs):
+    def apply (self, testing_data):
         """Applies training to the data.
         
         Parameters:
         -----------
-        Data: numpy array, size Ngalaxes x Nbands
+        testing_data: numpy array, size Ngalaxies x Nbands
           testing data, each row is a galaxy, each column is a band as per
           band defined above
         Returns:
@@ -518,12 +530,18 @@ class TensorFlow_DBN(Tomographer):
           each galaxy.
         """
 
-        del args, kwargs # we already loaded our value-added data in __init__
+
+        # Create value-added data
+        print("Creating value-added validation data")
+        self.testing_data = get_valueadded_data(
+             testing_data, self.bands, self.opt['errors'], self.opt['colors'],
+             self.opt['band_triplets'], self.opt['band_triplets_errors'], self.opt['heal_undetected'], self.wants_arrays
+        )
 
         # Apply transform to get rescaled values using the scaler we already fit to the training data
-        self.validation_data = self.scaler.transform(self.validation_data)
+        self.testing_data = self.scaler.transform(self.testing_data)
         
         # Find predictions
-        tomo_bin = self.classifier.predict(self.validation_data)
+        tomo_bin = self.classifier.predict(self.testing_data)
         
         return np.array(tomo_bin)
