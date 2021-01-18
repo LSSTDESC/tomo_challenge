@@ -10,7 +10,7 @@
 \usepackage{ae,aecompl}
 \usepackage[utf8]{inputenc}
 \usepackage[figure,figure*]{hypcap}
-
+\usepackage{natbib}
 \usepackage{url}
 \urlstyle{same}
 
@@ -131,11 +131,6 @@ residual shear estimation uncertainty during parameter estimation by marginalizi
 factor.  Widening the prior on this factor decreases the overall constraining power of the analysis.}.
 
 
-\begin{itemize}
-    \item Goal of challenge: identify binning method(s) leading to best cosmology constraints 
-\end{itemize}
-
-
 \section{Challenge Design}
 
 The Dark Energy Science Collaboration (DESC) Tomographic Challenge was launched in May 2019 and 
@@ -231,9 +226,12 @@ use the inverse area of a Fisher Matrix ellipse, which approximates the size in 
 of the posterior PDF one would obtain on analysing the spectra:
 \begin{align}
     F &= \left( \frac{\partial \mu}{\partial \theta} \right)^T C^{-1} \left( \frac{\partial \mu}{\partial \theta} \right), \\
-    S &= \frac{1}{2 \pi \sqrt{\det{([F^{-1}]_{\Omega_c,\sigma_8})}}}
+    S &= \frac{1}{2 \pi \sqrt{\det{([F^{-1}]_{p_1, p_2})}}}
 \end{align}
-where $[F^{-1}]_{\Omega_c,\sigma_8}$ extracts the 2x2 matrix for these two parameters.
+where $[F^{-1}]_{p_1, p_2}$ extracts the 2x2 matrix for two parameters.  We use both the original
+DETF variant in which $p_1 = w_0, p_2 = w_a$, representing the constraining power on dark energy 
+evolution, and a version in which $p_1 = \Omega_c$ and $p_2 = \sigma_8$, representing constraining
+power on overall cosmic structure amplitude and its evolution.
 
 
 
@@ -246,22 +244,151 @@ where $[F^{-1}]_{\Omega_c,\sigma_8}$ extracts the 2x2 matrix for these two param
 
 
 \subsection{Control Methods}
-\begin{itemize}
-    \item single bin
-    \item one galaxy per bin?
-    \item sanity check: random selection should be same as single bin
-\end{itemize}
+
+Two control methods were used to test the challenge machinery and metrics.
+The first method randomly assigned galaxies to each tomographic bin, resulting
+in bins which each had the same $n(z)$, on average.  Using this method, we expect
+that increasing the number of bins should not increase any metric, since bins are
+maximally correlated.  We find this to be true for all our metrics.
+
+Second, we use a method which uses only the $i$-band to select tomographic bins,
+splitting galaxies in equal-sized bins in this magnitude. We expect only a small
+increase in metrics with the number of bins, and also that the addition of the $g$-band
+should make no difference to metrics.  Again, we find this to be true.
+
+One additional method was submitted to the challenge with the caveat that it could
+never be applied to real data and should therefore considered a form of control method.
+This method was {\sc Utopia}, which found, for each object in the testing data, the
+nearest neighbour object in the training sample.  The high density, completeness, and
+representativeness of our training set made this possible; realistics spectroscopic training
+sets are too sparse.  The method performed well, as expected, 
+but was not the highest scoring overall.
 
 
 \section{Methods}
-\begin{itemize}
-    \item Gradient Boosting \@ jecampagne
-    \item Neural Network \@EiffL
-    \item Random Forest
-    \item \placeholder{cuts in photometry space without redshift estimation \@barber?}
-\end{itemize}
+
+\subsection{ {\sc RandomForest} }
+This method was submitted by the challenge organizers and used a random
+forest algorithm to assign galaxies.
+
+Random forests \cite{breiman2001} train a collection of individual \emph{decision trees},
+each of which consists of a set of bifurcating comparisons in which different features in
+the data (in this case, magnitudes and errors) are compared to criterion values to choose
+which branch to follow.  Each ``leaf'' (end comparison) selects a classification bin for
+an input galaxy, and the tree is trained to choose comparison features and comparison values
+which maximally split the discrimination at each step, and in final leaf purity.
+
+Since decision trees tend to over-fit data, random forests generate a suite of decision
+trees, each randomly choosing a subset of features on which to train at each bifurcation.
+An average over the trained trees is taken as the overall classification.
+
+In this implementation we chose nominal bin edges by splittng ensuring equal numbers of training set 
+objects were in each bin, and then trained the forest to map magnitudes, magnitude errors, and
+galaxy sizes to bin indices.  We use the {\sc scikit-learn} implementation of the random forest
+\citep{scikit-learn}.
+
+
+% Please describe your methods with some very general / high level background theory
+% and a focus on the spsecific implementation.  Add any citations you like with bibtex in
+% paper.bib
+% Feel free to rename your method, but please leave a comment explaining so that I can do the
+% same in the tables.
+
+\subsection{ {\sc Autokeras LSTM} }
+
+
+\subsection{ {\sc CNN} }
+
+
+\subsection{ {\sc ComplexSOM} }
+
+
+\subsection{ {\sc ENSEMBLE} }
+
+
+\subsection{ {\sc GPzBinning} }
+
+
+\subsection{ {\sc JaxCNN} }
+
+
+\subsection{ {\sc JaxResNet} }
+
+
+\subsection{ {\sc LGBM} }
+
+
+\subsection{ {\sc LSTM} }
+
+
+\subsection{ {\sc NeuralNetwork 1} }
+
+
+\subsection{ {\sc NeuralNetwork 2} }
+
+
+\subsection{ {\sc PCACluster} }
+
+
+\subsection{ {\sc SimpleSOM} }
+
+
+\subsection{ {\sc TCN} }
+
+
+\subsection{ {\sc UTOPIA} }
+
+
+\subsection{ {\sc ZotBin} }
+
+
+\subsection{ {\sc ZotNet} }
+
+
+\subsection{ {\sc funbins} }
+
+
+\subsection{ {\sc mlpqna} }
+
+
+\subsection{ {\sc myCombinedClassifiers} }
+
+
 
 \section{Results}
+
+\begin{table*}[]
+\begin{tabular}{l|llll|llll|}
+                & \multicolumn{4}{c|}{\textbf{riz}}      & \multicolumn{4}{c|}{\textbf{griz}}                                \\ \hline
+\textbf{Method} & \textbf{3-bin} & \textbf{5-bin} & \textbf{7-bin} & \textbf{9-bin} & \textbf{3-bin} & \textbf{5-bin} & \textbf{7-bin} & \textbf{9-bin} \\ \hline
+{\sc Autokeras\_LSTM } & 31.1 & 74.9    & 103.4    & nan    & 44.1             & 67.5             & 122.2             & 98.4\\
+{\sc CNN } & 27.1 & 50.8    & 76.7    & 103.3    & 30.5             & 57.7             & 95.4             & 122.4\\
+{\sc ComplexSOM } & 38.0 & 52.1    & 94.4    & 101.6    & 34.9             & 45.0             & 91.6             & 100.3\\
+{\sc ENSEMBLE1 } & 65.6 & 65.6    & 94.8    & 0.0    & 0.0             & 0.0             & 0.0             & 0.0\\
+{\sc funbins } & 36.8 & 82.5    & 122.1    & 141.8    & 42.1             & 100.4             & 142.5             & 167.2\\
+{\sc GPzBinning } & 26.2 & 49.7    & 80.8    & 111.7    & 27.8             & 55.3             & 87.2             & 126.9\\
+{\sc IBandOnly } & 38.0 & 50.0    & 54.4    & 57.3    & 38.0             & 50.0             & 54.4             & 57.3\\
+{\sc JaxCNN } & 59.9 & 101.9    & 105.2    & nan    & 79.7             & 125.2             & 150.0             & nan\\
+{\sc JaxResNet } & 73.7 & 111.1    & 131.6    & nan    & 82.2             & 126.0             & nan             & 161.5\\
+{\sc LGBM } & 27.0 & 50.8    & 78.8    & 108.2    & 30.3             & 57.4             & 92.9             & 125.2\\
+{\sc LSTM } & 26.7 & 51.1    & 81.4    & 103.6    & 30.2             & 57.1             & 95.9             & 126.9\\
+{\sc mlpqna } & 39.3 & 64.7    & 93.2    & 121.8    & 42.8             & 72.2             & 109.0             & 133.7\\
+{\sc myCombinedClassifiers } & 35.3 & 60.5    & 83.5    & 120.4    & 39.4             & 63.9             & 93.1             & 148.9\\
+{\sc NeuralNetwork\_1 } & 0.0 & 0.0    & 0.0    & 0.0    & 0.0             & 0.0             & 0.0             & 0.0\\
+{\sc NeuralNetwork\_2 } & 0.0 & 0.0    & 0.0    & 0.0    & 0.0             & 0.0             & 0.0             & 0.0\\
+{\sc PCACluster } & 29.5 & 68.1    & 75.8    & 0.0    & 50.1             & 72.7             & 90.8             & 0.0\\
+{\sc Random } & 1.2 & 1.2    & 1.2    & 1.2    & 1.2             & 1.2             & 1.2             & 1.2\\
+{\sc RandomForest } & 39.5 & 65.2    & 93.2    & 118.5    & 43.0             & 72.8             & 110.1             & 136.5\\
+{\sc SimpleSOM } & 39.5 & 59.9    & 77.9    & 98.5    & 42.2             & 73.2             & 108.0             & 134.8\\
+{\sc TCN } & 40.0 & 65.3    & 90.9    & 110.5    & 44.1             & 72.8             & 108.0             & 134.0\\
+{\sc UTOPIA } & 39.0 & 63.7    & 90.8    & 112.2    & 43.1             & 74.0             & 112.8             & 139.3\\
+{\sc ZotBin } & 64.8 & 106.4    & 121.8    & 135.3    & 77.6             & 120.0             & 141.8             & 154.7\\
+{\sc ZotNet } & 73.6 & 111.2    & 131.8    & 145.9    & 83.7             & 128.5             & 150.1             & 167.2\\
+\end{tabular}
+\caption{INCOMPLETE, AND AUTO-GENERATED SO NO POINT EDITING! Values of the 3x2pt DETF figure-of-merit achieved by entrant methods on the 
+CosmoDC2 part of the challenge.}
+\end{table*}
+
 \begin{itemize}
     \item Big table of results
     \item fisher matrix ellipses overplotted for top N methods
@@ -272,8 +399,27 @@ where $[F^{-1}]_{\Omega_c,\sigma_8}$ extracts the 2x2 matrix for these two param
 \begin{itemize}
     \item Overall effectiveness of method classes
     \item Individual winner
-    \item Largest number of bins that proves workable
 \end{itemize}
+
+
+
+\subsection{Individual winners}
+
+RUN WINNERS WITH UGRIZY TO GET AN IDEA OF THE LOSS FROM DROPPING U AND Y.
+
+\subsection{Large bin numbers}
+
+It is clear from values above that fears about restricted photometry catastrophically limiting
+the information needed for tomography are unfounded.  In both the CosmoDC2 and Buzzard analyses,
+even the $riz$ bands alone are sufficient to split objects into nine reasonably separated
+tomographic bins.
+Once bins become this narrow the primary analysis concern will become the calibration of overall
+bin $n(z)$ values, rather than initial tomography, so we consider this to be reassuring.
+
+The inclusion of the $g$ band typically increases metrics by around 10--20\%, including for the
+highest scoring methods.  This value should be weighed against the challenge of high-accuracy
+PSF measurement for this band, but until the end of the survey this is unlikely to be
+the limiting factor in overall precision.
 
 \subsection{Future directions}
 
@@ -282,6 +428,9 @@ where $[F^{-1}]_{\Omega_c,\sigma_8}$ extracts the 2x2 matrix for these two param
 \end{itemize}
 
 \section{Conclusions}
+
+\bibliography{paper}
+
 
 \appendix
 
@@ -319,6 +468,7 @@ These do not invalidate the process in any way, but we describe them here in the
 being useful for future challenge designers.
 
 \begin{itemize}
+    \item Splitting classification from nominal bin choice
     \item Infrastructure for checking submissions
     \item Guidance for users regarding caching and batch processing
     \item Timing

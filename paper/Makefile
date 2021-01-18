@@ -1,15 +1,16 @@
-export TEXINPUTS := desc-tex/styles/:desc-tex/logos/:
+ROOT = paper
 
 # for bibliography tests
-BIB := desc-tex/bib/lsstdesc.bib
-ROOT := note
+BIB = $(ROOT).bib
 TEX := $(ROOT).tex
 PDF := $(ROOT).pdf
 
 .PHONY: default
 
-default: $(TEX) $(BBL)
-	pdflatex $(TEX)
-
-%.bbl: %.aux $(BIB) $(NOTES)
-	bibtex $<
+all: $(TEX) $(BIB)
+	pdflatex $(ROOT)
+	pdflatex $(ROOT)
+	bibtex $(ROOT)
+	bibtex $(ROOT)
+	pdflatex $(ROOT)
+	pdflatex $(ROOT)
