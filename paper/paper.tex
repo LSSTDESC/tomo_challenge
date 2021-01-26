@@ -378,6 +378,9 @@ The two methods have their own systematics; they notably differ in the feature i
 the two is therefore especially effective.  The submitted method used {\sc SKLearn}, and used 50 models 
 of each type combined using its {\sc StackingClassifier}.
 
+An iterative precedure was used to progressively change the target bin edges to optimize one of the metrics (FOMs or SNRs) between the trainings of the classifiers. In general, we recover different choices for each statistic, but the differences are relatively marginal. This procedure was done by hand for this challenge, but could be automated and applied to any kind of classifier.
+
+
 % \lstset{language=Python}
 % \lstset{frame=lines}
 % \lstset{caption={The code}}
