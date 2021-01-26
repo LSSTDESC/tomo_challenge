@@ -8,7 +8,10 @@ import matplotlib.pyplot as plt
 import warnings
 import h5py
 
-import tensorflow as tf
+#import tensorflow as tf
+import tensorflow.compat.v1 as tf
+tf.disable_v2_behavior()
+
 from tensorflow import keras
 # from dbn.tensorflow import SupervisedDBNClassification # version conflict with tf_v2 (had to put it inside the DBN class)
 
