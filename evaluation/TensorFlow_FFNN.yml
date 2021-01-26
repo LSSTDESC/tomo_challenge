@@ -1,0 +1,29 @@
+metrics:  ['SNR_ww', 'SNR_gg', 'SNR_3x2', 'FOM_ww', 'FOM_gg', 'FOM_3x2']
+bands: griz
+training_file: data/training.hdf5 # change it to data_buzzard/training.hdf5 to run with the buzzard sim
+validation_file: data/validation.hdf5 # change it to data_buzzard/validation.hdf5 to run with the buzzard sim
+output_file: example/tensorflow_output.txt
+# Backend implementing the metrics, either: "firecrown" (default), "jax-cosmo"
+metrics_impl: firecrown
+
+run:
+  # This is a class name which will be looked up
+  TensorFlow_FFNN:
+    run_3:
+      # This setting is sent to the classifier
+      heal_undetected: True # needs `errors: True`
+      data_scaler: 'StandardScaler' # 'MinMaxScaler'
+      bins: 3
+      # cutting down to a fraction of original training and test sets
+      train_percent: 100
+      epochs: 100
+      activation: 'relu'
+      optimizer: 'adam'
+      # excess_prob_percent: False
+      # These special settings decide whether the
+      # color and error columns are passed to the classifier
+      # as well as the magnitudes
+      colors: True
+      errors: True # include errors for mags and potentially colors etc.
+      band_triplets: True
+      band_triplets_errors: True # needs `errors: True`
