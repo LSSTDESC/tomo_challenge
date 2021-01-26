@@ -55,7 +55,6 @@ def setup(queue):
 
         for nbin in bins:
             name = f"{classifier}_{nbin}_{config_index}"
-            plot_distributionsnt(name)
             queue.add_job(name, {})
 
 
@@ -63,7 +62,7 @@ def setup(queue):
 def task(name):
     print(name)
     sys.stdout.flush()
-    results_dir = "/global/cscratch1/sd/zuntz/tomo_challenge_results"
+    results_dir = "/global/cscratch1/sd/zuntz/tomo_challenge_secret_testing_results"
     result_file = f'{results_dir}/{name}.npy'
     img_file = f'{results_dir}/plots/{name}.png'
     metric_file = f'{results_dir}/metrics/{name}.yml'

@@ -13,7 +13,7 @@ with h5py.File("secret/testing.hdf5", "r") as f:#change later
     truth_z = f["redshift_true"][:]
 print("Loaded truth data")
 
-results_dir = "/global/cscratch1/sd/zuntz/tomo_challenge_results/"
+results_dir = "/global/cscratch1/sd/zuntz/tomo_challenge_secret_testing_results/"
 completed = sorted(glob.glob(results_dir + "*.npy"))
 
 for result_file in completed:
