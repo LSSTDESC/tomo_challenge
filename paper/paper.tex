@@ -309,7 +309,93 @@ galaxy sizes to bin indices.  We use the {\sc scikit-learn} implementation of th
 
 
 \subsection{ {\sc GPzBinning} }
+GPzBin is based on GPz \citep{Almosallam2016a,Almosallam2016b}, a machine learning
+regression algorithm originally developed for calculating the photometric
+redshifts of galaxies \citep{Gomes2017,Duncan2018,Hatfield2020} (but now also
+applied to other problems in physics \citep{Peng2019,Hatfield2020}). The
+algorithm is based on a Gaussian Process (GP; essentially an un-parametrised continuous
+function defined everywhere with Gaussian uncertainties); GPz specifically uses 
+a sparse GP framework, a fast and a scalable approximation
+of a full process \citep{Rasmussen2006}.
 
+The mean $\mu(x)$ and variance $\sigma(x)^2$ for predictions as a function of
+the input parameters $x$ (typically the photometry) are both linear combinations
+of a finite number of `basis functions': multi-variate Gaussian kernels with
+associated weights, locations and covariances. The algorithm seeks to find the
+optimal parameters of the basis functions such that the mean and variance
+functions are the most likely functions to have generated the data. The key
+innovations introduced by GPz include a) input-dependent variance estimations
+(heteroscedastic noise), b) a `cost-sensitive learning' framework where the
+algorithm can be tailored for the precise science goal, and c) properly
+accounting for uncertainty contributions from both variance in the data
+($\beta^{-1}_{\star}$) as well as uncertainty from lack of data ($\nu$) in a
+given part of parameter space (by marginalising over the functions supported by
+the GP that could have produced the data).
+
+%During the training stage of the algorithm GPz is inferring the locations and
+%spreads that describe the basis functions; during the validation stage it is
+%inferring the appropriate complexity of the model, essentially how many basis
+%functions to use.
+
+
+GPzBin is a simple extension to GPz for the problem of tomographic binning. For
+a given number of tomographic bins it selects redshift bin edges $z_{i}$ such
+that there are an equal number of training galaxies in each bin. Testing data
+galaxies then are assigned to the bin corresponding to their GPz predicted
+photometric redshift. The code allows for two selection criteria for removing
+galaxies for which it was not possible to make a good photometric redshift
+prediction: 1) cutting galaxies close to the boundaries of bins based on an
+`edge strictness' parameter $U$ which removes galaxies where $\mu\pm U \times
+\sigma \lessgtr z_i$ and 2) cutting galaxies based on the degree $E$ to which
+GPz is having to extrapolate to make the redshift prediction, removing galaxies
+with $\nu>E\sigma^2$ (see Figure 12 of \cite{Hatfield2020}). Cutting galaxies
+removes some signal at the possible benefit of improving binning purity. As the
+training and test data were sampled from the same distribution in this data
+challenge we might not expect removing galaxies to give huge improvements in
+binning quality, but cuts based on $E$ and $U$ might become more useful in
+future studies where the training and test data have substantially different
+colour-magnitude distributions.
+
+When used in GPzBin for this data challenge the GPz settings
+in Table \ref{table-settings} were used (see
+\cite{Almosallam2016a,Almosallam2016b} for precise definitions and
+interpretations).
+
+%GPz requires very little fine-tuning. The most important parameter is $m$, the number of basis functions. A higher $m$ corresponds to higher model complexity and longer training times.
+
+\begin{table*}[]
+% \tiny
+\begin{center}
+    \begin{tabular}{| l | l | l |}
+    \hline
+    Parameter   &   Value   &   Description\\  
+    \hline 
+    $m$         &   100     &   Number of basis functions; complexity of GP\\
+
+    maxIter     &   500     &   Maximum number of iterations (comparisons with 
+                                the validation data) permitted\\
+
+    maxAttempts &   50      &   Maximum number of iterations to attempt if there 
+                                is no progress on the validation set\\
+
+    method      &   GPVC    &   Type of bespoke covariances used on each basis 
+                                function (see \cite{Almosallam2016b} for 
+                                the different options)\\
+
+    normalize   &   True    &   Pre-process the input by subtracting the means
+                                and dividing by the standard deviations\\
+
+    joint       &   True    &   Jointly learn a prior linear mean-function 
+                                (learn the function means and variances 
+                                jointly)\\
+
+    heteroscedastic  & True & Model noise as well as point estimates \\
+    \hline
+    \end{tabular}
+\caption{Parameter settings in the GPz entry.}
+\end{center}
+\label{table-settings}
+\end{table*}
 
 \subsection{ {\sc JaxCNN} }
 
@@ -404,7 +490,7 @@ An iterative precedure was used to progressively change the target bin edges to 
 \section{Results}
 
 \begin{table*}[]
-\begin{tabular}{l|llll|llll|}
+\begin{tabular}{|l|llll|llll|}
                 & \multicolumn{4}{c|}{\textbf{riz}}      & \multicolumn{4}{c|}{\textbf{griz}}                                \\ \hline
 \textbf{Method} & \textbf{3-bin} & \textbf{5-bin} & \textbf{7-bin} & \textbf{9-bin} & \textbf{3-bin} & \textbf{5-bin} & \textbf{7-bin} & \textbf{9-bin} \\ \hline
 {\sc Autokeras\_LSTM } & 31.1 & 74.9    & 103.4    & nan    & 44.1             & 67.5             & 122.2             & 98.4\\

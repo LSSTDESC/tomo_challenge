@@ -14,3 +14,7 @@ all: $(TEX) $(BIB)
 	bibtex $(ROOT)
 	pdflatex $(ROOT)
 	pdflatex $(ROOT)
+
+
+clean:
+	rm -f $(ROOT).bbl $(ROOT).aux $(ROOT).blg $(ROOT).out $(ROOT).log $(ROOT).pdf texput.log
