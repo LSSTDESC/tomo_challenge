@@ -296,10 +296,108 @@ galaxy sizes to bin indices.  We use the {\sc scikit-learn} implementation of th
 % Feel free to rename your method, but please leave a comment explaining so that I can do the
 % same in the tables.
 
-\subsection{ {\sc Autokeras LSTM} }
+\subsection{ {\sc LSTM} } 
+\label{ClecioLSTM} 
+Methods \ref{ClecioLSTM} - \ref{ClecioEnsemble} were
+submitted by a team of authors CRB, BMOF, GT, ESC, and EJG.  All were built using TensorFlow, and
+chose bin edges such that an equal number of galaxies is assigned to each bin, and trained the
+network using the galaxies' magnitudes and colours. 
+
+The LSTM method uses a Bidirectional Long Short Term Memory network to assign galaxies to redshift
+bins.
+ 
+Recurrent Neural Networks (RNNs)\citep{schuster, medsker, pascanu} are a type of NN capable of
+analyzing sequential data, where data points have a strong correlation with their neighbours. Long
+Short Term Memory (LSTM) units are a particular type of RNN capable of retaining relevant
+information from previous points while at the same time removing unnecessary data. This is achieved
+through a series of gates with learnable weights connected to different activation functions to
+balance the amount of data retained or removed.
+ 
+In some cases, relevant information can come both from data points coming before or after each point
+being analyzed. In such cases, two LSTMs can be combined, each going in a different direction, to
+create effectively a bidirectional LSTM cell \citep{schuster}.
+ 
+In this implementation, we chose bin edges such that an equal number of galaxies is assigned to each
+bin, and trained the network using the galaxies' magnitudes and colours. The net was implemented
+using Tensorflow and Keras. The Deep model is composed of a series of convolutional blocks (1d
+convolutional layer with a tanh activation followed by a MaxPooling layer) followed by a
+bidirectional LSTM layer and a series of fully connected layers. 
+
+\subsection{ {\sc Autokeras LSTM}}
+Autokeras \citep{autokeras} is an AutoML system based on Keras. Given a general neural network
+architecture and a dataset, it searches for the best possible detailed configuration for the problem
+at hand. 
+ 
+We started from the basic architecture and bin assignment scheme mentioned in Section
+\ref{ClecioLSTM} and let Autokeras search for the configuration that results in the lowest
+validation loss. We kept the order of the layer blocks fixed, i.e., convolutional blocks,
+bidirectional LSTM, and Dense blocks. We let the other hyperparameters free, such as the number of
+neurons,  Dropout rates, maxpooling layers, the number of convolutional filters, and strides.
 
 
-\subsection{ {\sc CNN} }
+\subsection{ {\sc LGBM} }
+This method uses a Light Gradient Boosted Machine (LightGBM) \citep{lgbm} to assign galaxies to
+redshift bins.
+ 
+LightGBM uses a histogram-based algorithm that assigns continuous feature values to discrete bins
+instead of other pre-sort-based algorithms for decision tree learning. LightGBM also grows the trees
+leaf-wise, which tends to achieve lower losses than level-wise tree growth. This method tends to
+overfit for small data so that a \textit{max\_depth} parameter can be specified to limit tree depth.
+
+ 
+In this implementation, we chose bin edges such that an equal number of galaxies is assigned to each
+bin, and trained the network using the galaxies' magnitudes and colours.
+
+ 
+\subsection{ {\sc TCN}}
+This method uses a Temporal-Convolutional (TCN) \citep{baitcn} network to assign galaxies to redshift
+bins.
+ 
+Recurrent Neural Networks (such as LSTMs) are considered to be the state-of-the-art model for
+sequence modelling. However, research indicates that certain convolutional architectures can achieve
+human-level performance in these tasks \citep{dauphin}.
+ 
+TCNs are Fully Convolutional Networks with causal convolutions, in which the output at time
+\textit{t} is convolved only with elements of time \textit{t} and lower in the previous layer. This
+new approach prevents leakage of information from the future to the past. This simple model has one
+disadvantage, in that it needs a very deep architecture or large filters to achieve a long history
+size. 
+ 
+By using dilated convolutions, where a fixed step is introduced between adjacent filter taps, the
+receptive field of the TCN can be increased without increasing the number of convolutional filters.
+Furthermore, residual blocks \citep{he} are also used to stabilize deeper and larger networks. These
+modifications cause TCNs to have a longer memory than traditional RNNs with the same capacity,  and
+also require low memory for training.
+ 
+We used the Keras implementation of TCN \citep{kerastcn} and chose bin edges such that an equal
+number of galaxies is assigned to each bin, and trained the network using the galaxies' magnitudes
+and colours. 
+
+\subsection{ {\sc CNN} } 
+This method uses an optimized Convolutional Neural Network (CNN) to assign
+galaxies to redshift bins. 
+ 
+CNNs \citep{lecun2015deep} are layers inspired in pattern recognition types developed in mammals' brains.
+They consist of kernels that are convolved with the data as it flows through the net. CNN-based
+models have emerged as state-of-the-art in several computer vision tasks, such as image
+classification and pose estimations, as well as having applicability in a range of different fields.
+ 
+We combine the Convolutional layers are with dimensionality reduction (pooling layers) and different
+activation functions. Here, we used Autokeras to optimize a general convolutional architecture,
+using the galaxies' magnitudes and colours to assign them to redshift bins, which were chosen such
+that an equal number of galaxies were assigned to each.
+
+
+\subsection{ {\sc Ensemble} } 
+\label{ClecioEnsemble} 
+This method combines different neural network
+architectures to assign galaxies to redshift bins.
+ 
+Deep Ensemble models combine different neural network architectures to obtain better performance
+than any of the nets alone. In this method, we used the Bidirectional LSTM optimized by Autokeras, a
+ResNet \citep{resnet} and a Fully Convolutional Network (FCN) \citep{fcn}. The predictions of these
+models were averaged to get the final predicted bin. 
+ 
 
 
 \subsection{ {\sc ComplexSOM} }
@@ -309,6 +407,8 @@ galaxy sizes to bin indices.  We use the {\sc scikit-learn} implementation of th
 
 
 \subsection{ {\sc GPzBinning} }
+This method was submitted by author PH.
+
 GPzBin is based on GPz \citep{Almosallam2016a,Almosallam2016b}, a machine learning
 regression algorithm originally developed for calculating the photometric
 redshifts of galaxies \citep{Gomes2017,Duncan2018,Hatfield2020} (but now also
@@ -403,12 +503,6 @@ interpretations).
 \subsection{ {\sc JaxResNet} }
 
 
-\subsection{ {\sc LGBM} }
-
-
-\subsection{ {\sc LSTM} }
-
-
 \subsection{ {\sc NeuralNetwork 1} }
 
 
@@ -419,9 +513,6 @@ interpretations).
 
 
 \subsection{ {\sc SimpleSOM} }
-
-
-\subsection{ {\sc TCN} }
 
 
 \subsection{ {\sc UTOPIA} }
@@ -440,6 +531,7 @@ interpretations).
 
 
 \subsection{ {\sc Stacked Generalization} }
+This method was submitted by author JEC.
 
 \emph{Stacked generalization} consists of stacking the output of several individual estimators and 
 using a classifier to compute the final prediction. Stacking methods use the strength of each 
