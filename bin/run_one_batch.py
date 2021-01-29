@@ -43,7 +43,7 @@ if buzzard:
 else:
     training_file = 'data-train/training-cut.hdf5'
     validation_file = 'secret/testing.hdf5'
-    output_file = f'{scratch}/tomo_challenge_results/{task_name}.npy'
+    output_file = f'{scratch}/tomo_challenge_secret_testing_results/{task_name}.npy'
 
 training_data = tc.load_data(
     training_file,

@@ -2,9 +2,9 @@
 #SBATCH --constraint=gpu
 #SBATCH --nodes=1
 #SBATCH --gpus=1
-#SBATCH --time=04:00:00
-#SBATCH --array=13-14
-#SBATCH --account=des
+#SBATCH --time=08:00:00
+#SBATCH --array=15-16
+#SBATCH --account=m1727
 # GPU on cori is not charged
 #SBATCH --output=logs/gpu.%a.txt
 
