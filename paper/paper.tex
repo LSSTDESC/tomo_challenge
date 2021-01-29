@@ -528,6 +528,33 @@ interpretations).
 
 
 \subsection{ {\sc mlpqna} }
+This entry was submitted by authors SC and MB.
+
+The Multi Layer Perceptron trained by Quasi Newton Algorithm 
+({\sc MLPQNA}; \citealp{Brescia12}), is a feed-forward neural network 
+for multi-class classification and single/multi regression use cases.
+
+The architecture is a classical Multi Layer Perceptron (MLP; \citealp{Rosenblatt1961})
+with one or more hidden layers, on which the supervised learning paradigm is
+based on the Quasi Newton Algorithm (QNA), implemented through the L-BFGS rule
+\citep{Nocedal80}. L-BFGS is a solver that approximates the Hessian matrix,
+representing the second-order partial derivative of a function. Further, it
+approximates the inverse of the Hessian matrix to perform parameter updates.
+MLPQNA uses the least square loss function with the Tikhonov regularization
+\citep{Tikhonov77} for regression. It uses the cross-entropy \citep{deBoer05}
+and softmax \citep{Sutton98} as output error evaluation criteria for
+classification.
+
+Besides several scientific contexts and projects in which MLPQNA has succesfully
+been used, it was recently the kernel embedded into the method {\sc
+METAPHOR} \citep{cavuoti20} for photo-z estimation, which participated in the
+LSST Photometric Redshift PDF Challenge \citep{schmidt20}. 
+
+The {\sc MLPQNA} python implementation used here
+uses a customized Scipy version of the L-BFGS built-in rule.
+It used two hidden layers with $2N-1$ and $N+1$ nodes respectively,
+where $N$ is the number of input features (depending on the experiment).
+The decay was set to 0.1.
 
 
 \subsection{ {\sc Stacked Generalization} }

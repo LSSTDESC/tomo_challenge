@@ -252,3 +252,108 @@ Fully convolutional networks for semantic segmentation},
     pages = {3431-3440},
     year = {2015}
 }}
+
+@ARTICLE{Brescia12,
+       author = {{Brescia}, Massimo and {Cavuoti}, Stefano and {Paolillo}, Maurizio and {Longo}, Giuseppe and {Puzia}, Thomas},
+        title = "{The detection of globular clusters in galaxies as a data mining problem}",
+      journal = {\mnras},
+     keywords = {methods: data analysis, methods: statistical, globular clusters: general, galaxies: elliptical and lenticular, cD, galaxies: individual: NGC 1399, Astrophysics - Instrumentation and Methods for Astrophysics},
+         year = 2012,
+        month = apr,
+       volume = {421},
+       number = {2},
+        pages = {1155-1165},
+          doi = {10.1111/j.1365-2966.2011.20375.x},
+archivePrefix = {arXiv},
+       eprint = {1110.2144},
+ primaryClass = {astro-ph.IM},
+       adsurl = {https://ui.adsabs.harvard.edu/abs/2012MNRAS.421.1155B},
+      adsnote = {Provided by the SAO/NASA Astrophysics Data System}
+}
+
+%bibitem{hastieetal}
+@book{Rosenblatt61,
+  author = {Rosenblatt, F.},
+  publisher = {Spartan Books, New York},
+    title = {Principles of Neurodynamics. Perceptrons and the Theory of Brain Mechanisms},
+  year = 1961
+}
+
+@article{Nocedal80,
+ ISSN = {00255718, 10886842},
+ URL = {http://www.jstor.org/stable/2006193},
+ abstract = {We study how to use the BFGS quasi-Newton matrices to precondition minimization methods for problems where the storage is critical. We give an update formula which generates matrices using information from the last $m$ iterations, where $m$ is any number supplied by the user. The quasi-Newton matrix is updated at every iteration by dropping the oldest information and replacing it by the newest information. It is shown that the matrices generated have some desirable properties. The resulting algorithms are tested numerically and compared with several well-known methods.},
+ author = {Jorge Nocedal},
+ journal = {Mathematics of Computation},
+ number = {151},
+ pages = {773--782},
+ publisher = {American Mathematical Society},
+ title = {Updating Quasi-Newton Matrices with Limited Storage},
+ volume = {35},
+ year = {1980}
+}
+
+@book{Tikhonov77,
+ author = {Tikhonov, A. N and Arsenin, V. Y.},
+ publisher = {Winston},
+ title = {Solutions of Ill-posed problems},
+ year = {1977}
+}
+
+
+@article{deBoer05,
+    author = {de Boer, Pieter-Tjerk and Kroese, D.P. and Mannor, Shie and Rubinstein, Reuven Y.},
+ journal = {Annals of Operations Research},
+ pages = {19--67},
+ title = {A Tutorial on the Cross-Entropy Method},
+ volume = {134},
+ year = {2005}
+}
+
+
+@book{Sutton98,
+author = {Sutton, Richard S. and Barto, Andrew G.},
+title = {Introduction to Reinforcement Learning},
+year = {1998},
+isbn = {0262193981},
+publisher = {MIT Press},
+address = {Cambridge, MA, USA},
+edition = {1st},
+}
+
+@article{Cavuoti20,
+    author = {Cavuoti, S. and Amaro, V. and Brescia, M. and Vellucci, C. and Tortora, C. and Longo, G.},
+    title = "{METAPHOR: a machine-learning-based method for the probability density estimation of photometric redshifts}",
+    journal = {Monthly Notices of the Royal Astronomical Society},
+    volume = {465},
+    number = {2},
+    pages = {1959-1973},
+    year = {2016},
+    month = {11},
+    abstract = "{A variety of fundamental astrophysical science topics require the determination of very accurate photometric redshifts (photo-z). A wide plethora of methods have been developed, based either on template models fitting or on empirical explorations of the photometric parameter space. Machine-learning-based techniques are not explicitly dependent on the physical priors and able to produce accurate photo-z estimations within the photometric ranges derived from the spectroscopic training set. These estimates, however, are not easy to characterize in terms of a photo-z probability density function (PDF), due to the fact that the analytical relation mapping the photometric parameters on to the redshift space is virtually unknown. We present METAPHOR (Machine-learning Estimation Tool for Accurate PHOtometric Redshifts), a method designed to provide a reliable PDF of the error distribution for empirical techniques. The method is implemented as a modular workflow, whose internal engine for photo-z estimation makes use of the MLPQNA neural network (Multi Layer Perceptron with Quasi Newton learning rule), with the possibility to easily replace the specific machine-learning model chosen to predict photo-z. We present a summary of results on SDSS-DR9 galaxy data, used also to perform a direct comparison with PDFs obtained by the Le Phare spectral energy distribution template fitting. We show that METAPHOR is capable to estimate the precision and reliability of photometric redshifts obtained with three different self-adaptive techniques, i.e. MLPQNA, Random Forest and the standard K-Nearest Neighbors models.}",
+    issn = {0035-8711},
+    doi = {10.1093/mnras/stw2930},
+    url = {https://doi.org/10.1093/mnras/stw2930},
+    eprint = {https://academic.oup.com/mnras/article-pdf/465/2/1959/13480868/stw2930.pdf},
+}
+
+
+
+@article{Schmidt20,
+    author = {Schmidt, S J and Malz, A I and Soo, J Y H and Almosallam, I A and Brescia, M and Cavuoti, S and Cohen-Tanugi, J and Connolly, A J and DeRose, J and Freeman, P E and Graham, M L and Iyer, K G and Jarvis, M J and Kalmbach, J B and Kovacs, E and Lee, A B and Longo, G and Morrison, C B and Newman, J A and Nourbakhsh, E and Nuss, E and Pospisil, T and Tranin, H and Wechsler, R H and Zhou, R and Izbicki, R and (The LSST Dark Energy Science Collaboration) },
+    title = "{Evaluation of probabilistic photometric redshift estimation approaches for The Rubin Observatory Legacy Survey of Space and Time (LSST)}",
+    journal = {Monthly Notices of the Royal Astronomical Society},
+    volume = {499},
+    number = {2},
+    pages = {1587-1606},
+    year = {2020},
+    month = {09},
+    abstract = "{Many scientific investigations of photometric galaxy surveys require redshift estimates, whose uncertainty properties are best encapsulated by photometric redshift (photo-z) posterior probability density functions (PDFs). A plethora of photo-z PDF estimation methodologies abound, producing discrepant results with no consensus on a preferred approach. We present the results of a comprehensive experiment comparing 12 photo-z algorithms applied to mock data produced for The Rubin Observatory Legacy Survey of Space and Time Dark Energy Science Collaboration. By supplying perfect prior information, in the form of the complete template library and a representative training set as inputs to each code, we demonstrate the impact of the assumptions underlying each technique on the output photo-z PDFs. In the absence of a notion of true, unbiased photo-z PDFs, we evaluate and interpret multiple metrics of the ensemble properties of the derived photo-z PDFs as well as traditional reductions to photo-z point estimates. We report systematic biases and overall over/underbreadth of the photo-z PDFs of many popular codes, which may indicate avenues for improvement in the algorithms or implementations. Furthermore, we raise attention to the limitations of established metrics for assessing photo-z PDF accuracy; though we identify the conditional density estimate loss as a promising metric of photo-z PDF performance in the case where true redshifts are available but true photo-z PDFs are not, we emphasize the need for science-specific performance metrics.}",
+    issn = {0035-8711},
+    doi = {10.1093/mnras/staa2799},
+    url = {https://doi.org/10.1093/mnras/staa2799},
+    eprint = {https://academic.oup.com/mnras/article-pdf/499/2/1587/33890975/staa2799.pdf},
+}
+
+
+
