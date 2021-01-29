@@ -665,10 +665,10 @@ An iterative precedure was used to progressively change the target bin edges to 
 \end{tabular}
 \caption{INCOMPLETE, AND AUTO-GENERATED SO NO POINT EDITING! Values of the 3x2pt DETF figure-of-merit achieved by entrant methods on the 
 CosmoDC2 part of the challenge.}
+\label{tab:cosmodc2}
 \end{table*}
 
 \begin{itemize}
-    \item Big table of results
     \item fisher matrix ellipses overplotted for top N methods
     \item Plots of n(z)
 \end{itemize}
@@ -679,25 +679,42 @@ CosmoDC2 part of the challenge.}
     \item Individual winner
 \end{itemize}
 
+- 
 
-
-\subsection{Individual winners}
-
-RUN WINNERS WITH UGRIZY TO GET AN IDEA OF THE LOSS FROM DROPPING U AND Y.
-
-\subsection{Large bin numbers}
-
+\subsection{General outcomes}
 It is clear from values above that fears about restricted photometry catastrophically limiting
 the information needed for tomography are unfounded.  In both the CosmoDC2 and Buzzard analyses,
 even the $riz$ bands alone are sufficient to split objects into nine reasonably separated
-tomographic bins.
-Once bins become this narrow the primary analysis concern will become the calibration of overall
+tomographic bins.  Once bins become this narrow the primary analysis concern will become the calibration of overall
 bin $n(z)$ values, rather than initial tomography, so we consider this to be reassuring.
 
 The inclusion of the $g$ band typically increases metrics by around 10--20\%, including for the
 highest scoring methods.  This value should be weighed against the challenge of high-accuracy
 PSF measurement for this band, but until the end of the survey this is unlikely to be
 the limiting factor in overall precision.
+
+Methods using fixed bins with equal numbers by nominal redshift tend to plateau at scores of
+120-140 in Table \ref{tab:cosmodc2}, suggesting that a range of machine learning models can
+effectively classify by bin, at least in this case of representative, extensive training
+information.  Notably, this is the case even for the UTOPIA entry, which uses the nearest 
+training set neighbour to assign bins and thus was explicitly designed to work only
+for this idealised scenario; it should give an upper limit when using the same fixed bins.
+That other methods with the same nominal bin choice acheive scores close to it once again
+confirms that many entries are close to the best possible score for this approach.
+
+Several methods that instead try to optimize nominal bin edges break this
+barrier and acheive very high scores.  This included ZotNet, JaxResNet, and JaxCNN.  The
+Stacked Generalization method similarly included manually tuned bin edges to maximize
+score for this scenario. The typical 15--20\% improvement in FoM scores when optimizing
+nominal bin edges makes clear that this easy win should is compelling.
+
+Notably, though, the method that received the highest overall score in Table \ref{tab:cosmodc2}, 
+{\sc funbins} did so with a simpler approach - it used a random forest to assign galaxies to bins,
+but chose nominal bin edges using an equal width bins in \emph{comoving distance} $\chi$, converting
+this to redshift using a fiducial cosmology. The success of this simple solution suggests this
+as an easy heuristic for well-optimized nominal edges.
+
+
 
 \subsection{Future directions}
 
