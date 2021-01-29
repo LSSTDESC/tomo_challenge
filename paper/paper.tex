@@ -510,6 +510,33 @@ interpretations).
 
 
 \subsection{ {\sc PCACluster} }
+This entry was submitted by author DG.
+
+Principal Component Analysis (PCA) reduces the dimensionality of a dataset by
+calculating eigenvectors that align with the principal axes of variation in the
+data \citep{doi:10.1098}. {\sc PCACluster} uses PCA to reduce the flux \& color
+data set to three dimensions. 
+
+To generate the PCA dimensions used by this method the PCA algorithm takes in
+the $r$-band flux and $ri$ and $iz$ colors and outputs three principal
+components.  If the data set provides the $g$-band, the algorithm also uses the
+$gr$ color when determining eigenvectors. Tomographic bins are then determined
+in this three dimensional space using a unique clustering algorithm where each
+observation is assigned to a bin by determining which cluster centroid is
+closest to that observation.
+
+In order to determine optimal centroid positions, clustering is framed as a
+gradient descent problem that seeks to maximize the requested metric: either the
+SNR or the FoM. This approach of identifying clusters using gradient descent is
+inspired by the similar approach to K-means clustering in
+\cite{NIPS1994_a1140a3d}.
+
+This entry uses {\sc jax\_cosmo} to take the derivative of the requested metric
+and classification function combination with respect to the centroid locations
+to calculate gradients and weight updates \citep{jax-cosmo}.  The speed of
+training PCACluster is directly proportional to the number of requested
+centroids (the number of requested tomographic bins) and the amount of training
+data used.
 
 
 \subsection{ {\sc SimpleSOM} }
