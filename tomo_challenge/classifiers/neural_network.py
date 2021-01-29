@@ -104,10 +104,10 @@ class NeuralNetwork(Tomographer):
         labels = training_z
 
         # If model is already trained, we just load the weights
-        if os.path.exists(self.export_name):
-            with open(self.export_name, 'rb') as file:
-                self.model = serialization.from_bytes(self.model, pickle.load(file))
-            return
+        # if os.path.exists(self.export_name):
+        #     with open(self.export_name, 'rb') as file:
+        #         self.model = serialization.from_bytes(self.model, pickle.load(file))
+        #     return
 
         lr = 0.001
         optimizer = optim.Adam(learning_rate=lr).create(self.model)
@@ -149,8 +149,8 @@ class NeuralNetwork(Tomographer):
                 print('iter: %d; Loss : %f'%(i,loss))
 
         # Export model to disk
-        with open(self.export_name, 'wb') as file:
-            pickle.dump(serialization.to_bytes(optimizer.target), file)
+        # with open(self.export_name, 'wb') as file:
+        #     pickle.dump(serialization.to_bytes(optimizer.target), file)
 
         self.model = optimizer.target
 
