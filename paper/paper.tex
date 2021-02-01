@@ -269,7 +269,7 @@ but was not the highest scoring overall.
 
 \section{Methods}
 
-\subsection{ {\sc RandomForest} }
+\subsection{ {\sc RandomForest} } \label{sec:randomforest}
 This method was submitted by the challenge organizers and used a random
 forest algorithm to assign galaxies.
 
@@ -551,6 +551,17 @@ data used.
 
 
 \subsection{ {\sc funbins} }
+This method uses the random forest algorithm described in section \ref{randomforest} to assign galaxies to tomographic bins. There are 3 options for determining the bins used to assign labels to the training data - \textit{log}, \textit{random}, and \textit{chi}. 
+
+The first option, \textit{log}, calculates bin edges such that the number of galaxies in each bin grows logarithmically instead of being constant as in section 4.1. This option uses increasingly large bins for more distant galaxies and tests the relative importance of nearby galaxies.
+
+The second option, \textit{random}, draws the intermediate bin edges from a uniform distribution while fixing the outer edges to the limits of the data. This option is not theoretically motivated and just to study the sensitivity to the binning. 
+
+The last option, \textit{chi}, calculates redshift bin edges whose corresponding comoving distances are equally spaced, using Planck15 \citep{Planck15} cosmology for the distance-redshift relationship. This should lead to roughly equal shot noise for the angular power in each bin. 
+This method was used in the scores shown below.
+
+Once the bin edges are determined by either of the methods above, the random forest is trained as described in section \ref{randomforest}.
+
 
 
 \subsection{ {\sc mlpqna} }
@@ -723,6 +734,9 @@ as an easy heuristic for well-optimized nominal edges.
 \end{itemize}
 
 \section{Conclusions}
+
+\section{Acknowledgements}
+ESC acknowledges support from the FAPESP (\#2019/19687-2) and CNPq  (\#308539/2018-4).
 
 \bibliography{paper}
 
