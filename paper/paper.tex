@@ -34,7 +34,20 @@
 \input{authors}
 
 \begin{abstract}
-In this paper we present the results of the DESC 3x2pt tomography challenge, which aims to compare strategies for optimizing the photometric binning required for the main LSST 3x2pt analysis. This task is made particularly delicate in the context of a metacalibrated lensing survey, as only the photometry from the bands  included in the metacalibration process (riz and potentially g) can be used to define this tomographic binning. Using a set of realistic simulations including true galaxy redshifts and simulated photometry, the goal of the challenge is to propose a bin assignment strategy that maximizes the overall Figure of Merit of a 3x2pt analysis. This setting is idealized as it ignores spectroscopic completeness  issues for the training sample, but complex enough to address the main question of binning optimization. Based on the challenge dataset, we review and compare the different methods that have been proposed by participants. We find that even from this limited photometry information, various methods are able to yield binning schemes that achieve high FoM scores.
+In this paper we present the results of the DESC 3x2pt tomography challenge,
+which aims to compare strategies for optimizing the photometric binning required
+for the main LSST 3x2pt analysis. This task is made particularly delicate in the
+context of a metacalibrated lensing survey, as only the photometry from the
+bands  included in the metacalibration process (riz and potentially g) can be
+used to define this tomographic binning. Using a set of realistic simulations
+including true galaxy redshifts and simulated photometry, the goal of the
+challenge is to propose a bin assignment strategy that maximizes the overall
+Figure of Merit of a 3x2pt analysis. This setting is idealized as it ignores
+spectroscopic completeness  issues for the training sample, but complex enough
+to address the main question of binning optimization. Based on the challenge
+dataset, we review and compare the different methods that have been proposed by
+participants. We find that even from this limited photometry information,
+various methods are able to yield binning schemes that achieve high FoM scores.
 \end{abstract}
 
 \keywords{methods: statistical -- dark energy  -- large-scale structure of the universe}
@@ -115,7 +128,7 @@ from  them, will induce a shear bias since galaxies will preferentially fall eit
 depending on their shear.  Within metacal, we can solve this problem by performing the cut on both
 sheared variants of the catalog, and measuring the difference between the post-cut shear in the two
 variants.  In DES the corrected biases were found up to around 3\%, far larger than
-the requirements for the current generation of surveys \cite{des-y1-cat}.
+the requirements for the current generation of surveys \citep{des-y1-cat}.
 
 In summary: metacal allows us to correct for significant selection biases, but only if all selections
 are performed using only bands in which the PSF is measured well enough for deconvolution to be
@@ -273,7 +286,7 @@ but was not the highest scoring overall.
 This method was submitted by the challenge organizers and used a random
 forest algorithm to assign galaxies.
 
-Random forests \cite{breiman2001} train a collection of individual \emph{decision trees},
+Random forests \citep{breiman2001} train a collection of individual \emph{decision trees},
 each of which consists of a set of bifurcating comparisons in which different features in
 the data (in this case, magnitudes and errors) are compared to criterion values to choose
 which branch to follow.  Each ``leaf'' (end comparison) selects a classification bin for
@@ -401,6 +414,25 @@ models were averaged to get the final predicted bin.
 
 
 \subsection{ {\sc ComplexSOM} }
+  The {\tt ComplexSOM} method implements an additional optimization layer on the methodology used by {\tt SimpleSOM}.
+
+  Let ${\sf C}^{\rm group}_\ell$ be the matrix containing all auto- and cross-power spectra between members of a large set of galaxy samples (called ``groups'' here). We can compress this large set into a smaller set of samples (called ``bins'' here), by combining different groups. Let ${\sf A}$ be the assignment matrix determining these bins, such that $A_{\alpha,i}=1$ if group $i$ is assigned to bin $\alpha$, and 0 otherwise. In that case, the redshift distribution of bin $\alpha$ is given by $N_\alpha(z)=\sum_i A_{\alpha,i}n_i(z)$, where $n_i(z)$ is the redshift distribution of group $i$. Defining the normalized assignment matrix ${\sf B}$ as
+  \begin{equation}
+    B_{\alpha,i}=A_{\alpha,i}\frac{\int dz\,n_i(z)}{\sum_j A_{\alpha,j}\int dz\,n_j(z)},
+  \end{equation}
+  ${\sf C}^{\rm group}_\ell$ is related to the matrix of cross-power spectra between pairs of bins via:
+  \begin{equation}
+    {\sf C}^{\rm bin}_\ell={\sf B}\,{\sf C}^{\rm group}_\ell\,{\sf B}^T.
+  \end{equation}
+
+  The rationale behind the {\tt ComplexSOM} method is based on the observation that, while ${\sf C}^{\rm group}_\ell$ is a slow quantity to calculate for a large number of groups, ${\sf B}$ and therefore ${\sf C}^{\rm bin}_\ell$ are very fast. Thus, given an initial set of groups characterizing the distribution of the full sample in colour space, ${\sf C}^{\rm group}_\ell$ can be precomputed once, and used to find the optimal assignment matrix ${\sf B}$ that maximizes the figure of merit in Eq. {\bf reference to FoM equation}, which can be written in terms of ${\sf C}^{\rm bin}_\ell$ alone as
+  \begin{equation}\label{eq:fom_tr}
+    F_{\theta\theta'}=\sum_\ell f_{\rm sky}\frac{2\ell+1}{2}{\rm Tr}\left[\partial_\theta{\sf C}^{\rm bin}_\ell({\sf C}^{\rm bin}_\ell)^{-1}\partial_{\theta'}{\sf C}^{\rm bin}_\ell({\sf C}_\ell^{\rm bin})^{-1}\right].
+  \end{equation}
+
+  Note that the general problem of finding the matrix ${\sf B}$ that optimally compresses the information on a given parameter has an analytical solution in terms of Karnhunen-L\^oeve eigenvectors \citep{astro-ph/9603021}. However, the assignment matrix used in this case has the additional constraints that it must be positive, discrete and binary (i.e. groups are either in a bin or they are not). Thus, finding the absolute maximum figure of merit would involve a brute-force evaluation of all matrix elements $A_{\alpha,j}$, which is an intractable $N_{\rm bin}^{N_{\rm group}}$ problem. We thus parametrize ${\sf A}$ in terms of a small set of continuous parameters, for which standard minimization routines can be used. In particular we use $N_{\rm bin}-1$ parameters, given by the edges of the redshift bins, and a group is assigned to a bin if its mean redshift falls within its edges. We also explored the possibility of ``trashing'' groups if less than a fraction $p_{\rm in}$ of its redshift distribution fell within its preassigned bin, treating $p_{\rm in}$ as an additional free parameter. We found that adding this extra freedom did not translate into a significant improvement in the final level of data compression.
+
+  Once the SOM has been generated, the {\tt ComplexSOM} method proceeds as follows. First, the full SOM is distilled into a smaller set of ${\cal O}(100)$ groups based by combining SOM cells with similar moments of their redshift distributions, thus ensuring that this process does not induce any catastrophic $N(z)$ broadening {\bf you may wanna refer to the {\tt SimpleSOM} method here}. The large ${\sf C}^{\rm group}_\ell$ is then precomputed for the initial set of groups. Finally, we find the optimal assignment matrix, defined in terms of the free redshift-edge parameters, by maximizing the figure of merit in Eq. \ref{eq:fom_tr} using Powell's minimization method \citep{10.1093/comjnl/7.2.155}.
 
 
 \subsection{ {\sc ENSEMBLE} }
@@ -448,7 +480,7 @@ prediction: 1) cutting galaxies close to the boundaries of bins based on an
 `edge strictness' parameter $U$ which removes galaxies where $\mu\pm U \times
 \sigma \lessgtr z_i$ and 2) cutting galaxies based on the degree $E$ to which
 GPz is having to extrapolate to make the redshift prediction, removing galaxies
-with $\nu>E\sigma^2$ (see Figure 12 of \cite{Hatfield2020}). Cutting galaxies
+with $\nu>E\sigma^2$ (see Figure 12 of \citealp{Hatfield2020}). Cutting galaxies
 removes some signal at the possible benefit of improving binning purity. As the
 training and test data were sampled from the same distribution in this data
 challenge we might not expect removing galaxies to give huge improvements in
@@ -458,7 +490,7 @@ colour-magnitude distributions.
 
 When used in GPzBin for this data challenge the GPz settings
 in Table \ref{table-settings} were used (see
-\cite{Almosallam2016a,Almosallam2016b} for precise definitions and
+\citealp{Almosallam2016a,Almosallam2016b} for precise definitions and
 interpretations).
 
 %GPz requires very little fine-tuning. The most important parameter is $m$, the number of basis functions. A higher $m$ corresponds to higher model complexity and longer training times.
@@ -528,7 +560,7 @@ In order to determine optimal centroid positions, clustering is framed as a
 gradient descent problem that seeks to maximize the requested metric: either the
 SNR or the FoM. This approach of identifying clusters using gradient descent is
 inspired by the similar approach to K-means clustering in
-\cite{NIPS1994_a1140a3d}.
+\citet{NIPS1994_a1140a3d}.
 
 This entry uses {\sc jax\_cosmo} to take the derivative of the requested metric
 and classification function combination with respect to the centroid locations
@@ -881,8 +913,20 @@ The challenge organizers made a number of mistakes when building and running the
 These do not invalidate our process or results, but we describe them here in the hope of
 being useful for future challenge designers.
 
+\subsection{Splitting nominal bin choice from assignment}
+There were two ways to obtain good scores in the challenge: either one could choose the best
+nominal bin edges, or find the best method to put galaxies into those bins once they are chosen.
+These two are not completely disconnected: some theoretically powerful choices of nominal edges
+could prove impossible to assign in practice.  But it would still have been useful to separate
+the challenge into two separate parts, fixing the edges while optimizing classifiers, and vice
+versa.   We can retrospectively determine this since we understand the classifiers, but the picture
+would have been clearer doing so in advance.
+
+\subsection{Infrastructure}
+
+
 \begin{itemize}
-    \item Splitting classification from nominal bin choice
+    \item 
     \item Infrastructure for checking submissions
     \item Guidance for users regarding caching and batch processing
     \item Timing
