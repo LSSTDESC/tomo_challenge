@@ -910,7 +910,7 @@ figure-of-merit achieved by entrant methods on the Buzzard part of the challenge
 
 \section{Mistakes}
 The challenge organizers made a number of mistakes when building and running the challenge.
-These do not invalidate our process or results, but we describe them here in the hope of
+These do not invalidate our process or results, but we describe some of them here in the hope of
 being useful for future challenge designers.
 
 \subsection{Splitting nominal bin choice from assignment}
@@ -923,16 +923,27 @@ versa.   We can retrospectively determine this since we understand the classifie
 would have been clearer doing so in advance.
 
 \subsection{Infrastructure}
+Since submissions could use a wide variety of libraries and dependencies, it was extremely
+difficult after the challenge was complete to build appropriate environments for all the challenges
+in order to run the methods on additional data sets. In retrospect, a robust and careful
+continuous integration tool with a mechanism for entrants to specify an environment (for example, a 
+container or a {\sc conda} requirements file) could have been used to simplify this and ensure
+all methods could be easily run by the organizers.
 
+Once additional issue, though, was that many methods required GPUs to train in a reasonable time,
+and specifying an environment on these systems can be more complicated.
 
-\begin{itemize}
-    \item 
-    \item Infrastructure for checking submissions
-    \item Guidance for users regarding caching and batch processing
-    \item Timing
-    \item Training set size
-    \item Advertisement
-\end{itemize}
+\subsection{Guidance on caching \& batch processing}
+Since the training process for the challenge could be slow for some algorithms, many entries
+very reasonably cached trained models or other values for later use.  In some cases these
+cached values were then incorrectly picked up by subsequent runs on new data sets, leading
+to (at best) crashes and at worst silently poor scores.  We should have provided an explicit
+caching mechanism for entrants to avoid such issues.
+
+Additionally, the challenge supplied the data described in Section \ref{sec:data} to entrants,
+and some assumed that it was safe to hard-code specific paths to them or
+otherwise assume fixed data inputs.  This led to problems when switching to new test data sets. 
+Again, a requirement enforced by continuous integration could have checked this.
 
 %=====================
 % END OF THE MAIN TEXT
