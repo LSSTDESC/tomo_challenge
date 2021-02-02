@@ -287,7 +287,7 @@ class PQNLD(Tomographer):
             os.system("echo 'os.environ[\"HOME\"]=\""+curdir + "\"' >> " + run_file)
             os.system("echo 'os.environ[\"BPZPATH\"]=\""+curdir+"/bpz-1.99.3-py3/\"' >> " + run_file)
             os.system("echo 'os.environ[\"NUMERIX\"]=\"numpy\"' >> " + run_file)
-            argv = ["\'bpz.py\'", "\'../training_bpz.cat\'",
+            argv = ["\'bpz.py\'", f"\'../{training_cat_file}\'",
                 "-PRIOR", "NGVS", "-SPECTRA", "CWWSB_capak.list",
                 "-ZMIN", "0.001", "-ZMAX", "7.000",
                 "-INTERP", "10", "-NEW_AB", "yes",
