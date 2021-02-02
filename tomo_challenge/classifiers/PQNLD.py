@@ -52,10 +52,15 @@ gr = None
 dev = None
 kohonen = None
 
-training_cat_file = "training_bpz.cat"
-training_col_file = "training_bpz.columns"
+task_id = os.environ.get("SLURM_ARRAY_TASK_ID", "666")
+
+run_file = f"bpz_run_{task_id}.py"
+training_cat_file = f"training_bpz_{task_id}.cat"
+training_col_file = f"training_bpz_{task_id}.columns"
+bpz_file = f"training_bpz_{task_id}.bpz"
+ascii_file = f"training_bpz_{task_id}.asc"
 #validation_cat_file = "validato" # not used
-validation_col_file = "validation_bpz.columns"
+validation_col_file = f"validation_bpz_{task_id}.columns"
 
 def init_r_packages():
     global base, stats, gr, dev, kohonen
@@ -121,8 +126,8 @@ class PQNLD(Tomographer):
           true redshift for the training sample
 
         """
-        remove("training_bpz.asc")
-        remove("training_bpz.bpz")
+        remove(ascii_file)
+        remove(bpz_file)
         remove(training_col_file)
         remove(training_cat_file)
         remove(validation_col_file)
@@ -272,16 +277,16 @@ class PQNLD(Tomographer):
         if not os.path.exists("bpz-1.99.3-py3/"): 
             os.system("bash INSTALL.sh")
         
-        if not os.path.exists("training_bpz.bpz"): 
+        if not os.path.exists(bpz_file): 
             print("Running BPZ on the training data")
             curdir=os.getcwd()
             os.chdir('bpz-1.99.3-py3')
-            os.system("echo '#NEW' > bpz_run.py")
-            os.system("echo import sys >> bpz_run.py")
-            os.system("echo import os >> bpz_run.py")
-            os.system("echo 'os.environ[\"HOME\"]=\""+curdir+"\"' >>bpz_run.py")
-            os.system("echo 'os.environ[\"BPZPATH\"]=\""+curdir+"/bpz-1.99.3-py3/\"' >> bpz_run.py")
-            os.system("echo 'os.environ[\"NUMERIX\"]=\"numpy\"' >> bpz_run.py")
+            os.system("echo '#NEW' > " + run_file)
+            os.system("echo import sys >> " + run_file)
+            os.system("echo import os >> " + run_file)
+            os.system("echo 'os.environ[\"HOME\"]=\""+curdir + "\"' >> " + run_file)
+            os.system("echo 'os.environ[\"BPZPATH\"]=\""+curdir+"/bpz-1.99.3-py3/\"' >> " + run_file)
+            os.system("echo 'os.environ[\"NUMERIX\"]=\"numpy\"' >> " + run_file)
             argv = ["\'bpz.py\'", "\'../training_bpz.cat\'",
                 "-PRIOR", "NGVS", "-SPECTRA", "CWWSB_capak.list",
                 "-ZMIN", "0.001", "-ZMAX", "7.000",
@@ -290,21 +295,21 @@ class PQNLD(Tomographer):
                 "-PROBS_LITE", "no",
                 "-VERBOSE", "yes",
                 "-CHECK", "no"]
-            os.system("echo 'sys.argv=[\""+"\",\"".join(argv)+"\"]' >> bpz_run.py")
+            os.system("echo 'sys.argv=[\""+"\",\"".join(argv)+"\"]' >> " + run_file)
             # os.system("echo 'exec(open(\"bpz.py\").read())' >> bpz_run.py")
-            os.system("echo 'import bpz' >> bpz_run.py")
+            os.system("echo 'import bpz' >> " + run_file)
             # os.system("cp ../BPZ_SEDs/prior_NGVS.py .")
             # os.system("cp ../BPZ_SEDs/*.sed SED/")
             # os.system("cp ../BPZ_SEDs/CWWSB_capak.list SED/")
-            os.system('cat bpz_run.py')
-            res = os.system("python bpz_run.py")
+            os.system('cat ' + run_file)
+            res = os.system("python " + run_file)
             os.chdir('../')
 
         print("Read the BPZ results")
         #bpz_res = pd.read_fwf("training_bpz.bpz",comment="#",skiprows=62,header=None)
-        os.system("grep -v '^#' training_bpz.bpz | sed 's/  / /g' | sed 's/  / /g' | \
-                sed 's/  / /g' | sed 's/^ //g' | sed 's/ $//g' > training_bpz.asc")
-        bpz_res = pd.read_csv("training_bpz.asc",sep=' ',header=None)
+        os.system("grep -v '^#' " + bpz_file + " | sed 's/  / /g' | sed 's/  / /g' | \
+                sed 's/  / /g' | sed 's/^ //g' | sed 's/ $//g' > " + ascii_file)
+        bpz_res = pd.read_csv(ascii_file,sep=' ',header=None)
 
         print("Adding BPZ Photoz info to training data")
         training_data['Z_B'] = bpz_res[[1]]
@@ -315,21 +320,21 @@ class PQNLD(Tomographer):
               train_df = ro.conversion.py2rpy(training_data)
 
         #Construct or Load the SOM 
-        som_outname = f"SOM_{som_dim}_{self.bands}.pkl"
-        if not os.path.exists(som_outname):
-            print("Training the SOM using R kohtrain")
-            #Train the SOM using R kohtrain
-            som=kohonen.kohtrain(data=train_df,som_dim=IntVector(som_dim),max_na_frac=0,data_threshold=FloatVector(data_threshold),
-                        n_cores=num_threads,train_expr=StrVector(expressions),train_sparse=False,sparse_frac=sparse_frac)
-            #Output the SOM 
-            #base.save(som,file=som_outname)
-            with open(som_outname, 'wb') as f:
-                pickle.dump(som, f)
-        else:
-            print("Loading the pretrained SOM")
-            with open(som_outname, 'rb') as f:
-                som = pickle.load(f)
-            som.rx2['unit.classif']=FloatVector([])
+        # som_outname = f"SOM_{som_dim}_{self.bands}.pkl"
+        # if True: #not os.path.exists(som_outname):
+        print("Training the SOM using R kohtrain")
+        #Train the SOM using R kohtrain
+        som=kohonen.kohtrain(data=train_df,som_dim=IntVector(som_dim),max_na_frac=0,data_threshold=FloatVector(data_threshold),
+                    n_cores=num_threads,train_expr=StrVector(expressions),train_sparse=False,sparse_frac=sparse_frac)
+        #Output the SOM 
+        #base.save(som,file=som_outname)
+        # with open(som_outname, 'wb') as f:
+        #     pickle.dump(som, f)
+        # else:
+        #     print("Loading the pretrained SOM")
+        #     with open(som_outname, 'rb') as f:
+        #         som = pickle.load(f)
+        #     som.rx2['unit.classif']=FloatVector([])
 
         #If grouping by redshift, construct the cell redshift statistics
         print("Constructing cell-based redshift properties")
