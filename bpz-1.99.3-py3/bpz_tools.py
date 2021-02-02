@@ -710,8 +710,11 @@ def ABflux(sed,filter,madau='yes'):
     #fmax=max(f)
     #f=where(less(f,fmax*ab_clip),0.,f)
 
-    print('Writing AB file ',ABoutput)
-    put_data(ABoutput,(z_ab,f))
+    if not os.path.exists(ABoutput):
+        print('Writing AB file ',ABoutput)
+        put_data(ABoutput,(z_ab,f))
+    else:
+        print("Skipping existing ", ABoutput)
 
 
 def VegatoAB(m_vega,filter,Vega=Vega):
