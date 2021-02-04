@@ -571,9 +571,70 @@ data used.
 
 
 \subsection{ {\sc SimpleSOM} }
+The SimpleSOM algorithm submitted by AHW utilises a self-organising map
+\citep[SOM,][]{Kohonen:1982} to perform  a discretisation of the
+high-dimensional colour-magnitude-space of the challenge training and reference
+datasets. 
+
+We utilise a branched version of the {\tt
+kohonen}\footnote{\url{https://github.com/ AngusWright/kohonen.git}} package
+\citep{Wright/etal:2020b, Wehrens/Kruisselbrink:2018, Wehrens/Lutgarde:2007}
+within R \citep{R}, which we integrate with  the challenge's {\tt python}
+classes using the {\tt rpy2} interface\footnote{\url{https://rpy2.github.io}}. 
+We train a $101 \times 101$ hexagonal-cell SOM with toroidal topology on the
+maximal combination of (non-repeated) colours, $z$-band magnitude, and so-called
+`band-triplets'. For example, for the `griz' setup, our SOM is trained on the
+combination of  $z$, $g-r$, $g-i$, $g-z$, $r-i$, $r-z$, $i-z$, $g-r-(r-i)$,
+$r-i-(i-z)$. This combination proved optimal during testing on the DC2 dataset,
+as determined by the 3x2pt SNR metric. The training and reference data then
+propagated into this trained SOM, producing like-for-like groupings between the
+two datasets. We then compute the mean redshift of the training sample sources
+within each cell and the number of reference sources per-cell. By rank-ordering
+the cells in mean training-sample redshift, we construct the cumulative
+distribution function of reference sample source counts, and split cells into
+${n_{\rm tomo}}$ equal-N tomographic bins using this function. 
+
+In addition to this base functionality, the SimpleSOM method includes a
+mechanism for distilling $N_{\rm cell}$ SOM cells into $N_{\rm group}<N_{\rm
+cell}$ groups of cells, while maintaining optimal redshift resolution. This is
+done by invoking a hierarchical clustering of SOM cells \citep[see Appendix B of
+][]{Wright/etal:2020a}, where in this case we combine cells based on the
+similarity of the cells Nz moments (mean, median, and normalised median absolute
+deviation from median) using complete-linkage clustering. The result of this
+procedure is the construction of fewer discrete groups of training and reference
+data, while not introducing pathological redshift-distribution broadening (as
+happens when, e.g., training using a lower resolution SOM and/or clustering
+cells based on distances in colour-magnitude space). 
 
 
 \subsection{ {\sc UTOPIA} }
+
+The `Useless Technique that OutPerforms Intelligent Alternatives' is a method
+submitted by AHW that is designed,  primarily, as a demonstration of the care
+that must be taken in the interpretation of the tomographic challenge results. 
+The method performs  the simplest-possible direct mapping between the training
+and reference data, by performing a nearest-neighbour  assignment of training
+sample galaxies to each reference sample source in $n_{\rm band}$ magnitude-only
+space. Each reference  sample galaxy is then assigned the redshift of its
+matching training-sample source, and these redshifts are  used to bin the
+reference galaxies into $n_{\rm tomo}$ equal-N tomographic bins. Importantly,
+the method was specifically  implemented so as to use only the minimum
+information contained within the available bands (by using magnitudes alone,
+without  any colours, etc.). 
+
+In this way UTOPIA is the simplest possible algorithm (utilising all available
+photometric bands) that one can  implement for tomography. It is also a method
+whose performance is optimal in the limit of an infinitely large,  perfectly
+representative training sample; i.e. the limit in which this challenge operates.
+As the requirements of perfect  training-sample representivity and large size
+are violated, UTOPIA ought to assign redshifts to reference  galaxies from
+increasingly distant regions of the multi-dimensional magnitude-space, resulting
+in poorer tomographic binning.  Therefore, UTOPIA acts as a warning against
+over-interpretation of the tomographic challenge results, as success in the
+challenge  need not translate to optimal-performance/usefulness under realistic
+survey conditions. Instead, the challenge results should be interpreted
+holistically, by comparing the performance between different classes of methods,
+rather than individuals. 
 
 
 \subsection{ {\sc ZotBin} }
