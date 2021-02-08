@@ -805,30 +805,7 @@ count, such that the spectrum could not be calculated.
 \begin{tabular}{|l|llll|llll|}
                 & \multicolumn{4}{c|}{\textbf{riz}}      & \multicolumn{4}{c|}{\textbf{griz}}                                \\ \hline
 \textbf{Method} & \textbf{3-bin} & \textbf{5-bin} & \textbf{7-bin} & \textbf{9-bin} & \textbf{3-bin} & \textbf{5-bin} & \textbf{7-bin} & \textbf{9-bin} \\ \hline
-{\sc Autokeras\_LSTM } & 31.1 & 74.9    & 103.4    & --    & 44.1             & 67.5             & 122.2             & 98.4\\
-{\sc CNN } & 27.1 & 50.8    & 76.7    & 103.3    & 30.5             & 57.7             & 95.4             & 122.4\\
-{\sc ComplexSOM } & 38.0 & 52.1    & 94.4    & 101.6    & 34.9             & 45.0             & 91.6             & 100.3\\
-{\sc ENSEMBLE1 } & 65.6 & 65.6    & 94.8    & *    & *             & *             & *             & *\\
-{\sc funbins } & 36.8 & 82.5    & 122.1    & 141.8    & 42.1             & 100.4             & 142.5             & 167.2\\
-{\sc GPzBinning } & 26.2 & 49.7    & 80.8    & 111.7    & 27.8             & 55.3             & 87.2             & 126.9\\
-{\sc IBandOnly } & 38.0 & 50.0    & 54.4    & 57.3    & 38.0             & 50.0             & 54.4             & 57.3\\
-{\sc JaxCNN } & 59.9 & 101.9    & 105.2    & --    & 79.7             & 125.2             & 150.0             & --\\
-{\sc JaxResNet } & 73.7 & 111.1    & 131.6    & --    & 82.2             & 126.0             & --             & 161.5\\
-{\sc LGBM } & 27.0 & 50.8    & 78.8    & 108.2    & 30.3             & 57.4             & 92.9             & 125.2\\
-{\sc LSTM } & 26.7 & 51.1    & 81.4    & 103.6    & 30.2             & 57.1             & 95.9             & 126.9\\
-{\sc mlpqna } & 39.3 & 64.7    & 93.2    & 121.8    & 42.8             & 72.2             & 109.0             & 133.7\\
-{\sc myCombinedClassifiers } & 35.3 & 60.5    & 83.5    & 120.4    & 39.4             & 63.9             & 93.1             & 148.9\\
-{\sc NeuralNetwork1 } & 76.3 & 117.6    & 135.8    & 109.9    & 81.9             & 132.9             & 158.0             & 96.9\\
-{\sc NeuralNetwork2 } & 30.5 & 48.0    & 57.8    & 136.1    & 49.4             & 102.7             & 122.2             & 140.0\\
-{\sc PCACluster } & 29.5 & 68.1    & 75.8    & *    & 50.1             & 72.7             & 90.8             & *\\
-{\sc Random } & 1.2 & 1.2    & 1.2    & 1.2    & 1.2             & 1.2             & 1.2             & 1.2\\
-{\sc RandomForest } & 39.5 & 65.2    & 93.2    & 118.5    & 43.0             & 72.8             & 110.1             & 136.5\\
-{\sc SimpleSOM } & 39.5 & 59.9    & 77.9    & 98.5    & 42.2             & 73.2             & 108.0             & 134.8\\
-{\sc TensorFlow\_FFNN } & 39.0 & 64.3    & 90.3    & 114.7    & 43.0             & 72.0             & 112.3             & 137.2\\
-{\sc TCN } & 40.0 & 65.3    & 90.9    & 110.5    & 44.1             & 72.8             & 108.0             & 134.0\\
-{\sc UTOPIA } & 39.0 & 63.7    & 90.8    & 112.2    & 43.1             & 74.0             & 112.8             & 139.3\\
-{\sc ZotBin } & 64.8 & 106.4    & 121.8    & 135.3    & 77.6             & 120.0             & 141.8             & 154.7\\
-{\sc ZotNet } & 73.6 & 111.2    & 131.8    & 145.9    & 83.7             & 128.5             & 150.1             & 167.2\\
+\input{results/tables/table_FOM_DETF_3x2_dc2.tex}
 \end{tabular}
 \caption{INCOMPLETE, AND AUTO-GENERATED SO NO POINT EDITING! Values of the 3x2pt DETF figure-of-merit achieved by entrant methods on the 
 CosmoDC2 part of the challenge.}
@@ -1010,30 +987,7 @@ Buzzard part of the challenge.}
 \begin{tabular}{|l|llll|llll|}
                 & \multicolumn{4}{c|}{\textbf{riz}}      & \multicolumn{4}{c|}{\textbf{griz}}                                \\ \hline
 \textbf{Method} & \textbf{3-bin} & \textbf{5-bin} & \textbf{7-bin} & \textbf{9-bin} & \textbf{3-bin} & \textbf{5-bin} & \textbf{7-bin} & \textbf{9-bin} \\ \hline
-{\sc Autokeras\_LSTM } & 13.8 & 30.2    & 31.1    & --    & 26.4             & 7.7             & 43.0             & 44.6\\
-{\sc CNN } & 7.0 & 29.8    & 37.5    & 38.1    & 6.2             & 35.8             & 45.0             & 48.7\\
-{\sc ComplexSOM } & 17.3 & 19.7    & 25.0    & 25.4    & 6.5             & 12.2             & 19.3             & 21.5\\
-{\sc ENSEMBLE1 } & 36.0 & 36.0    & 38.6    & --    & --             & --             & --             & --\\
-{\sc funbins } & 23.3 & 31.6    & 36.5    & 39.8    & 31.2             & 43.0             & 50.4             & 54.0\\
-{\sc GPzBinning } & 6.9 & 23.9    & 33.1    & 35.1    & 6.5             & 36.0             & 46.0             & 47.8\\
-{\sc IBandOnly } & 0.8 & 2.6    & 3.2    & 3.6    & 0.8             & 2.6             & 3.2             & 3.6\\
-{\sc JaxCNN } & 9.3 & 27.9    & 29.0    & --    & 3.3             & 38.0             & 42.7             & --\\
-{\sc JaxResNet } & 2.1 & 30.8    & 37.9    & --    & 2.2             & 31.1             & --             & 44.7\\
-{\sc LGBM } & 7.0 & 30.1    & 37.5    & 39.6    & 6.3             & 36.3             & 45.4             & 48.6\\
-{\sc LSTM } & 6.9 & 29.3    & 36.8    & 38.2    & 6.4             & 35.5             & 44.6             & 48.9\\
-{\sc mlpqna } & 23.1 & 35.0    & 37.3    & 38.0    & 30.0             & 43.9             & 48.9             & 51.4\\
-{\sc myCombinedClassifiers } & 1.2 & 8.4    & 28.8    & 39.1    & 1.7             & 10.9             & 37.2             & 49.3\\
-{\sc NeuralNetwork1 } & 1.6 & 34.0    & 36.7    & --    & 2.1             & 37.7             & 46.3             & --\\
-{\sc NeuralNetwork2 } & 19.2 & 21.8    & 22.4    & 35.8    & 8.5             & 18.6             & 22.5             & 36.7\\
-{\sc PCACluster } & 7.8 & 11.3    & 14.2    & --    & 12.6             & 12.0             & 21.6             & --\\
-{\sc Random } & 0.0 & 0.0    & 0.0    & 0.0    & 0.0             & 0.0             & 0.0             & 0.0\\
-{\sc RandomForest } & 23.5 & 34.9    & 38.4    & 39.6    & 30.0             & 44.5             & 50.1             & 53.2\\
-{\sc SimpleSOM } & 20.5 & 30.7    & 35.1    & 36.7    & 28.8             & 45.4             & 50.7             & 53.8\\
-{\sc TensorFlow\_FFNN } & 22.6 & 34.4    & 36.7    & 37.7    & 29.7             & 43.4             & 48.3             & 50.9\\
-{\sc TCN } & 23.6 & 36.0    & 38.0    & 38.7    & 27.6             & 41.2             & 46.3             & 49.4\\
-{\sc UTOPIA } & 22.0 & 31.1    & 35.1    & 36.3    & 29.8             & 43.2             & 49.6             & 52.3\\
-{\sc ZotBin } & 4.8 & 24.8    & 30.9    & 29.1    & 4.0             & 27.3             & 35.9             & 38.1\\
-{\sc ZotNet } & 2.2 & 29.9    & 33.1    & 34.6    & 2.3             & 33.2             & 42.3             & 43.0\\
+\input{results/tables/table_FOM_ww_dc2.tex}
 \end{tabular}
 \caption{INCOMPLETE, AND AUTO-GENERATED SO NO POINT EDITING! Values of the weak lensing $\Omega_c - \sigma_8$
 figure-of-merit achieved by entrant methods on the CosmoDC2 part of the challenge.}
@@ -1044,30 +998,8 @@ figure-of-merit achieved by entrant methods on the CosmoDC2 part of the challeng
 \begin{tabular}{|l|llll|llll|}
                 & \multicolumn{4}{c|}{\textbf{riz}}      & \multicolumn{4}{c|}{\textbf{griz}}                                \\ \hline
 \textbf{Method} & \textbf{3-bin} & \textbf{5-bin} & \textbf{7-bin} & \textbf{9-bin} & \textbf{3-bin} & \textbf{5-bin} & \textbf{7-bin} & \textbf{9-bin} \\ \hline
-{\sc Autokeras\_LSTM } & 2.9 & 10.5    & 8.2    & --    & 5.7             & 5.0             & --             & 11.5\\
-{\sc CNN } & 1.8 & 9.5    & 12.3    & 13.2    & 1.8             & 9.4             & 14.7             & 16.2\\
-{\sc ComplexSOM } & 1.9 & 6.2    & 7.5    & 8.4    & 1.0             & 7.9             & 13.2             & 15.9\\
-{\sc ENSEMBLE1 } & 11.4 & 11.4    & 13.7    & 13.7    & 13.9             & 13.9             & 17.9             & 17.9\\
-{\sc funbins } & 4.4 & 8.8    & 10.8    & 11.8    & 7.2             & 13.1             & 16.3             & 17.4\\
-{\sc GPzBinning } & 1.7 & 9.3    & 11.3    & 12.5    & 2.1             & 10.6             & 15.0             & 16.7\\
-{\sc IBandOnly } & 0.2 & 0.3    & 0.4    & 0.4    & 0.2             & 0.3             & 0.4             & 0.4\\
-{\sc JaxCNN } & 4.0 & 10.0    & 11.6    & --    & 4.4             & 13.1             & 14.9             & 15.5\\
-{\sc JaxResNet } & 4.2 & 10.2    & --    & --    & 4.8             & 11.3             & --             & --\\
-{\sc LGBM } & 1.8 & 9.5    & 12.5    & 13.4    & 1.8             & 9.6             & 14.5             & 16.5\\
-{\sc LSTM } & 1.8 & 9.6    & 12.6    & 13.3    & 1.9             & 9.6             & 14.5             & 16.5\\
-{\sc mlpqna } & 4.8 & 11.2    & 13.0    & 13.7    & 6.9             & 13.8             & 17.3             & 18.3\\
-{\sc myCombinedClassifiers } & 1.5 & 6.6    & 11.0    & 13.1    & 2.3             & 9.5             & 14.9             & 17.6\\
-{\sc NeuralNetwork1 } & 3.9 & 10.2    & 12.0    & 13.3    & 5.0             & 14.5             & 16.4             & 17.9\\
-{\sc NeuralNetwork2 } & 2.3 & 9.8    & 11.1    & 12.6    & 2.8             & 7.0             & 9.8             & 14.1\\
-{\sc PCACluster } & 3.8 & 6.0    & 4.2    & --    & 1.2             & 2.5             & 5.0             & --\\
-{\sc Random } & 0.0 & 0.0    & 0.0    & 0.0    & 0.0             & 0.0             & 0.0             & 0.0\\
-{\sc RandomForest } & 4.6 & 10.8    & 12.6    & 13.1    & 6.8             & 13.8             & 17.2             & 18.2\\
-{\sc SimpleSOM } & 4.7 & 10.4    & 12.0    & 12.7    & 7.3             & 15.0             & 17.6             & 18.5\\
-{\sc TensorFlow\_FFNN } & -- & --    & --    & --    & --             & --             & --             & --\\
-{\sc TCN } & 5.0 & 10.9    & 12.9    & 13.4    & 6.2             & 12.2             & 15.8             & 16.4\\
-{\sc UTOPIA } & 4.2 & 9.9    & 11.6    & 12.1    & 6.6             & 13.0             & 16.2             & 17.2\\
-{\sc ZotBin } & 5.7 & 8.8    & 10.8    & 10.5    & 3.6             & 10.0             & --             & 12.4\\
-{\sc ZotNet } & 3.8 & 10.1    & 11.5    & 11.7    & 4.3             & 11.3             & 13.1             & 13.4\\
+\input{results/tables/table_FOM_ww_buzzard.tex}
+
 \end{tabular}
 \caption{INCOMPLETE, AND AUTO-GENERATED SO NO POINT EDITING! Values of the weak lensing $\Omega_c - \sigma_8$
 figure-of-merit achieved by entrant methods on the Buzzard part of the challenge.}

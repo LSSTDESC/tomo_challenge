@@ -29,6 +29,7 @@ method_names = [
     "NeuralNetwork1",
     "NeuralNetwork2",
     "PCACluster",
+    "PQNLD",
     "Random",
     "RandomForest",
     "SimpleSOM",
@@ -51,7 +52,7 @@ class EverythingIsNan:
         return np.nan
 
 
-def make_table(results, metric):
+def make_table(results, metric, filename):
     N = np.array([3, 5, 7, 9])
     row_format = r"{0} & {1} & {2}    & {3}    & {4}    & {5}             & {6}             & {7}             & {8}\\"
     data = {}
@@ -61,7 +62,7 @@ def make_table(results, metric):
         bins = row['bins']
         data[name, bands, bins] = row[metric]
 
-
+    f = open(filename, 'w')
     for name in method_names:
         disp_name = rf"{{\sc {name} }}".replace("_", r"\_")
         row = [disp_name]
@@ -75,7 +76,9 @@ def make_table(results, metric):
                 else:
                     row.append(f"{val:.1f}")
 
-        print(row_format.format(*row))
+        f.write(row_format.format(*row))
+        f.write("\n")
+    f.close()
 
 
 def load_table(base):
@@ -200,21 +203,18 @@ def plot_g_band_loss(dc2, buzzard, filename):
     fig.savefig(filename)
     plt.close(fig)
  
+def make_tex_tables(dc2, buzzard, dirname):
+    for name, data in [("dc2", dc2), ("buzzard", buzzard)]:
+        for metric in metrics:
+            fn = f'{dirname}/table_{metric}_{name}.tex'
+            print(fn)
+            make_table(data, metric, fn)
+
 
 if __name__ == '__main__':
     dc2 = load_table('cosmodc2')
     buzzard = load_table('buzzard')
+
     plot_metric_comparisons(dc2, buzzard, "metric_comparisons.pdf")
-    # plot_g_band_loss(dc2, buzzard, "g_band_loss.pdf")
-    # plot_g_band_loss(dc2, buzzard, "g_band_loss.pdf")
-
-    # make_table(dc2, 'FOM_DETF_3x2')
-
-    # pylab.scatter(dc2['bins'], dc2['FOM_DETF_3x2'])
-    # pylab.show()
-    #dc2.sort("FOM_ww")
-    # pylab.show()
-    # buzzard = load_table('buzzard')
-    # print(buzzard)
-    # make_table(dc2, 'FOM_DETF_3x2')
-    # make_table(dc2, 'FOM_ww')
+    plot_g_band_loss(dc2, buzzard, "g_band_loss.pdf")
+    make_tex_tables(dc2, buzzard, 'tables')
