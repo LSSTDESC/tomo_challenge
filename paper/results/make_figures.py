@@ -68,8 +68,10 @@ def make_table(results, metric):
         for i, bands in enumerate(['riz', 'griz']):
             for n in N:
                 val  = data.get((name, bands, n), np.nan)
-                if np.isnan(val) or val == 0:
+                if np.isnan(val):
                     row.append(f"--")
+                elif val == 0:
+                    row.append(f"*")
                 else:
                     row.append(f"{val:.1f}")
 
@@ -102,8 +104,68 @@ def pair_riz_griz(data):
     return data[riz], data[griz]
 
 
+def color_plot(data, x, y, ax):
+    c = data['bins']
+    cmap = matplotlib.cm.Dark2
+    for i, nbin in enumerate([3,5,7,9]):
+        s = data['bins']==nbin
+        ax.plot(x[s], y[s], '.', markersize=8, color=cmap.colors[i], label=f'$n_b={nbin}$')
+
+
+def plot_metric_comparisons(dc2, buzzard, filename):
+    assert (dc2['method'] == buzzard['method']).all()
+    assert (dc2['bins'] == buzzard['bins']).all()
+
+
+    fig, ax = plt.subplots(4, 1, figsize=(4,9), sharex=True)
+    x = dc2['FOM_DETF_3x2'].copy()
+    x[x==0] = np.nan
+    y = buzzard['FOM_DETF_3x2'].copy()
+    y[y==0] = np.nan
+    color_plot(dc2, x, y, ax[0])
+    ax[0].set_ylabel("Buzzard FOM")
+    ax[0].set_ylim(0)
+    ax[0].legend(ncol=2, frameon=True)
+
+
+    x = dc2['FOM_DETF_3x2'].copy()
+    x[x==0] = np.nan
+    y = dc2['FOM_3x2'].copy() / 1000
+    y[y==0] = np.nan
+    color_plot(dc2, x, y, ax[1])
+    ax[1].set_ylabel(r"$\Omega_c - \sigma_8$ FOM / 1000")
+    ax[1].set_ylim(0)
+
+
+    x = dc2['FOM_DETF_3x2'].copy()
+    x[x==0] = np.nan
+    y = dc2['FOM_DETF_ww'].copy()
+    y[y==0] = np.nan
+    color_plot(dc2, x, y, ax[2])
+    ax[2].set_ylabel(r"Lensing FOM")
+    ax[2].set_ylim(0)
+
+
+    x = dc2['FOM_DETF_3x2'].copy()
+    x[x==0] = np.nan
+    y = dc2['SNR_3x2'].copy()
+    y[y==0] = np.nan
+
+    color_plot(dc2, x, y, ax[3])
+    ax[3].set_ylabel(r"SNR Metric")
+    ax[3].set_ylim(500)
+
+
+    ax[-1].set_xlabel("CosmoDC2 DETF 3x2pt FOM")
+    ax[0].set_xlim(0, 180)
+    fig.tight_layout()
+    fig.subplots_adjust(hspace=0.0)
+    fig.savefig(filename)
+    plt.close(fig)
+
+
+
 def plot_g_band_loss(dc2, buzzard, filename):
-    fig = plt.figure()
     fig, ax = plt.subplots(1, 2, figsize=(8,4))
 
     cmap = matplotlib.cm.Dark2
@@ -142,7 +204,11 @@ def plot_g_band_loss(dc2, buzzard, filename):
 if __name__ == '__main__':
     dc2 = load_table('cosmodc2')
     buzzard = load_table('buzzard')
-    plot_g_band_loss(dc2, buzzard, "g_band_loss.pdf")
+    plot_metric_comparisons(dc2, buzzard, "metric_comparisons.pdf")
+    # plot_g_band_loss(dc2, buzzard, "g_band_loss.pdf")
+    # plot_g_band_loss(dc2, buzzard, "g_band_loss.pdf")
+
+    # make_table(dc2, 'FOM_DETF_3x2')
 
     # pylab.scatter(dc2['bins'], dc2['FOM_DETF_3x2'])
     # pylab.show()

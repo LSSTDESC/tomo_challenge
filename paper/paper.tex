@@ -47,7 +47,7 @@ spectroscopic completeness  issues for the training sample, but complex enough
 to address the main question of binning optimization. Based on the challenge
 dataset, we review and compare the different methods that have been proposed by
 participants. We find that even from this limited photometry information,
-various methods are able to yield binning schemes that achieve high FoM scores.
+various methods are able to yield binning schemes that achieve high figure-of-merit scores.
 \end{abstract}
 
 \keywords{methods: statistical -- dark energy  -- large-scale structure of the universe}
@@ -229,6 +229,7 @@ Our first metric is the total signal-to-noise ratio of the power spectrum derive
 $n_i(z)$ values:
 \begin{equation}
     S = \mu^{T} C^{-1} \mu
+\label{eq:snr}
 \end{equation}
 where $\mu$ is a stack of the theoretical predictions for the $C_\ell$ spectra for each tomographic 
 bin, in turn, and $C$ a Gaussian estimaate of the covariance between them, as described in
@@ -236,12 +237,13 @@ bin, in turn, and $C$ a Gaussian estimaate of the covariance between them, as de
 
 \subsubsection{Metric 2: Figure-of-merit}
 
-Metric 2 uses a figure of merit based on that presented by the Dark Energy Task Force \citep{detf}.  We 
+Metric 2 uses a figure of merit (FOM) based on that presented by the Dark Energy Task Force \citep{detf}.  We 
 use the inverse area of a Fisher Matrix ellipse, which approximates the size in two axes 
 of the posterior PDF one would obtain on analysing the spectra:
 \begin{align}
     F &= \left( \frac{\partial \mu}{\partial \theta} \right)^T C^{-1} \left( \frac{\partial \mu}{\partial \theta} \right), \\
     S &= \frac{1}{2 \pi \sqrt{\det{([F^{-1}]_{p_1, p_2})}}}
+\label{eq:fom}
 \end{align}
 where $[F^{-1}]_{p_1, p_2}$ extracts the 2x2 matrix for two parameters.  We use both the original
 DETF variant in which $p_1 = w_0, p_2 = w_a$, representing the constraining power on dark energy 
@@ -414,25 +416,70 @@ models were averaged to get the final predicted bin.
 
 
 \subsection{ {\sc ComplexSOM} }
-  The {\tt ComplexSOM} method implements an additional optimization layer on the methodology used by {\tt SimpleSOM}.
+The {\tt ComplexSOM} method implements an additional optimization layer on the
+methodology used by {\tt SimpleSOM}.
 
-  Let ${\sf C}^{\rm group}_\ell$ be the matrix containing all auto- and cross-power spectra between members of a large set of galaxy samples (called ``groups'' here). We can compress this large set into a smaller set of samples (called ``bins'' here), by combining different groups. Let ${\sf A}$ be the assignment matrix determining these bins, such that $A_{\alpha,i}=1$ if group $i$ is assigned to bin $\alpha$, and 0 otherwise. In that case, the redshift distribution of bin $\alpha$ is given by $N_\alpha(z)=\sum_i A_{\alpha,i}n_i(z)$, where $n_i(z)$ is the redshift distribution of group $i$. Defining the normalized assignment matrix ${\sf B}$ as
-  \begin{equation}
-    B_{\alpha,i}=A_{\alpha,i}\frac{\int dz\,n_i(z)}{\sum_j A_{\alpha,j}\int dz\,n_j(z)},
-  \end{equation}
-  ${\sf C}^{\rm group}_\ell$ is related to the matrix of cross-power spectra between pairs of bins via:
-  \begin{equation}
-    {\sf C}^{\rm bin}_\ell={\sf B}\,{\sf C}^{\rm group}_\ell\,{\sf B}^T.
-  \end{equation}
+Let ${\sf C}^{\rm group}_\ell$ be the matrix containing all auto- and
+cross-power spectra between members of a large set of galaxy samples (called
+``groups'' here). We can compress this large set into a smaller set of samples
+(called ``bins'' here), by combining different groups. Let ${\sf A}$ be the
+assignment matrix determining these bins, such that $A_{\alpha,i}=1$ if group
+$i$ is assigned to bin $\alpha$, and 0 otherwise. In that case, the redshift
+distribution of bin $\alpha$ is given by $N_\alpha(z)=\sum_i
+A_{\alpha,i}n_i(z)$, where $n_i(z)$ is the redshift distribution of group $i$.
 
-  The rationale behind the {\tt ComplexSOM} method is based on the observation that, while ${\sf C}^{\rm group}_\ell$ is a slow quantity to calculate for a large number of groups, ${\sf B}$ and therefore ${\sf C}^{\rm bin}_\ell$ are very fast. Thus, given an initial set of groups characterizing the distribution of the full sample in colour space, ${\sf C}^{\rm group}_\ell$ can be precomputed once, and used to find the optimal assignment matrix ${\sf B}$ that maximizes the figure of merit in Eq. {\bf reference to FoM equation}, which can be written in terms of ${\sf C}^{\rm bin}_\ell$ alone as
-  \begin{equation}\label{eq:fom_tr}
-    F_{\theta\theta'}=\sum_\ell f_{\rm sky}\frac{2\ell+1}{2}{\rm Tr}\left[\partial_\theta{\sf C}^{\rm bin}_\ell({\sf C}^{\rm bin}_\ell)^{-1}\partial_{\theta'}{\sf C}^{\rm bin}_\ell({\sf C}_\ell^{\rm bin})^{-1}\right].
-  \end{equation}
+Defining the normalized assignment matrix ${\sf B}$ as
+\begin{equation}
+B_{\alpha,i}=A_{\alpha,i}\frac{\int dz\,n_i(z)}{\sum_j A_{\alpha,j}\int dz\,n_j(z)},
+\end{equation}
 
-  Note that the general problem of finding the matrix ${\sf B}$ that optimally compresses the information on a given parameter has an analytical solution in terms of Karnhunen-L\^oeve eigenvectors \citep{astro-ph/9603021}. However, the assignment matrix used in this case has the additional constraints that it must be positive, discrete and binary (i.e. groups are either in a bin or they are not). Thus, finding the absolute maximum figure of merit would involve a brute-force evaluation of all matrix elements $A_{\alpha,j}$, which is an intractable $N_{\rm bin}^{N_{\rm group}}$ problem. We thus parametrize ${\sf A}$ in terms of a small set of continuous parameters, for which standard minimization routines can be used. In particular we use $N_{\rm bin}-1$ parameters, given by the edges of the redshift bins, and a group is assigned to a bin if its mean redshift falls within its edges. We also explored the possibility of ``trashing'' groups if less than a fraction $p_{\rm in}$ of its redshift distribution fell within its preassigned bin, treating $p_{\rm in}$ as an additional free parameter. We found that adding this extra freedom did not translate into a significant improvement in the final level of data compression.
+${\sf C}^{\rm group}_\ell$ is related to the matrix of cross-power spectra
+between pairs of bins via:
+\begin{equation}
+{\sf C}^{\rm bin}_\ell={\sf B}\,{\sf C}^{\rm group}_\ell\,{\sf B}^T.
+\end{equation}
 
-  Once the SOM has been generated, the {\tt ComplexSOM} method proceeds as follows. First, the full SOM is distilled into a smaller set of ${\cal O}(100)$ groups based by combining SOM cells with similar moments of their redshift distributions, thus ensuring that this process does not induce any catastrophic $N(z)$ broadening {\bf you may wanna refer to the {\tt SimpleSOM} method here}. The large ${\sf C}^{\rm group}_\ell$ is then precomputed for the initial set of groups. Finally, we find the optimal assignment matrix, defined in terms of the free redshift-edge parameters, by maximizing the figure of merit in Eq. \ref{eq:fom_tr} using Powell's minimization method \citep{10.1093/comjnl/7.2.155}.
+The rationale behind the {\tt ComplexSOM} method is based on the observation
+that, while ${\sf C}^{\rm group}_\ell$ is a slow quantity to calculate for a
+large number of groups, ${\sf B}$ and therefore ${\sf C}^{\rm bin}_\ell$ are
+very fast. Thus, given an initial set of groups characterizing the
+distribution of the full sample in colour space, ${\sf C}^{\rm group}_\ell$
+can be precomputed once, and used to find the optimal assignment matrix ${\sf
+B}$ that maximizes the figure of merit in Equation \ref{eq:fom},
+which can be written in terms of ${\sf C}^{\rm bin}_\ell$ alone as
+
+\begin{equation}\label{eq:fom_tr}
+F_{\theta\theta'}=\sum_\ell f_{\rm sky}\frac{2\ell+1}{2}{\rm Tr}\left[\partial_\theta{\sf C}^{\rm bin}_\ell({\sf C}^{\rm bin}_\ell)^{-1}\partial_{\theta'}{\sf C}^{\rm bin}_\ell({\sf C}_\ell^{\rm bin})^{-1}\right].
+\end{equation}
+
+Note that the general problem of finding the matrix ${\sf B}$ that optimally
+compresses the information on a given parameter has an analytical solution in
+terms of Karnhunen-L\^oeve eigenvectors \citep{astro-ph/9603021}. However, the
+assignment matrix used in this case has the additional constraints that it
+must be positive, discrete and binary (i.e. groups are either in a bin or they
+are not). Thus, finding the absolute maximum figure of merit would involve a
+brute-force evaluation of all matrix elements $A_{\alpha,j}$, which is an
+intractable $N_{\rm bin}^{N_{\rm group}}$ problem. We thus parametrize ${\sf
+A}$ in terms of a small set of continuous parameters, for which standard
+minimization routines can be used. In particular we use $N_{\rm bin}-1$
+parameters, given by the edges of the redshift bins, and a group is assigned
+to a bin if its mean redshift falls within its edges. We also explored the
+possibility of ``trashing'' groups if less than a fraction $p_{\rm in}$ of its
+redshift distribution fell within its preassigned bin, treating $p_{\rm in}$
+as an additional free parameter. We found that adding this extra freedom did
+not translate into a significant improvement in the final level of data
+compression.
+
+Once the SOM has been generated, the {\tt ComplexSOM} method proceeds as
+follows. First, the full SOM is distilled into a smaller set of ${\cal O}(100)$
+groups based by combining SOM cells with similar moments of their redshift
+distributions, thus ensuring that this process does not induce any catastrophic
+$N(z)$ broadening {\bf you may wanna refer to the {\tt SimpleSOM} method here}.
+The large ${\sf C}^{\rm group}_\ell$ is then precomputed for the initial set of
+groups. Finally, we find the optimal assignment matrix, defined in terms of the
+free redshift-edge parameters, by maximizing the figure of merit in Eq.
+\ref{eq:fom_tr} using Powell's minimization method
+\citep{10.1093/comjnl/7.2.155}.
 
 
 \subsection{ {\sc ENSEMBLE} }
@@ -738,6 +785,22 @@ An iterative precedure was used to progressively change the target bin edges to 
 
 \section{Results}
 
+\section{Overall results}
+The methods described above were run on a data set, previously unseen by entrants but drawn
+from the same underlying population, of size 8.6M objects for CosmoDC2 and 5.4M objects for Buzzard.
+A complete suite of the metrics described in Section \ref{sec:metrics} was run on each of the two
+for each method.  In total, each method was run on 16 scenarios, each combination of: griz vs riz,
+Buzzard vs CosmoDC2, and 3,5,7, and 9 bins requested.  Nine metrics were calculated for each
+scenario: clustering, lensing, and 3x2pt for each of the SNR metric (Equation \ref{eq:snr}, the $w_0-w_a$ 
+DETF FOM, and the $\Omega_c - \sigma_8$ FOM (Equation \ref{eq:fom}).
+
+The DETF results for each method are shown in Table \ref{tab:cosmodc2}.  Further results for other
+metrics are shown in Appendix \ref{sec:complete}.  Missing entries occured in two ways.
+The first, marked with an asterisk, is when a method did not run for the given scenario,
+either due to memory overflow or taking an extremely long time.
+The second, marked with a dash, is when a method ran, but generated at least one bin with an extremely small number
+count, such that the spectrum could not be calculated.
+
 \begin{table*}[]
 \begin{tabular}{|l|llll|llll|}
                 & \multicolumn{4}{c|}{\textbf{riz}}      & \multicolumn{4}{c|}{\textbf{griz}}                                \\ \hline
@@ -745,7 +808,7 @@ An iterative precedure was used to progressively change the target bin edges to 
 {\sc Autokeras\_LSTM } & 31.1 & 74.9    & 103.4    & --    & 44.1             & 67.5             & 122.2             & 98.4\\
 {\sc CNN } & 27.1 & 50.8    & 76.7    & 103.3    & 30.5             & 57.7             & 95.4             & 122.4\\
 {\sc ComplexSOM } & 38.0 & 52.1    & 94.4    & 101.6    & 34.9             & 45.0             & 91.6             & 100.3\\
-{\sc ENSEMBLE1 } & 65.6 & 65.6    & 94.8    & --    & --             & --             & --             & --\\
+{\sc ENSEMBLE1 } & 65.6 & 65.6    & 94.8    & *    & *             & *             & *             & *\\
 {\sc funbins } & 36.8 & 82.5    & 122.1    & 141.8    & 42.1             & 100.4             & 142.5             & 167.2\\
 {\sc GPzBinning } & 26.2 & 49.7    & 80.8    & 111.7    & 27.8             & 55.3             & 87.2             & 126.9\\
 {\sc IBandOnly } & 38.0 & 50.0    & 54.4    & 57.3    & 38.0             & 50.0             & 54.4             & 57.3\\
@@ -755,9 +818,9 @@ An iterative precedure was used to progressively change the target bin edges to 
 {\sc LSTM } & 26.7 & 51.1    & 81.4    & 103.6    & 30.2             & 57.1             & 95.9             & 126.9\\
 {\sc mlpqna } & 39.3 & 64.7    & 93.2    & 121.8    & 42.8             & 72.2             & 109.0             & 133.7\\
 {\sc myCombinedClassifiers } & 35.3 & 60.5    & 83.5    & 120.4    & 39.4             & 63.9             & 93.1             & 148.9\\
-{\sc NeuralNetwork1 } & 76.3 & 117.6    & 135.8    & --    & 81.9             & 132.9             & 158.0             & --\\
+{\sc NeuralNetwork1 } & 76.3 & 117.6    & 135.8    & 109.9    & 81.9             & 132.9             & 158.0             & 96.9\\
 {\sc NeuralNetwork2 } & 30.5 & 48.0    & 57.8    & 136.1    & 49.4             & 102.7             & 122.2             & 140.0\\
-{\sc PCACluster } & 29.5 & 68.1    & 75.8    & --    & 50.1             & 72.7             & 90.8             & --\\
+{\sc PCACluster } & 29.5 & 68.1    & 75.8    & *    & 50.1             & 72.7             & 90.8             & *\\
 {\sc Random } & 1.2 & 1.2    & 1.2    & 1.2    & 1.2             & 1.2             & 1.2             & 1.2\\
 {\sc RandomForest } & 39.5 & 65.2    & 93.2    & 118.5    & 43.0             & 72.8             & 110.1             & 136.5\\
 {\sc SimpleSOM } & 39.5 & 59.9    & 77.9    & 98.5    & 42.2             & 73.2             & 108.0             & 134.8\\
@@ -772,20 +835,58 @@ CosmoDC2 part of the challenge.}
 \label{tab:cosmodc2}
 \end{table*}
 
+\subsection{Metric comparisons}
+Figure \ref{fig:metrics} shows a comparison of some of the different metrics used in the challenge.
+
+
+\begin{figure}[htbp]
+% \centering
+\includegraphics[width=0.9\linewidth]{results/metric_comparisons.pdf}
+\caption{A comparison of the metrics used in our challenge. The x-axis is shared, and shows
+the 3x2pt $w_0 - w_a$ (DETF) figure of merit on the CosmoDC2 data set for all methods, 
+with colours labelling the number
+of bins used.  Each of the panels shows a metric which is the same except for a single change, 
+which is labelled on its y-axis.  For example, the top panel still shows the 3x2pt $w_0 - w_a$ (DETF) figure of merit,
+but for the Buzzard data set.}
+\label{fig:metrics}
+\end{figure}
+
+
+
+\subsection{Impact of losing g-band}
+Figure \ref{fig:loss} shows the ratio of the FOM between methods using the griz and the same method
+using the riz.  Each point represents one method with a specific number of bins, indicated by colour.
+For lower scoring methods and for smaller numbers of bins there is more scatter in the ratio,
+but for the highest scoring algorithms and configurations the loss when losing g-band is a little
+more stable, at around 10--15\%.
+
+
+\begin{figure*}
+\includegraphics[width=0.9\linewidth]{results/g_band_loss.pdf}
+\caption{The degradation in constraining power over all methods
+ when comparing them on methods including and excluding
+the g-band, in terms of the ratio of the $w_0-w-a$ figure of merit.  The left-hand panel shows
+results for the CosmoDC2 scenarios, and the right-hand panel for the Buzzard scenarios.  Colours
+indicate the number of bins used in the analysis.}
+\label{fig:loss}
+\end{figure*}
+
+\subsection{Trained edges vs fixed edges}
+
+Some of the methods in the challenge accepted target bin edges as an input to their algorithms,
+and then used classifiers to assign objects to those bins.  Other methods optimized the values
+of bin edges themselves.
+
+
+
 \begin{itemize}
     \item fisher matrix ellipses overplotted for top N methods
     \item Plots of n(z)
 \end{itemize}
 
+
+
 \section{Discussion}
-\begin{itemize}
-    \item Overall effectiveness of method classes
-    \item Individual winner
-\end{itemize}
-
-- 
-
-\subsection{General outcomes}
 It is clear from values above that fears about restricted photometry catastrophically limiting
 the information needed for tomography are unfounded.  In both the CosmoDC2 and Buzzard analyses,
 even the $riz$ bands alone are sufficient to split objects into nine reasonably separated
@@ -819,14 +920,14 @@ this to redshift using a fiducial cosmology. The success of this simple solution
 as an easy heuristic for well-optimized nominal edges.
 
 
-
 \subsection{Future directions}
 
 \begin{itemize}
-    \item spectroscopic incompleteness
+    \item spectroscopic incompleteness / unrepresentativeness
+    \item data set volume
+    \item comparison of optimal choices in different science cases
 \end{itemize}
 
-\section{Conclusions}
 
 \section{Acknowledgements}
 ESC acknowledges support from the FAPESP (\#2019/19687-2) and CNPq  (\#308539/2018-4).
@@ -837,7 +938,11 @@ ESC acknowledges support from the FAPESP (\#2019/19687-2) and CNPq  (\#308539/20
 \appendix
 
 \section{Theory}\label{app:theory}
-In our metrics, the power spectrum between two tomographic bins $i$ and $j$ is computed using either the Core Cosmology Library \citep{ccl} or the JAX Cosmology Library \citep{jax-cosmo} as:
+
+In our metrics, the power spectrum between two tomographic bins $i$ and $j$ is
+computed using either the Core Cosmology Library \citep{ccl} or the JAX
+Cosmology Library \citep{jax-cosmo} as:
+
 \begin{equation}
     C^{ij}_\ell = \int_0^{\infty} \frac{q_i(\chi) q_j(\chi)}{\chi^2} P\left(\frac{\ell +\frac{1}{2}}{\chi}, \chi \right) \mathrm{d}\chi
 \end{equation}
@@ -865,7 +970,7 @@ where $n_i$ is the number density of galaxies in bin $i$ (we asssume equally wei
 total number density over all bins of 20 galaxies per square arcminute) and $\sigma_e=0.26$.
 
 \section{Complete results}
-
+\label{sec:complete}
 
 \begin{table*}[]
 \begin{tabular}{|l|llll|llll|}
@@ -996,7 +1101,7 @@ and specifying an environment on these systems can be more complicated.
 
 \subsection{Guidance on caching \& batch processing}
 Since the training process for the challenge could be slow for some algorithms, many entries
-very reasonably cached trained models or other values for later use.  In some cases these
+(very reasonably) cached trained models or other values for later use.  In some cases these
 cached values were then incorrectly picked up by subsequent runs on new data sets, leading
 to (at best) crashes and at worst silently poor scores.  We should have provided an explicit
 caching mechanism for entrants to avoid such issues.
