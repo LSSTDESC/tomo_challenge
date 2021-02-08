@@ -503,8 +503,9 @@ class PQNLD(Tomographer):
                                    ["0.000001","0.000001","0.000001","0.000001"])
             #Output the columns file 
             columns.to_csv(validation_col_file,sep=' ',index=None,header=None,mode='w')
-            columns = pd.DataFrame(["M_0"],
-                                   ["7"])
+            columns = pd.DataFrame(np.transpose(
+                                  np.array([["M_0"],
+                                            ["7"]])))
             #Output the columns file 
             columns.to_csv(validation_col_file,sep=' ',index=None,header=None,mode='a')
         elif self.bands == 'grizy':
@@ -521,8 +522,9 @@ class PQNLD(Tomographer):
                                    ["0.000001","0.000001","0.000001","0.000001","0.000001"])
             #Output the columns file 
             columns.to_csv(validation_col_file,sep=' ',index=None,header=None,mode='w')
-            columns = pd.DataFrame(["M_0"],
-                                   ["7"])
+            columns = pd.DataFrame(np.transpose(
+                                  np.array([["M_0"],
+                                            ["7"]])))
             #Output the columns file 
             columns.to_csv(validation_col_file,sep=' ',index=None,header=None,mode='a')
         elif self.bands == 'ugriz':
@@ -539,8 +541,9 @@ class PQNLD(Tomographer):
                                    ["0.000001","0.000001","0.000001","0.000001","0.000001"])
             #Output the columns file 
             columns.to_csv(validation_col_file,sep=' ',index=None,header=None,mode='w')
-            columns = pd.DataFrame(["M_0"],
-                                   ["9"])
+            columns = pd.DataFrame(np.transpose(
+                                  np.array([["M_0"],
+                                            ["9"]])))
             #Output the columns file 
             columns.to_csv(validation_col_file,sep=' ',index=None,header=None,mode='a')
         elif self.bands == 'ugrizy':
@@ -557,8 +560,9 @@ class PQNLD(Tomographer):
                                    ["0.000001","0.000001","0.000001","0.000001","0.000001","0.000001"])
             #Output the columns file 
             columns.to_csv(validation_col_file,sep=' ',index=None,header=None,mode='w')
-            columns = pd.DataFrame(["M_0"],
-                                   ["9"])
+            columns = pd.DataFrame(np.transpose(
+                                  np.array([["M_0"],
+                                            ["9"]])))
             #Output the columns file 
             columns.to_csv(validation_col_file,sep=' ',index=None,header=None,mode='a')
 
