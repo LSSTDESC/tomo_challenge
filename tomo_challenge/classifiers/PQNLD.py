@@ -195,8 +195,9 @@ class PQNLD(Tomographer):
                                    ["0.000001","0.000001","0.000001","0.000001"]])))
             #Output the columns file 
             columns.to_csv(training_col_file,sep=' ',index=None,header=None,mode='w')
-            columns = pd.DataFrame(["M_0","Z_S"],
-                                   ["7","9"])
+            columns = pd.DataFrame(np.transpose(
+                                  np.array([["M_0","Z_S"],
+                                            ["7","9"]])))
             #Output the columns file 
             columns.to_csv(training_col_file,sep=' ',index=None,header=None,mode='a')
         elif self.bands == 'grizy':
@@ -213,8 +214,9 @@ class PQNLD(Tomographer):
                                    ["0.000001","0.000001","0.000001","0.000001","0.000001"]])))
             #Output the columns file 
             columns.to_csv(training_col_file,sep=' ',index=None,header=None,mode='w')
-            columns = pd.DataFrame(["M_0","Z_S"],
-                                   ["7","11"])
+            columns = pd.DataFrame(np.transpose(
+                                  np.array([["M_0","Z_S"],
+                                            ["7","11"]])))
             #Output the columns file 
             columns.to_csv(training_col_file,sep=' ',index=None,header=None,mode='a')
         elif self.bands == 'ugriz':
@@ -231,8 +233,9 @@ class PQNLD(Tomographer):
                                    ["0.000001","0.000001","0.000001","0.000001","0.000001"]])))
             #Output the columns file 
             columns.to_csv(training_col_file,sep=' ',index=None,header=None,mode='w')
-            columns = pd.DataFrame(["M_0","Z_S"],
-                                   ["9","11"])
+            columns = pd.DataFrame(np.transpose(
+                                  np.array([["M_0","Z_S"],
+                                            ["9","11"]])))
             #Output the columns file 
             columns.to_csv(training_col_file,sep=' ',index=None,header=None,mode='a')
         elif self.bands == 'ugrizy':
@@ -249,8 +252,9 @@ class PQNLD(Tomographer):
                                    ["0.000001","0.000001","0.000001","0.000001","0.000001","0.000001"]])))
             #Output the columns file 
             columns.to_csv(training_col_file,sep=' ',index=None,header=None,mode='w')
-            columns = pd.DataFrame(["M_0","Z_S"],
-                                   ["9","13"])
+            columns = pd.DataFrame(np.transpose(
+                                  np.array([["M_0","Z_S"],
+                                            ["9","13"]])))
             #Output the columns file 
             columns.to_csv(training_col_file,sep=' ',index=None,header=None,mode='a')
 
