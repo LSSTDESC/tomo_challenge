@@ -500,11 +500,12 @@ class PQNLD(Tomographer):
                            "z","g-r-(r-i)",
                            "r-i-(i-z)")
             # Filter columns AB/Vega zp_error zp_offset
-            columns = pd.DataFrame(["g_SDSS","r_SDSS","i_SDSS","z_SDSS"],
+            columns = pd.DataFrame(np.transpose(np.array([
+                                   ["g_SDSS","r_SDSS","i_SDSS","z_SDSS"],
                                    ["1,2","3,4","5,6","7,8"],
                                    ["AB","AB","AB","AB"],
                                    ["0.01","0.01","0.01","0.01"],
-                                   ["0.000001","0.000001","0.000001","0.000001"])
+                                   ["0.000001","0.000001","0.000001","0.000001"]])))
             #Output the columns file 
             columns.to_csv(validation_col_file,sep=' ',index=None,header=None,mode='w')
             columns = pd.DataFrame(np.transpose(
@@ -519,11 +520,12 @@ class PQNLD(Tomographer):
                            "z-y","z","g-r-(r-i)",
                            "r-i-(i-z)","i-z-(z-y)")
             # Filter columns AB/Vega zp_error zp_offset
-            columns = pd.DataFrame(["g_SDSS","r_SDSS","i_SDSS","z_SDSS","y_SDSS"],
+            columns = pd.DataFrame(np.transpose(np.array([
+                                   ["g_SDSS","r_SDSS","i_SDSS","z_SDSS","y_SDSS"],
                                    ["1,2","3,4","5,6","7,8","9,10"],
                                    ["AB","AB","AB","AB","AB"],
                                    ["0.01","0.01","0.01","0.01","0.01"],
-                                   ["0.000001","0.000001","0.000001","0.000001","0.000001"])
+                                   ["0.000001","0.000001","0.000001","0.000001","0.000001"]])))
             #Output the columns file 
             columns.to_csv(validation_col_file,sep=' ',index=None,header=None,mode='w')
             columns = pd.DataFrame(np.transpose(
@@ -538,11 +540,12 @@ class PQNLD(Tomographer):
                            "z","u-g-(g-r)","g-r-(r-i)",
                            "r-i-(i-z)")
             # Filter columns AB/Vega zp_error zp_offset
-            columns = pd.DataFrame(["u_SDSS","g_SDSS","r_SDSS","i_SDSS","z_SDSS"],
+            columns = pd.DataFrame(np.transpose(np.array([
+                                   ["u_SDSS","g_SDSS","r_SDSS","i_SDSS","z_SDSS"],
                                    ["1,2","3,4","5,6","7,8","9,10"],
                                    ["AB","AB","AB","AB","AB"],
                                    ["0.01","0.01","0.01","0.01","0.01"],
-                                   ["0.000001","0.000001","0.000001","0.000001","0.000001"])
+                                   ["0.000001","0.000001","0.000001","0.000001","0.000001"]])))
             #Output the columns file 
             columns.to_csv(validation_col_file,sep=' ',index=None,header=None,mode='w')
             columns = pd.DataFrame(np.transpose(
@@ -557,11 +560,12 @@ class PQNLD(Tomographer):
                            "z-y","z","u-g-(g-r)","g-r-(r-i)",
                            "r-i-(i-z)","i-z-(z-y)")
             # Filter columns AB/Vega zp_error zp_offset
-            columns = pd.DataFrame(["u_SDSS","g_SDSS","r_SDSS","i_SDSS","z_SDSS","y_SDSS"],
+            columns = pd.DataFrame(np.transpose(np.array([
+                                   ["u_SDSS","g_SDSS","r_SDSS","i_SDSS","z_SDSS","y_SDSS"],
                                    ["1,2","3,4","5,6","7,8","9,10","11,12"],
                                    ["AB","AB","AB","AB","AB","AB"],
                                    ["0.01","0.01","0.01","0.01","0.01","0.01"],
-                                   ["0.000001","0.000001","0.000001","0.000001","0.000001","0.000001"])
+                                   ["0.000001","0.000001","0.000001","0.000001","0.000001","0.000001"]])))
             #Output the columns file 
             columns.to_csv(validation_col_file,sep=' ',index=None,header=None,mode='w')
             columns = pd.DataFrame(np.transpose(
