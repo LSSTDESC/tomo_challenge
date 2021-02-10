@@ -128,7 +128,7 @@ def plot_metric_comparisons(dc2, buzzard, filename):
     color_plot(dc2, x, y, ax[0])
     ax[0].set_ylabel("Buzzard FOM")
     ax[0].set_ylim(0)
-    ax[0].legend(ncol=2, frameon=True)
+    ax[0].legend(frameon=True)
 
 
     x = dc2['FOM_DETF_3x2'].copy()
