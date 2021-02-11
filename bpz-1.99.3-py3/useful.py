@@ -248,7 +248,7 @@ def params_file(file):
         #     raise 'Keyword not string!'
         if len(pieces)<2:
             mensaje='No value(s) for parameter  '+key
-            raise mensaje
+            raise ValueError(mensaje)
         dict[key]=tuple(pieces[1:]) 
         if len(dict[key])==1: dict[key]=dict[key][0]
     return dict
