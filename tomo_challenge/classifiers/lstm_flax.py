@@ -80,7 +80,7 @@ class Flax_LSTM(Tomographer):
         self.opt = options
         self.n_bins = options['bins']
         self.n_features = options['n_feats']
-        self.model = get_classifier(self.n_features, self.n_bins)
+        self.model = get_classifier(self.n_bins, self.n_features)#, self.n_bins)
         self.scaler = MinMaxScaler()
     
     def load_data(self, fname, take_colors=True, cutoff=0.0):
@@ -125,7 +125,7 @@ class Flax_LSTM(Tomographer):
          
     def train(self, training_data, training_z, batch_size=512, epochs=20):
         x_train = self.scaler.fit_transform(training_data)
-        x_train = np.expand_dims(x_train, axis=1)
+        x_train = np.expand_dims(x_train, axis=-1)
         lr = 0.001
         optimizer = optim.Adam(learning_rate=lr).create(self.model)
 
@@ -149,8 +149,9 @@ class Flax_LSTM(Tomographer):
 
         losses = []
         for e in range(epochs):
-            for i, (x_train, labels) in enumerate(get_batches().as_numpy_iterator()):
-                optimizer, loss = train_step(optimizer, x_train, labels)
+            print("Running training epoch ", e)
+            for i, (x_train1, labels) in enumerate(get_batches().as_numpy_iterator()):
+                optimizer, loss = train_step(optimizer, x_train1, labels)
                 losses.append(loss)
 
             print('Epoch {}\nLoss = {}'.format(e, loss))
