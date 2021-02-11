@@ -56,7 +56,7 @@ class Flax_LSTM(Tomographer):
     # this settings means arrays will be sent to train and apply instead
     # of dictionaries
     wants_arrays = True
-    skips_zero_flux = True
+    skips_zero_flux = False
     
     def __init__ (self, bands, options):
         """Constructor
@@ -142,20 +142,20 @@ class Flax_LSTM(Tomographer):
             optimizer = optimizer.apply_gradient(g)
             return optimizer, loss
 
-    def get_batches():
-        train_dataset = tf.data.Dataset.from_tensor_slices((x_train, training_z))
-        train_dataset = train_dataset.shuffle(buffer_size=2048).batch(batch_size)
-        return train_dataset
+        def get_batches():
+            train_dataset = tf.data.Dataset.from_tensor_slices((x_train, training_z))
+            train_dataset = train_dataset.shuffle(buffer_size=2048).batch(batch_size)
+            return train_dataset
 
         losses = []
         for e in range(epochs):
             for i, (x_train, labels) in enumerate(get_batches().as_numpy_iterator()):
                 optimizer, loss = train_step(optimizer, x_train, labels)
-            losses.append(loss)
+                losses.append(loss)
 
-        print('Epoch {}\nLoss = {}'.format(e, loss))
+            print('Epoch {}\nLoss = {}'.format(e, loss))
 
-       
+   
         self.model = optimizer.target
 
 
@@ -167,19 +167,22 @@ class Flax_LSTM(Tomographer):
         Data: numpy array, size Ngalaxes x Nbands
           testing data, each row is a galaxy, each column is a band as per
           band defined above
-
         Returns: 
         tomographic_selections: numpy array, int, size Ngalaxies
           tomographic selection for galaxies return as bin number for 
           each galaxy.
         """
+        
         x_test = self.scaler.transform(data)
         x_test = np.expand_dims(x_test, axis=-1)
-        
         bs = 512
-        s = len(x_test)
-        weights = np.concatenate([self.model(x_test[bs*i:min((bs*(i+1)), s)]) for i in range(s//bs + 1)])
+        batches = tf.data.Dataset.from_tensor_slices(x_test).batch(bs)
         
-        tomo_bin = weights.argmax(axis=1)
+        preds = []
+        for i, test in enumerate(batches.as_numpy_iterator()):
+            p = self.model(test)
+            preds.append(p)
+        
+        result = np.concatenate([p for p in preds], axis=0)
+        tomo_bin = np.argmax(result, axis=1)
         return tomo_bin
-
