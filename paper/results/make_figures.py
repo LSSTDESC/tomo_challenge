@@ -1,3 +1,4 @@
+import os
 import yaml
 import tabulate
 import numpy as np
@@ -5,10 +6,14 @@ from astropy.table import Table
 import matplotlib
 matplotlib.use('agg')
 import matplotlib.pyplot as plt
+import subprocess
 
 # set default styles
 plt.style.use('StyleSheet.mplstyle')
 
+
+blue_color =  '#1f77b4'
+orange_color =  '#ff7f0e'
 
 
 method_names = [
@@ -233,7 +238,7 @@ def plot_edge_type_comparison(data, filename):
         return x, y, z
 
 
-    color =  '#1f77b4'
+    color =  blue_color
     alpha = 0.5
     lw = 1
     style =  "--"
@@ -245,7 +250,7 @@ def plot_edge_type_comparison(data, filename):
         ax[0].plot(x, y, color, alpha=alpha, lw=lw, ls=style, label=label)
         ax[1].plot(x, z, color, alpha=alpha, lw=lw, ls=style)
 
-    color =  '#ff7f0e'
+    color =  orange_color
     alpha = 1.0
     lw = 3
     style =  "-"
@@ -276,6 +281,47 @@ def plot_edge_type_comparison(data, filename):
     plt.close(fig)
 
 
+def plot_funbins_nz(filename):
+    riz_file = "./cosmodc2/bins/funbins_9_riz_0.npy"
+    griz_file = "./cosmodc2/bins/funbins_9_griz_0.npy"
+    z_file = "./cosmodc2/bins/z.npz"
+
+
+    if not os.path.exists(riz_file):
+        print("Data not downloaded for n(z) plot - not overwriting")
+        return
+
+    fig, ax = plt.subplots(2, 1, figsize=(6,6), sharex=True, sharey=True)
+    colors = plt.rcParams['axes.prop_cycle'].by_key()['color']
+
+    riz = np.load(riz_file)
+    griz = np.load(griz_file)
+    z = np.load(z_file)['arr_0']
+
+
+    nbin = 9
+
+    for i in range(nbin):
+        w = np.where(griz == i)
+        weight = np.repeat(1e-5, w[0].size)
+        ax[0].hist(z[w], bins=50, histtype='step', ls='-', color=colors[i], weights=weight, lw=3)
+
+    for i in range(nbin):
+        w = np.where(riz == i)
+        weight = np.repeat(1e-5, w[0].size)
+        ax[1].hist(z[w], bins=50, histtype='step', ls='-', color=colors[i], weights=weight, lw=3)
+
+    ax[0].set_ylabel('riz counts / $10^5$')
+    ax[1].set_ylabel('griz counts / $10^5$')
+    ax[1].set_xlabel('Redshift')
+    ax[0].set_xlim(0, 3)
+    fig.tight_layout()
+    fig.subplots_adjust(hspace=0.05)
+    fig.savefig(filename)
+    plt.close(fig)
+
+
+
 def make_tex_tables(dc2, buzzard, dirname):
     for name, data in [("dc2", dc2), ("buzzard", buzzard)]:
         for metric in metrics:
@@ -291,3 +337,4 @@ if __name__ == '__main__':
     plot_g_band_loss(dc2, buzzard, "g_band_loss.pdf")
     make_tex_tables(dc2, buzzard, 'tables')
     plot_edge_type_comparison(dc2, "edge_comparison.pdf")
+    plot_funbins_nz('funbins_nz.pdf')

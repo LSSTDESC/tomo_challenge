@@ -181,7 +181,7 @@ $10^9$ -- $10^{10}$ galaxies will be measured.
 The challenge was open to any entrants, not just those already involved in DESC, but it was
 advertised primarily through Rubin, and so is perhaps best described as semi-public.
 Participants tested and ran their methods locally, but submitted code to be run as part of a central
-combined analysis.  No prize was offered beyond recognition.
+combined analysis on the NERSC supercomputing facility.  No prize was offered apart from recognition.
 
 
 \subsection{Data}
@@ -194,6 +194,13 @@ data sets were random sub-selections of the full data sets, with the training an
 the full data each and the validation 50\%. In practice many entrants trained on a subset of
 this, so to make the final evaluation phase tractable we trained on 1M objects for both data sets.
 
+We used the second Buzzard catalog for two reasons.  First, to check the significance of
+an issue with galaxy colour assignments in CosmoDC2, described below.  And second, to check
+for over-fitting in the design of models themselves, and thus to determine whether two
+reasonable but different galaxy populations can be optimized by the same methods; this will
+tell us whether our conclusions might be reasonable for real data. We discuss correlations
+between metrics in Section \ref{sec:metric-results}.
+
 Each of these data set come from cosmological simulations which provide truth values of galaxy magnitudes
 and sizes.  We simulate and add noise to the objects as described below.
 
@@ -203,7 +210,8 @@ The CosmoDC2 simulation was designed to support the Dark Energy Science
 Collaboration and is described in detail in \citet{cosmodc2}.  It covered 440
 deg${}^2$ of sky, and used the dark matter particles from the Outer Rim
 simulations \citep{outer_rim}.  The UniverseMachine \citep{universe_machine}
-simulations were then used, in a combination of empirical and semi-analytic
+simulations were then used, with the GalSampler technique \citep{galsampler},
+in a combination of empirical and semi-analytic
 methods, to assign galaxies with a limited set of specified properties to halos.
 
 These objects were then matched to outputs of the Galacticus model
@@ -218,7 +226,7 @@ we used around 36M objects from the CosmoDC2 simulations.
 
 One limitation of the CosmoDC2 catalogs we used, found during the challenge,
 was that the matching to Galacticus led to only a limited number of SEDs being
-used at high redshifts, and thus to many galaxies in the simulations sharing
+used at high redshifts, and thus too many galaxies in the simulations sharing
 similar characteristics at these redshifts, such as colour-colour relations.
 It was unknown whether this limitation would have any practical impact on the challenge,
 and was one of the reasons for adpoting the additional Buzzard catalog.
@@ -295,7 +303,7 @@ bin, in turn, and $C$ a Gaussian estimaate of the covariance between them, as de
 
 \subsubsection{Metric 2: Figure-of-merit}
 
-Metric 2 uses a figure of merit (FOM) based on that presented by the Dark Energy Task Force \citep{detf}.  We 
+Metric 2 uses a figure of merit (FOM) based on that presented by the Dark Energy Task Force (DETF) \citep{detf}.  We 
 use the inverse area of a Fisher Matrix ellipse, which approximates the size in two axes 
 of the posterior PDF one would obtain on analysing the spectra:
 \begin{align}
@@ -854,15 +862,10 @@ The DETF results for each method are shown in Table \ref{tab:cosmodc2}.  Further
 metrics are shown in Appendix \ref{sec:complete}.  Missing entries occured in two ways.
 The first, marked with an asterisk, is when a method did not run for the given scenario,
 either due to memory overflow or taking an extremely long time.
-The second, marked with a dash, is when a method ran, but generated at least one bin with an extremely small number
-count, such that the spectrum could not be calculated.
+The second, marked with a dash, is when a method ran, but generated at least one bin with an extremely 
+small number count, such that the spectrum could not be calculated.
 
 
-It is clear from values here that fears about restricted photometry catastrophically limiting
-the information needed for tomography are unfounded.  In both the CosmoDC2 and Buzzard analyses,
-even the $riz$ bands alone are sufficient to split objects into nine reasonably separated
-tomographic bins.  Once bins become this narrow the primary analysis concern will become the calibration of overall
-bin $n(z)$ values, rather than initial tomography, so we consider this to be reassuring.
 
 
 \begin{table*}[]
@@ -877,17 +880,37 @@ CosmoDC2 part of the challenge.}
 \end{table*}
 
 
+Figure \ref{fig:funbin_nz} shows the number density obtained by the highest scoring method in
+the fiducial metric, {\sc funbins}, for both the riz and griz scenarios.
+It is clear from this that fears about restricted photometry catastrophically limiting
+the information needed for tomography are unfounded, at least in our idealised scenario.
+In both the CosmoDC2 and Buzzard analyses,
+even the $riz$ bands alone are sufficient to split objects into nine reasonably separated
+tomographic bins.  Once bins become this narrow the primary analysis concern will become the calibration 
+of overall bin $n(z)$ values, rather than initial tomography, so we consider this to be reassuring.
+
+There is a clear widening of the $n(z)$ when losing the g-band.  This widening leads to a loss in 
+constraining power, which is discussed more in Section \ref{sec:gband}.
+
 \begin{figure}[htbp]
 % \centering
-% \includegraphics[width=0.9\linewidth]{results/metric_comparisons.pdf}
-\caption{Add $n(z)$ plots here for funbins.}
-\label{fig:metrics}
+\includegraphics[width=1\linewidth]{results/funbins_nz.pdf}
+\caption{$n(z)$ values from funbins}
+\label{fig:funbin_nz}
 \end{figure}
 
 
-\subsection{Metric comparisons}
-Figure \ref{fig:metrics} shows a comparison of some of the different metrics used in the challenge.
 
+\subsection{Metric comparisons} \label{sec:metric-results}
+Figure \ref{fig:metrics} shows a comparison of some of the different metrics used in the challenge.
+We plot, using assignments for methods and for all bin counts, the relationship between our fiducial
+metric, the DETF 3x2pt on CosmoDC2, and other metrics we measured.
+
+\begin{enumrate}
+\item Generally good relationship, especially at high end
+\item Domination of metric by clustering
+\item Bimodality in SNR
+\end{enumerate}
 
 \begin{figure}[htbp]
 % \centering
@@ -903,7 +926,7 @@ but for the Buzzard data set.}
 
 
 
-\subsection{Impact of losing g-band}
+\subsection{Impact of losing g-band} \label{sec:gband}
 Figure \ref{fig:loss} shows the ratio of the FOM between methods using the griz and the same method
 using the riz.  Each point represents one method with a specific number of bins, indicated by colour.
 For lower scoring methods and for smaller numbers of bins there is more scatter in the ratio,
