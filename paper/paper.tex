@@ -187,14 +187,72 @@ combined analysis.  No prize was offered beyond recognition.
 \subsection{Data}
 \label{sec:data}
 
+We run challenge entries on two data sets, CosmoDC2 and Buzzard, each of which is split into training, 
+validation, and testing components.  In each case participants were supplied with the training and 
+validation data, and the testing data was kept secret for final evaluation. In each case the three
+data sets were random sub-selections of the full data sets, with the training and testing sets 25\% of 
+the full data each and the validation 50\%. In practice many entrants trained on a subset of
+this, so to make the final evaluation phase tractable we trained on 1M objects for both data sets.
 
-\begin{itemize}
-    \item CosmoDC2 - description
-    \item CosmoDC2 - discussion
-    \item Noise properties
-    \item Pre-selection 
-    \item Metacal as a limitation
-\end{itemize}
+Each of these data set come from cosmological simulations which provide truth values of galaxy magnitudes
+and sizes.  We simulate and add noise to the objects as described below.
+
+\subsubsection{CosmoDC2}
+
+The CosmoDC2 simulation was designed to support the Dark Energy Science
+Collaboration and is described in detail in \citet{cosmodc2}.  It covered 440
+deg${}^2$ of sky, and used the dark matter particles from the Outer Rim
+simulations \citep{outer_rim}.  The UniverseMachine \citep{universe_machine}
+simulations were then used, in a combination of empirical and semi-analytic
+methods, to assign galaxies with a limited set of specified properties to halos.
+
+These objects were then matched to outputs of the Galacticus model
+\citep{galacticus}, which generated complete galaxy properties and which was run
+on an additional DESC simulation, AlphaQ, and included all the LSST bands.  The
+simulation is complete to $r=28$, and contains objects up to redshift 3.  We
+include the ultra-faint galaxies in the simulation, not assigned to a specific
+halo.
+
+After the post-processing and selections described below, and a cut to a specific geographic region, 
+we used around 36M objects from the CosmoDC2 simulations.
+
+One limitation of the CosmoDC2 catalogs we used, found during the challenge,
+was that the matching to Galacticus led to only a limited number of SEDs being
+used at high redshifts, and thus to many galaxies in the simulations sharing
+similar characteristics at these redshifts, such as colour-colour relations.
+It was unknown whether this limitation would have any practical impact on the challenge,
+and was one of the reasons for adpoting the additional Buzzard catalog.
+
+\subsubsection{Buzzard}
+
+The Buzzard catalog was developed to support Dark Energy Survey Year 1 (DES-Y1)
+data analysis, and is described in detail in \citet{buzzard}.  It used dark
+matter simulations from L-GADGET2 \cite{lgadget} and then added galaxies using
+the {\sc AddGals} algorithm \citet{addgals}, which matches a set of galaxy
+property probability densities to data using sub-halo abundance matching. 
+Buzzard galaxies extend to around redshift 2.3, and were shown to be a good
+match (after appropriate selections) to DES-Y1 observable catalogs.  Magnitudes
+using the LSST band passes were provided in the catalog.
+
+After the post-processing and selections described below, and a cut to a
+specific geographic region,  we used around 20M objects from the Buzzard
+simulations.
+
+
+\subsubsection{Post-processing}
+
+We add noise to the truth values in the extra-galactic catalogs to simulate real observations.
+In each case we simulate observations corresponding to the first year Rubin observations
+using the DESC {\sc TXPipe} framework, following the methodology of \citet{ivezic_jones_lupton}
+and assuming the numerical values for telescope and sky characteristics therein.
+
+In both simulations we add two cuts to approximately simulate the selection used in a real
+lensing catalog.  In both cases we apply a cut on the combined $riz$ signal to noise of
+$S/N > 10$, and a size cut $T / T_\mathrm{psf} > 0.5$, where
+$T$ is the trace $I_{xx} + I_{yy}$ of the moments matrix and measures the squared radius of the
+galaxy compared to that of the PSF.
+
+
 
 \subsection{Metrics}
 \label{sec:metrics}
@@ -481,8 +539,6 @@ free redshift-edge parameters, by maximizing the figure of merit in Eq.
 \ref{eq:fom_tr} using Powell's minimization method
 \citep{10.1093/comjnl/7.2.155}.
 
-
-\subsection{ {\sc ENSEMBLE} }
 
 
 \subsection{ {\sc GPzBinning} }
@@ -785,7 +841,7 @@ An iterative precedure was used to progressively change the target bin edges to 
 
 \section{Results \& Discussion}
 
-\section{Overall results}
+\subsection{Overall results}
 The methods described above were run on a data set, previously unseen by entrants but drawn
 from the same underlying population, of size 8.6M objects for CosmoDC2 and 5.4M objects for Buzzard.
 A complete suite of the metrics described in Section \ref{sec:metrics} was run on each of the two

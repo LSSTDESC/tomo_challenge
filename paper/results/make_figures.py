@@ -76,7 +76,7 @@ def make_table(results, metric, filename):
 
     f = open(filename, 'w')
     for name in method_names:
-        disp_name = rf"{{\sc {name} }}".replace("_", r"\_")
+        disp_name = rf"{{\sc {name} }}".replace("_", r"\_").replace("myCombinedClassifiers", "Stacked Generalization")
         row = [disp_name]
         for i, bands in enumerate(['riz', 'griz']):
             for n in N:
