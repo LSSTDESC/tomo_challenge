@@ -40,6 +40,18 @@ method_names = [
     "ZotNet",
 ]
 
+
+methods_with_trained_edges = [
+    "ComplexSOM",
+    "JaxCNN",
+    "JaxResNet",
+    "NeuralNetwork1",
+    "NeuralNetwork2",
+    "PCACluster",
+    "ZotBin",
+    "ZotNet",
+]
+
 metrics = ["SNR_ww", "SNR_gg", "SNR_3x2", "FOM_ww", "FOM_gg", "FOM_3x2", "FOM_DETF_ww", "FOM_DETF_gg", "FOM_DETF_3x2"]
 
 
@@ -203,6 +215,67 @@ def plot_g_band_loss(dc2, buzzard, filename):
     fig.savefig(filename)
     plt.close(fig)
  
+
+def plot_edge_type_comparison(data, filename):
+    _, data = pair_riz_griz(data)
+    fig, ax = plt.subplots(2, 1, figsize=(5,8), sharex=True)
+
+    untrained = [m for m in method_names if m not in methods_with_trained_edges]
+
+    def get(method):
+        s = data['method'] == method
+        m = data[s]
+        x = m['bins']
+        y = m['FOM_DETF_3x2']
+        z = m['FOM_DETF_ww']
+        y[y==0] = np.nan
+        z[z==0] = np.nan
+        return x, y, z
+
+
+    color =  '#1f77b4'
+    alpha = 0.5
+    lw = 1
+    style =  "--"
+    need_legend = True
+    for method in untrained:
+        x, y, z = get(method)
+        label = "Fixed edges" if need_legend else None
+        need_legend = False
+        ax[0].plot(x, y, color, alpha=alpha, lw=lw, ls=style, label=label)
+        ax[1].plot(x, z, color, alpha=alpha, lw=lw, ls=style)
+
+    color =  '#ff7f0e'
+    alpha = 1.0
+    lw = 3
+    style =  "-"
+    need_legend = True
+
+    for method in methods_with_trained_edges:
+        x, y, z = get(method)
+        label = "Trained edges" if need_legend else None
+        need_legend = False
+        ax[0].plot(x, y, color, alpha=alpha, lw=lw, ls=style, label=label)
+        ax[1].plot(x, z, color, alpha=alpha, lw=lw, ls=style)
+
+    ax[0].tick_params(which='minor', length=0, axis='x')
+    ax[1].tick_params(which='minor', length=0, axis='x')
+    ax[0].legend(frameon=True)
+    ax[1].set_xlabel("Number of bins")
+    ax[0].set_ylabel("3x2pt metric")
+    ax[1].set_ylabel("Lensing metric")
+    ax[1].set_xlim(3, 9)
+    ax[0].set_ylim(0, 175)
+    ax[1].set_ylim(0, 1.25)
+    ax[1].set_xticks([3, 5, 7, 9])
+
+    fig.tight_layout()
+    fig.subplots_adjust(hspace=0.05)
+
+    fig.savefig(filename)
+    plt.close(fig)
+
+
 def make_tex_tables(dc2, buzzard, dirname):
     for name, data in [("dc2", dc2), ("buzzard", buzzard)]:
         for metric in metrics:
@@ -214,7 +287,7 @@ def make_tex_tables(dc2, buzzard, dirname):
 if __name__ == '__main__':
     dc2 = load_table('cosmodc2')
     buzzard = load_table('buzzard')
-
     plot_metric_comparisons(dc2, buzzard, "metric_comparisons.pdf")
     plot_g_band_loss(dc2, buzzard, "g_band_loss.pdf")
     make_tex_tables(dc2, buzzard, 'tables')
+    plot_edge_type_comparison(dc2, "edge_comparison.pdf")

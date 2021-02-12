@@ -783,7 +783,7 @@ An iterative precedure was used to progressively change the target bin edges to 
 
 
 
-\section{Results}
+\section{Results \& Discussion}
 
 \section{Overall results}
 The methods described above were run on a data set, previously unseen by entrants but drawn
@@ -801,6 +801,14 @@ either due to memory overflow or taking an extremely long time.
 The second, marked with a dash, is when a method ran, but generated at least one bin with an extremely small number
 count, such that the spectrum could not be calculated.
 
+
+It is clear from values here that fears about restricted photometry catastrophically limiting
+the information needed for tomography are unfounded.  In both the CosmoDC2 and Buzzard analyses,
+even the $riz$ bands alone are sufficient to split objects into nine reasonably separated
+tomographic bins.  Once bins become this narrow the primary analysis concern will become the calibration of overall
+bin $n(z)$ values, rather than initial tomography, so we consider this to be reassuring.
+
+
 \begin{table*}[]
 \begin{tabular}{|l|llll|llll|}
                 & \multicolumn{4}{c|}{\textbf{riz}}      & \multicolumn{4}{c|}{\textbf{griz}}                                \\ \hline
@@ -811,6 +819,15 @@ count, such that the spectrum could not be calculated.
 CosmoDC2 part of the challenge.}
 \label{tab:cosmodc2}
 \end{table*}
+
+
+\begin{figure}[htbp]
+% \centering
+% \includegraphics[width=0.9\linewidth]{results/metric_comparisons.pdf}
+\caption{Add $n(z)$ plots here for funbins.}
+\label{fig:metrics}
+\end{figure}
+
 
 \subsection{Metric comparisons}
 Figure \ref{fig:metrics} shows a comparison of some of the different metrics used in the challenge.
@@ -837,6 +854,12 @@ For lower scoring methods and for smaller numbers of bins there is more scatter 
 but for the highest scoring algorithms and configurations the loss when losing g-band is a little
 more stable, at around 10--15\%.
 
+This is true in particular for the highest scoring methods, so we may assume the behaviour to be
+generic. The value of the extra FoM that could be gained should be weighed against 
+the challenge of high-accuracy
+PSF measurement for this band, and the cost in time and effort of determining it, 
+but until the end of the survey this is unlikely to be the limiting factor in overall precision.
+
 
 \begin{figure*}
 \includegraphics[width=0.9\linewidth]{results/g_band_loss.pdf}
@@ -852,39 +875,29 @@ indicate the number of bins used in the analysis.}
 
 Some of the methods in the challenge accepted target bin edges as an input to their algorithms,
 and then used classifiers to assign objects to those bins.  Other methods optimized the values
-of bin edges themselves.
+of bin edges themselves, by optimizing the metric.  For the runs shown here, these methods all
+targeted one of the 3x2pt metrics. \textbf{Check this is correct}.
 
-
+A comparison of trained-edge and fixed-edge methods on the CosmoDC2 griz scenarios
+is shown in Figure \ref{fig:edges}.  One important point to note is that while trained-edge
+methods dominate the highest scores for the 3x2pt DETF metric, on which they trained, they
+fare much worse on the lensing-only metrics (the methods were not re-trained on the lensing metrics;
+we show the metrics for the same assigned bins).  This suggests that the difference between
+optimal bins for different science cases is a significant one, and thus that analysis pipelines
+should make it straightforward to calibrate multiple configurations and pass them to
+subsequent science anlysis.
 
 \begin{figure*}
-\includegraphics[width=0.9\linewidth]{results/edge_comparison.pdf}
-\caption{.}
+\includegraphics[width=0.9\columnwidth]{results/edge_comparison.pdf}
+\caption{A comparison of results from methods which used fixed target edges (dashed blue)
+with those which optimized target bins (solid orange).  Methods were trained on the 3x2pt metric
+shown in the upper panel; the lower performance for these classifications 
+for the lensing-only metric shown in the lower panel illustrates the need for science case-specific
+binning choices. In each case, classification is done using griz bands on the CosmoDC2 data set.}
 \label{fig:edges}
 \end{figure*}
 
-\subsection{Notable Methods}
-
-
-\begin{itemize}
-    \item fisher matrix ellipses overplotted for top N methods
-    \item Plots of n(z)
-\end{itemize}
-
-
-
-\section{Discussion}
-It is clear from values above that fears about restricted photometry catastrophically limiting
-the information needed for tomography are unfounded.  In both the CosmoDC2 and Buzzard analyses,
-even the $riz$ bands alone are sufficient to split objects into nine reasonably separated
-tomographic bins.  Once bins become this narrow the primary analysis concern will become the calibration of overall
-bin $n(z)$ values, rather than initial tomography, so we consider this to be reassuring.
-
-The inclusion of the $g$ band typically increases metrics by around 10--20\%, including for the
-highest scoring methods.  This value should be weighed against the challenge of high-accuracy
-PSF measurement for this band, but until the end of the survey this is unlikely to be
-the limiting factor in overall precision.
-
-Methods using fixed bins with equal numbers by nominal redshift tend to plateau at scores of
+Among methods with fixed bins, those using equal numbers in each tend to plateau at scores of
 120-140 in Table \ref{tab:cosmodc2}, suggesting that a range of machine learning models can
 effectively classify by bin, at least in this case of representative, extensive training
 information.  Notably, this is the case even for the UTOPIA entry, which uses the nearest 
@@ -893,7 +906,8 @@ for this idealised scenario; it should give an upper limit when using the same f
 That other methods with the same nominal bin choice acheive scores close to it once again
 confirms that many entries are close to the best possible score for this approach.
 
-Several methods that instead try to optimize nominal bin edges break this
+
+Several of the methods with optimized target bin edges break this
 barrier and acheive very high scores.  This included ZotNet, JaxResNet, and JaxCNN.  The
 Stacked Generalization method similarly included manually tuned bin edges to maximize
 score for this scenario. The typical 15--20\% improvement in FoM scores when optimizing
@@ -904,6 +918,8 @@ Notably, though, the method that received the highest overall score in Table \re
 but chose nominal bin edges using an equal width bins in \emph{comoving distance} $\chi$, converting
 this to redshift using a fiducial cosmology. The success of this simple solution suggests this
 as an easy heuristic for well-optimized nominal edges.
+
+
 
 
 \subsection{Future directions}
