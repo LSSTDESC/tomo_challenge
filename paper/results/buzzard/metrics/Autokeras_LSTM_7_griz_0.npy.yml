@@ -1,0 +1,17 @@
+FOM_3x2: .nan
+FOM_DETF_3x2: .nan
+FOM_DETF_gg: .nan
+FOM_DETF_ww: .nan
+FOM_gg: .nan
+FOM_ww: .nan
+SNR_3x2: .nan
+SNR_gg: .nan
+SNR_ww: .nan
+counts:
+  0: 6185
+  3: 28502
+  4: 5055366
+  5: 132
+  6: 847
+  7: 312741
+name: Autokeras_LSTM_7_griz_0.npy
