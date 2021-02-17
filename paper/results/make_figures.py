@@ -4,12 +4,9 @@ import tabulate
 import numpy as np
 from astropy.table import Table
 import matplotlib
-matplotlib.use('agg')
-import matplotlib.pyplot as plt
 import subprocess
 
 # set default styles
-plt.style.use('StyleSheet.mplstyle')
 
 
 blue_color =  '#1f77b4'
@@ -320,6 +317,37 @@ def plot_funbins_nz(filename):
     fig.savefig(filename)
     plt.close(fig)
 
+def make_initial_nz(filename):
+    dc2_file = "dc2_validation.hdf5"
+    buzzard_file = "buzzard_validation.hdf5"
+    if not os.path.exists(buzzard_file):
+        print("Data not downloaded for colour-colour plot - not overwriting")
+        print("Download from https://portal.nersc.gov/cfs/lsst/txpipe/tomo_challenge_data/ugrizy_buzzard/validation.hdf5")
+        print("and https://portal.nersc.gov/cfs/lsst/txpipe/tomo_challenge_data/griz/validation.hdf5")
+        return
+
+    #buzz = h5py.File(buzzard_file)
+    #dc2 = h5py.File(dc2_file)
+    buzz_z = buzz['redshift_true'][:]
+    fig, ax = plt.subplots(figsize=(6,6))
+    ax.hist(buzz_z, bins=100, histtype='step', label='Buzzard')
+    del buzz_z
+    dc2_z = dc2['redshift_true'][:]
+    ax.hist(dx2_z, bins=100, histtype='step', label='CosmoDC2')
+    fig.tight_layout()
+    fig.savefig(filename)
+    plt.close(fig)
+
+def make_colour_colour(filename):
+    dc2_file = "dc2_validation.hdf5"
+    buzzard_file = "buzzard_validation.hdf5"
+    if not os.path.exists(buzzard_file):
+        print("Data not downloaded for colour-colour plot - not overwriting")
+        print("Download from https://portal.nersc.gov/cfs/lsst/txpipe/tomo_challenge_data/ugrizy_buzzard/validation.hdf5")
+        print("and https://portal.nersc.gov/cfs/lsst/txpipe/tomo_challenge_data/griz/validation.hdf5")
+        return
+    
+
 
 
 def make_tex_tables(dc2, buzzard, dirname):
@@ -331,6 +359,10 @@ def make_tex_tables(dc2, buzzard, dirname):
 
 
 if __name__ == '__main__':
+    matplotlib.use('agg')
+    import matplotlib.pyplot as plt
+    plt.style.use('StyleSheet.mplstyle')
+
     dc2 = load_table('cosmodc2')
     buzzard = load_table('buzzard')
     plot_metric_comparisons(dc2, buzzard, "metric_comparisons.pdf")
@@ -338,3 +370,5 @@ if __name__ == '__main__':
     make_tex_tables(dc2, buzzard, 'tables')
     plot_edge_type_comparison(dc2, "edge_comparison.pdf")
     plot_funbins_nz('funbins_nz.pdf')
+    make_colour_colour("colour-colour")
+    make_initial_nz("initial_data.pdf")
