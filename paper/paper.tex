@@ -433,6 +433,9 @@ validation loss. We kept the order of the layer blocks fixed, i.e., convolutiona
 bidirectional LSTM, and Dense blocks. We let the other hyperparameters free, such as the number of
 neurons,  Dropout rates, maxpooling layers, the number of convolutional filters, and strides.
 
+A technical problem, involving conflicting versions of libraries and incompatible hardware,
+meant that method could not be run in the final challenge.
+
 
 \subsection{ {\sc LGBM} }
 This method uses a Light Gradient Boosted Machine (LightGBM) \citep{lgbm} to assign galaxies to
@@ -924,7 +927,7 @@ Figure \ref{fig:metrics} shows a comparison of some of the different metrics use
 We plot, using assignments for methods and for all bin counts, the relationship between our fiducial
 metric, the DETF 3x2pt on CosmoDC2, and other metrics we measured.
 
-\begin{enumrate}
+\begin{enumerate}
 \item Generally good relationship, especially at high end
 \item Domination of metric by clustering
 \item Bimodality in SNR
@@ -984,7 +987,7 @@ optimal bins for different science cases is a significant one, and thus that ana
 should make it straightforward to calibrate multiple configurations and pass them to
 subsequent science anlysis.
 
-\begin{figure*}
+\begin{figure}
 \includegraphics[width=0.9\columnwidth]{results/edge_comparison.pdf}
 \caption{A comparison of results from methods which used fixed target edges (dashed blue)
 with those which optimized target bins (solid orange).  Methods were trained on the 3x2pt metric
@@ -992,7 +995,7 @@ shown in the upper panel; the lower performance for these classifications
 for the lensing-only metric shown in the lower panel illustrates the need for science case-specific
 binning choices. In each case, classification is done using griz bands on the CosmoDC2 data set.}
 \label{fig:edges}
-\end{figure*}
+\end{figure}
 
 Among methods with fixed bins, those using equal numbers in each tend to plateau at scores of
 120-140 in Table \ref{tab:cosmodc2}, suggesting that a range of machine learning models can
