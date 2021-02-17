@@ -333,7 +333,7 @@ def make_initial_nz(filename):
     dc2 = h5py.File(dc2_file, 'r')
     buzz_z = buzz['redshift_true'][:]
     dc2_z = dc2['redshift_true'][:]
-    fig, ax = plt.subplots(figsize=(5,5))
+    fig, ax = plt.subplots(figsize=(5,4))
     w1 = np.repeat(1e-5, buzz_z.size)
     w2 = np.repeat(1e-5, dc2_z.size)
     ax.hist(buzz_z, bins=50, histtype='step', label='Buzzard', linewidth=3, weights=w1)
@@ -382,7 +382,7 @@ def make_colour_colour(filename):
         return
 
 
-    fig, ax = plt.subplots(2, 1, figsize=(4, 8))
+    fig, ax = plt.subplots(2, 1, figsize=(4, 6))
 
     buzz = h5py.File(buzzard_file, 'r')
     dc2 = h5py.File(dc2_file, 'r')
