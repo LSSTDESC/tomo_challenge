@@ -320,10 +320,28 @@ power on overall cosmic structure amplitude and its evolution.
 
 
 \subsection{Infrastructure}
-\begin{itemize}
-    \item Pull request submissions
-    \item Data at NERSC
-\end{itemize}
+
+The challenge was structured as a python library, in which each classification
+method was a class.  The abstract base parent class, {\sc Tomographer}, 
+and other challenge machinery, performed initialization,
+configuration option handling, data loading, and computing derived quantities
+such as colours from magnitudes.
+
+Participants were expected to subclass
+{\sc Tomographer} and implement two methods, {\sc train} and {\sc apply}.  Each
+was required to accept as an argument an array or dictionary of galaxy properties
+(magnitudes, and, optionally, sizes, errors, and colours).  The {\sc train} method
+was also passed an array of true redshift values, which could be used however they wished.
+Methods were submitted to the challenge in the form of a pull request to the challenge
+repostitory\footnote{\url{http://github.com/LSSTDESC/tomo_challenge}}.
+
+The training and validation parts of the data set were made available for training
+and hyper-parameter tuning. Once the challenge period was complete, the algorithms
+were collected from the pull requests and run at the National Energy Research
+Supercomputing Center (NERSC). If a method failed due to a difference in the
+runtime environment or the hardware at NERSC, the participants and organizers tried
+to amend it after the formal challenge period, though this was not always possible.
+
 
 
 \subsection{Control Methods}
@@ -341,7 +359,7 @@ should make no difference to metrics.  Again, we find this to be true.
 
 One additional method was submitted to the challenge with the caveat that it could
 never be applied to real data and should therefore considered a form of control method.
-This method was {\sc Utopia}, which found, for each object in the testing data, the
+This method was {\sc Utopia}, which, as described below, found, for each object in the testing data, the
 nearest neighbour object in the training sample.  The high density, completeness, and
 representativeness of our training set made this possible; realistics spectroscopic training
 sets are too sparse.  The method performed well, as expected, 
