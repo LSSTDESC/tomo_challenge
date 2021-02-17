@@ -5,6 +5,7 @@ import numpy as np
 from astropy.table import Table
 import matplotlib
 import subprocess
+import h5py
 
 # set default styles
 
@@ -328,14 +329,19 @@ def make_initial_nz(filename):
 
     #buzz = h5py.File(buzzard_file)
     #dc2 = h5py.File(dc2_file)
-    buzz = h5py.File(buzzard_file)
-    dc2 = h5py.File(dc2_file)
+    buzz = h5py.File(buzzard_file, 'r')
+    dc2 = h5py.File(dc2_file, 'r')
     buzz_z = buzz['redshift_true'][:]
-    fig, ax = plt.subplots(figsize=(6,6))
-    ax.hist(buzz_z, bins=100, histtype='step', label='Buzzard')
+    dc2_z = dc2['redshift_true'][:]
+    fig, ax = plt.subplots(figsize=(5,5))
+    w1 = np.repeat(1e-5, buzz_z.size)
+    w2 = np.repeat(1e-5, dc2_z.size)
+    ax.hist(buzz_z, bins=50, histtype='step', label='Buzzard', linewidth=3, weights=w1)
     del buzz_z
     dc2_z = dc2['redshift_true'][:]
-    ax.hist(dx2_z, bins=100, histtype='step', label='CosmoDC2')
+    ax.hist(dc2_z, bins=50, histtype='step', label='CosmoDC2', linewidth=3, weights=w2)
+    ax.set_xlabel("z")
+    ax.set_ylabel("Counts / $10^5$")
     ax.legend(frameon=True)
     fig.tight_layout()
     fig.savefig(filename)
@@ -343,18 +349,22 @@ def make_initial_nz(filename):
 
 
 def colour_colour_cat(ax, cat, colour, thin, label):
-    g = cat['g_mag'][:][::thin]
-    r = cat['r_mag'][:][::thin]
-    i = cat['i_mag'][:][::thin]
-    z = cat['z_mag'][:][::thin]
+    if 'g_mag' in cat.keys():
+        fmt = '{}_mag'
+    else:
+        fmt = 'mcal_mag_{}'
+    g = cat[fmt.format('g')][:][::thin]
+    r = cat[fmt.format('r')][:][::thin]
+    i = cat[fmt.format('i')][:][::thin]
+    z = cat[fmt.format('z')][:][::thin]
 
     gr = g - r
     ri = r - i
     gz = g - z
     iz = i - z
 
-    ax[0].scatter(gr, ri, c=colour, s=1, label=label)
-    ax[1].scatter(gz, iz, c=colour, s=1, label=label)
+    ax[0].scatter(gr, ri, c=colour, s=0.5, label=label)
+    ax[1].scatter(gz, iz, c=colour, s=0.5, label=label)
 
     ax[0].set_xlabel("g - r")
     ax[0].set_ylabel("r - i")
@@ -374,11 +384,11 @@ def make_colour_colour(filename):
 
     fig, ax = plt.subplots(2, 1, figsize=(4, 8))
 
-    buzz = h5py.File(buzzard_file)
-    dc2 = h5py.File(dc2_file)
+    buzz = h5py.File(buzzard_file, 'r')
+    dc2 = h5py.File(dc2_file, 'r')
 
-    colour_colour_cat(ax, buzz, blue_color, 1000, "Buzzard")
-    colour_colour_cat(ax, buzz, orange_color, 1000, "CosmoDC2")
+    colour_colour_cat(ax, buzz, blue_color, 4000, "Buzzard")
+    colour_colour_cat(ax, dc2, orange_color, 8000, "CosmoDC2")
 
     ax[0].legend(frameon=True)
     
@@ -407,5 +417,5 @@ if __name__ == '__main__':
     make_tex_tables(dc2, buzzard, 'tables')
     plot_edge_type_comparison(dc2, "edge_comparison.pdf")
     plot_funbins_nz('funbins_nz.pdf')
-    make_colour_colour("colour-colour")
+    make_colour_colour("colour_colour.pdf")
     make_initial_nz("initial_data.pdf")
