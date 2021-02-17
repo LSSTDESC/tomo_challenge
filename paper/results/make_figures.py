@@ -328,15 +328,39 @@ def make_initial_nz(filename):
 
     #buzz = h5py.File(buzzard_file)
     #dc2 = h5py.File(dc2_file)
+    buzz = h5py.File(buzzard_file)
+    dc2 = h5py.File(dc2_file)
     buzz_z = buzz['redshift_true'][:]
     fig, ax = plt.subplots(figsize=(6,6))
     ax.hist(buzz_z, bins=100, histtype='step', label='Buzzard')
     del buzz_z
     dc2_z = dc2['redshift_true'][:]
     ax.hist(dx2_z, bins=100, histtype='step', label='CosmoDC2')
+    ax.legend(frameon=True)
     fig.tight_layout()
     fig.savefig(filename)
     plt.close(fig)
+
+
+def colour_colour_cat(ax, cat, colour, thin, label):
+    g = cat['g_mag'][:][::thin]
+    r = cat['r_mag'][:][::thin]
+    i = cat['i_mag'][:][::thin]
+    z = cat['z_mag'][:][::thin]
+
+    gr = g - r
+    ri = r - i
+    gz = g - z
+    iz = i - z
+
+    ax[0].scatter(gr, ri, c=colour, s=1, label=label)
+    ax[1].scatter(gz, iz, c=colour, s=1, label=label)
+
+    ax[0].set_xlabel("g - r")
+    ax[0].set_ylabel("r - i")
+    ax[1].set_xlabel("g - z")
+    ax[1].set_ylabel("i - z")
+
 
 def make_colour_colour(filename):
     dc2_file = "dc2_validation.hdf5"
@@ -346,8 +370,21 @@ def make_colour_colour(filename):
         print("Download from https://portal.nersc.gov/cfs/lsst/txpipe/tomo_challenge_data/ugrizy_buzzard/validation.hdf5")
         print("and https://portal.nersc.gov/cfs/lsst/txpipe/tomo_challenge_data/griz/validation.hdf5")
         return
-    
 
+
+    fig, ax = plt.subplots(2, 1, figsize=(4, 8))
+
+    buzz = h5py.File(buzzard_file)
+    dc2 = h5py.File(dc2_file)
+
+    colour_colour_cat(ax, buzz, blue_color, 1000, "Buzzard")
+    colour_colour_cat(ax, buzz, orange_color, 1000, "CosmoDC2")
+
+    ax[0].legend(frameon=True)
+    
+    fig.tight_layout()
+    fig.savefig(filename)
+    plt.close(fig)
 
 
 def make_tex_tables(dc2, buzzard, dirname):
