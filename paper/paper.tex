@@ -792,11 +792,44 @@ holistically, by comparing the performance between different classes of methods,
 rather than individuals. 
 
 
-\subsection{ {\sc ZotBin} }
 
+\subsection{ {\sc ZotBin and ZotNet} }
 
-\subsection{ {\sc ZotNet} }
+This pair of related methods was submitted by author DPK and its associated code is available at
+\url{https://github.com/dkirkby/zotbin}.
 
+The ZotBin method consists of three stages: preprocessing, grouping, and bin optimization.  The ZotNet method
+uses the same preprocessing, then skips directly to bin optimization.  Both methods optimize the final bins to
+maximize an arbitrary linear combination of the three metrics defined in \ref{sec:metrics}, using the JAX
+library~\cite{jax} for efficient computation. The goal of ZotNet is to find a nearly optimal set of bins (for
+a specified linear combination of metrics) using a neural network, at the expense of interpretability of the
+results.  The ZotBin method aims to perform almost as well as ZotNet, but with a much more interpretable mapping
+from input features to final bins.
+
+Both methods transform the $n$ input fluxes into $n-1$ colors and one flux. The data are very sparse in this
+$n$-dimensional feature space and exhibit complex correlations. The preprocessing step transforms to a new
+$n$-dimensional space where the data is nearly uncorrelated and dense on the unit hypercube $[0,1]^n$. This is accomplished
+by learning a normalizing flow~\cite{2019arXiv191202762P} that maps the complex input probability density
+into a multivariate unit Gaussian, then applying the error function to yield a uniform distribution. Although
+the resulting transformation is non-linear, it is invertible and differentiable, and thus provides an interpretable
+smooth mapping.
+
+The second stage of ZotBin starts by dividing the unit hypercube $[0,1]^n$ from the preprocessing step
+into a regular lattice of ${\cal O}$(10K) cells which, by construction, each contain a similar number
+of training samples.  Next, adjacent cells are iteratively merged into $M \sim 100$ groups of cells by
+combining at each step the pair of groups that are most ``similar''.  We define similarity as the product
+of similarities in feature and redshift space.  Redshift similarity is based on the histogram of redshifts
+associated with each group, interpreted as a vector.
+
+The final stage of ZotBin selects linear combinations of the $M$ groups to form the $N$ output bins. This is
+accomplished by optimizing the specified metric combination with respect to the $M\times N$ matrix of linear
+weights.
+
+The ZotBin method defines a fully invertible sequence of steps that transform the input feature space into
+the final bins, so that each bin is associated with a well-defined region in color / flux space. The ZotNet method,
+on the other hand, trains a neural network to directly map from the preprocessed unit hypercube $[0,1]^n$ into
+$N$ output bins by optimizing the specified metric combination. The resulting map is not invertible, so less
+interpretable, but also less constrained than ZotBin, so expected to achieve somewhat better performance.
 
 \subsection{ {\sc funbins} }
 This method uses the random forest algorithm described in section \ref{randomforest} to assign galaxies to tomographic bins. There are 3 options for determining the bins used to assign labels to the training data - \textit{log}, \textit{random}, and \textit{chi}. 
