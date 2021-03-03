@@ -689,10 +689,30 @@ interpretations).
 \subsection{ {\sc JaxResNet} }
 
 
-\subsection{ {\sc NeuralNetwork 1} }
+\subsection{ {\sc NeuralNetwork 1 \& 2} }
+
+The {\sc NeuralNetwork} approach combines the two following ideas:
+\begin{itemize}
+	\item Use a simple neural network to parameterize a bin assignment function $f_\theta$ taking available photometry as the input and returning a bin number. 
+	\item Optimize the parameters of $f_\theta$ as to maximize a target score, either the total SNR \autoref{eq:snr}, or the DETF FoM \autoref{eq:fom}.
+\end{itemize}
+The interest of this approach is that it actually bypasses the need for a photometric redshift estimate in allocating a galaxy to a bin, and directly solves the problem of optimal bin assignment given available photometry, as to maximize the cosmological information.
 
 
-\subsection{ {\sc NeuralNetwork 2} }
+Details of the particular neural network are mostly irrelevant, the main difficulty in this approach is to be able to compute the back-propagation of gradients through the cosmological loss function as to update the parameters $\theta$ of the bin assignment function. This is was made possible for this challenge by the \texttt{jax-cosmo} library \citep{jax-cosmo}, which allows the computation of both metrics using the JAX automatic differentiation framework \citep{jax2018github}. 
+
+
+In practice, to parameterize $f_\theta$ we use a simple dense neural network, composed of 3 linear layers of size 500 with leaky\_relu activation function and output batch normalization. The last layer of the model is a linear layer with an output size matching the number of bins, and softmax activation. We implement this model using the JAX-based Flax neural network library \citep{flax2020github}. 
+
+Training is performed using batches of 5000 galaxies, over 2000 iterations under the ADAM optimizer \citep{adam} with a base learning rate of 0.001. The loss function $\mathcal{L}$ used for training directly derive from the challenge metrics, and constitutes the only difference between the NeuralNetwork 1 \& NeuralNetwork 2 entries:
+
+\begin{itemize}
+	\item NeuralNetwork 1: $\mathcal{L}_1 = 1 / S_{FoM}$
+	\item NeuralNetwork 2: $\mathcal{L}_2 = - S_{SNR} $
+\end{itemize}  
+
+
+%\subsection{ {\sc NeuralNetwork 2} }
 
 
 \subsection{ {\sc PCACluster} }
