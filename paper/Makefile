@@ -17,9 +17,9 @@ all: $(PDF)
 
 $(PDF): $(PLOTS) $(TEX) $(BIB)
 	pdflatex $(ROOT)
+	bibtex $(ROOT)
+	bibtex $(ROOT)
 	pdflatex $(ROOT)
-	bibtex $(ROOT)
-	bibtex $(ROOT)
 	pdflatex $(ROOT)
 	pdflatex $(ROOT)
 

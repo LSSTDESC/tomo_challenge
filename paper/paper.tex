@@ -63,7 +63,7 @@ various methods are able to yield binning schemes that achieve high figure-of-me
 
 \section{Introduction}
 Weak gravitational lensing (WL) has emerged over the last decade as a powerful
-cosmological probe \citep{cfhtlens,des,kids,hsc}.  WL
+cosmological probe \citep{cfhtlens,rcslens,des,kids,hsc}.  WL
 uses measurements of coherent shear distortion to the observed shapes of galaxies
 to track the evolution of large-scale gravitational fields.  It measures the integrated
 gravitational potential along lines of sight to source galaxies, and can thence constrain
@@ -92,17 +92,22 @@ foreground samples it is similarly near-lossless, since redshift estimates of su
 large uncertainties\footnote{Spectroscopic foreground samples may be more likely to see significant 
 gains from moving beyond spectroscopic methods.}.  Binning galaxies by approximate redshift lets us 
 model galaxy bias, intrinsic alignments, and other systematic errors en masse in a more tractable way.
-While fully 3D methods have been proposed and prototyped \citep{kitching,more}, the tomographic 
-approach remains the standard within the field.
+While fully 3D methods have been proposed, prototyped, and shown to have significant promise, 
+\citep{heavens,kitching}, the tomographic approach remains the standard within the field.
 
 Tomographic 3x2pt measurements will be a key science goal in the upcoming \emph{Stage IV} surveys,
-including the Rubin Observatory \citep{rubin} and the Euclid and Roman space telescopes \citep{euclid,roman}.
+including the Rubin Observatory \citep{rubin} and the Euclid and Roman space telescopes
+\citep{euclid,roman}. The general question of optimizing tomography was recently discussed in detail
+in \citet{rainbow} using a self-organizing map approach to target up to five tomographic bins.  For this
+configuration they find that equally spaced redshift bins are a good proxy
+for an optimized method, but note, importantly, that we should not be constrained to trying to directly
+match our bin selections to specific tomographic bin edges.
 
-In this paper we discuss and evaluate methods for assigning objects to tomographic bins, and 
-specifically the impact
+In this paper we discuss and evaluate the related challenge
 of using a limited set of color bands to make those assignments, motivated by requirements of using the
-metacalibration method for galaxy shape measurement to limit biases.  Tomographic methods have been 
-explored before in \citet{jain} and \citet{kitching2019} \textbf{more}.  In this paper we describe the results of a 
+metacalibration method for galaxy shape measurement to limit biases.  
+A similar question, with different motivations, was explored in \citet{jain}, who find that 3-band 
+gri tomography could be effective for tomographic selection, a result we will echo here in a new context: in this paper we describe the results of a 
 challenge using simulated Rubin-like data with a range of methods submitted by different teams.  We explore how many tomographic bins we can effectively generate using only a subset of bins, and compare methods submitted to the challenge.
 
 In \autoref{sec:motivation} we explain the need for methods that work on limited sets of bands in the context of upcoming lensing surveys.  \textbf{Complete structure...}
@@ -127,7 +132,7 @@ magnitude.  It follows that a cut (or re-weighting) on galaxy magnitudes, or on 
 from  them, will induce a shear bias since galaxies will preferentially fall either side of the cut
 depending on their shear.  Within metacal, we can solve this problem by performing the cut on both
 sheared variants of the catalog, and measuring the difference between the post-cut shear in the two
-variants.  In DES the corrected biases were found up to around 3\%, far larger than
+variants.  In DES the corrected biases were found up to around 4\%, far larger than
 the requirements for the current generation of surveys \citep{des-y1-cat}.
 
 In summary: metacal allows us to correct for significant selection biases, but only if all selections
@@ -235,8 +240,8 @@ and was one of the reasons for adpoting the additional Buzzard catalog.
 
 The Buzzard catalog was developed to support Dark Energy Survey Year 1 (DES-Y1)
 data analysis, and is described in detail in \citet{buzzard}.  It used dark
-matter simulations from L-GADGET2 \cite{lgadget} and then added galaxies using
-the {\sc AddGals} algorithm \citet{addgals}, which matches a set of galaxy
+matter simulations from L-GADGET2 \cite{gadget2} and then added galaxies using
+an algorithm that matches a set of galaxy
 property probability densities to data using sub-halo abundance matching. 
 Buzzard galaxies extend to around redshift 2.3 (significantly shallower than CosmoDC2)
 and were shown to be a good
@@ -322,7 +327,7 @@ $n_i(z)$ values:
 \end{equation}
 where $\mu$ is a stack of the theoretical predictions for the $C_\ell$ spectra for each tomographic 
 bin, in turn, and $C$ a Gaussian estimaate of the covariance between them, as described in
-\citet{wl-review} and summarized in \autoref{app:theory}.   We compute this metric for lensing alone, clustering alone, and the full 3x2pt combination.
+\citet{takada_jain} and summarized in \autoref{app:theory}.   We compute this metric for lensing alone, clustering alone, and the full 3x2pt combination.
 
 \subsubsection{Metric 2: Figure-of-merit}
 
@@ -490,7 +495,7 @@ size.
  
 By using dilated convolutions, where a fixed step is introduced between adjacent filter taps, the
 receptive field of the TCN can be increased without increasing the number of convolutional filters.
-Furthermore, residual blocks \citep{he} are also used to stabilize deeper and larger networks. These
+Furthermore, residual blocks \citep{resnet} are also used to stabilize deeper and larger networks. These
 modifications cause TCNs to have a longer memory than traditional RNNs with the same capacity,  and
 also require low memory for training.
  
@@ -699,7 +704,7 @@ The {\sc NeuralNetwork} approach combines the two following ideas:
 The interest of this approach is that it actually bypasses the need for a photometric redshift estimate in allocating a galaxy to a bin, and directly solves the problem of optimal bin assignment given available photometry, as to maximize the cosmological information.
 
 
-Details of the particular neural network are mostly irrelevant, the main difficulty in this approach is to be able to compute the back-propagation of gradients through the cosmological loss function as to update the parameters $\theta$ of the bin assignment function. This is was made possible for this challenge by the \texttt{jax-cosmo} library \citep{jax-cosmo}, which allows the computation of both metrics using the JAX automatic differentiation framework \citep{jax2018github}. 
+Details of the particular neural network are mostly irrelevant, the main difficulty in this approach is to be able to compute the back-propagation of gradients through the cosmological loss function as to update the parameters $\theta$ of the bin assignment function. This is was made possible for this challenge by the \texttt{jax-cosmo} library \citep{jax-cosmo}, which allows the computation of both metrics using the JAX automatic differentiation framework \citep{jax}. 
 
 
 In practice, to parameterize $f_\theta$ we use a simple dense neural network, composed of 3 linear layers of size 500 with leaky\_relu activation function and output batch normalization. The last layer of the model is a linear layer with an output size matching the number of bins, and softmax activation. We implement this model using the JAX-based Flax neural network library \citep{flax2020github}. 
