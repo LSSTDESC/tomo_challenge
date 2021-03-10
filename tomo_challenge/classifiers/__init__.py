@@ -41,8 +41,8 @@ else:
             gpus = tf.config.experimental.list_physical_devices('GPU')
             for gpu in gpus:
                 if tf_mem:
-                    tf.config.experimental.set_memory_growth(gpu, True)
-                    print("Setting memory_growth=True")
+#                    tf.config.experimental.set_memory_growth(gpu, True)
+                    print("NOT Setting memory_growth=True")
         except AttributeError:
             gpus = []
 

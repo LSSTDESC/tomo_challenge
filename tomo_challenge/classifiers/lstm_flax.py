@@ -26,6 +26,9 @@ import jax.random as rand
 import jax.numpy as jnp
 import jax
 from .. import jax_metrics as j_metrics
+import pickle, os
+array_id = os.environ.get("SLURM_ARRAY_TASK_ID", "666")
+model_file =  f"lstm_{array_id}.pickle"
 
 def get_classifier(n_bin, n_features):
     class BinningNN(nn.Module):
@@ -123,7 +126,10 @@ class Flax_LSTM(Tomographer):
 
 
          
-    def train(self, training_data, training_z, batch_size=512, epochs=20):
+    def train(self, training_data, training_z, batch_size=512, epochs=1):
+        print(training_data.shape)
+        training_data = training_data[::50]
+        training_z = training_z[::50]
         x_train = self.scaler.fit_transform(training_data)
         x_train = np.expand_dims(x_train, axis=-1)
         lr = 0.001
@@ -159,6 +165,8 @@ class Flax_LSTM(Tomographer):
    
         self.model = optimizer.target
 
+#        with open(model_file, "wb") as outfile:
+#            picklae.dump(self.model, outfile)
 
     def apply (self, data):
         """Applies training to the data.

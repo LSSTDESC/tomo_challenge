@@ -126,11 +126,12 @@ class PQNLD(Tomographer):
           true redshift for the training sample
 
         """
-        remove(ascii_file)
-        remove(bpz_file)
-        remove(training_col_file)
-        remove(training_cat_file)
-        remove(validation_col_file)
+        #remove(ascii_file)
+        print("NOT REMOVING FILES")
+        #remove(bpz_file)
+        #remove(training_col_file)
+        #remove(training_cat_file)
+        #remove(validation_col_file)
         print("Initialising")
         #Number of tomographic bins 
         n_bin = self.opt['bins']
@@ -281,7 +282,9 @@ class PQNLD(Tomographer):
         if not os.path.exists("bpz-1.99.3-py3/"): 
             os.system("bash INSTALL.sh")
         
-        if not os.path.exists(bpz_file): 
+        if os.path.exists(bpz_file):
+            print("SKPPING BPZ RUN")
+        else:
             print("Running BPZ on the training data")
             curdir=os.getcwd()
             os.chdir('bpz-1.99.3-py3')
