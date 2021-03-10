@@ -282,6 +282,7 @@ def plot_edge_type_comparison(data, filename):
 def plot_funbins_nz(filename):
     riz_file = "./cosmodc2/bins/funbins_9_riz_0.npy"
     griz_file = "./cosmodc2/bins/funbins_9_griz_0.npy"
+    ugrizy_file = "./cosmodc2/bins/funbins_ugrizy.npy"
     z_file = "./cosmodc2/bins/z.npz"
 
 
@@ -289,29 +290,37 @@ def plot_funbins_nz(filename):
         print("Data not downloaded for n(z) plot - not overwriting")
         return
 
-    fig, ax = plt.subplots(2, 1, figsize=(6,6), sharex=True, sharey=True)
+    fig, ax = plt.subplots(3, 1, figsize=(6,9), sharex=True, sharey=True)
     colors = plt.rcParams['axes.prop_cycle'].by_key()['color']
 
     riz = np.load(riz_file)
     griz = np.load(griz_file)
+    ugrizy = np.load(ugrizy_file)
     z = np.load(z_file)['arr_0']
 
 
     nbin = 9
 
     for i in range(nbin):
-        w = np.where(griz == i)
+        w = np.where(riz == i)
         weight = np.repeat(1e-5, w[0].size)
         ax[0].hist(z[w], bins=50, histtype='step', ls='-', color=colors[i], weights=weight, lw=3)
 
     for i in range(nbin):
-        w = np.where(riz == i)
+        w = np.where(griz == i)
         weight = np.repeat(1e-5, w[0].size)
         ax[1].hist(z[w], bins=50, histtype='step', ls='-', color=colors[i], weights=weight, lw=3)
 
+
+    for i in range(nbin):
+        w = np.where(ugrizy == i)
+        weight = np.repeat(1e-5, w[0].size)
+        ax[2].hist(z[w], bins=50, histtype='step', ls='-', color=colors[i], weights=weight, lw=3)
+
     ax[0].set_ylabel('riz counts / $10^5$')
     ax[1].set_ylabel('griz counts / $10^5$')
-    ax[1].set_xlabel('Redshift')
+    ax[2].set_ylabel('ugrizy counts / $10^5$')
+    ax[2].set_xlabel('Redshift')
     ax[0].set_xlim(0, 3)
     fig.tight_layout()
     fig.subplots_adjust(hspace=0.05)
