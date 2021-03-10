@@ -503,7 +503,7 @@ We used the Keras implementation of TCN \citep{kerastcn} and chose bin edges suc
 number of galaxies is assigned to each bin, and trained the network using the galaxies' magnitudes
 and colours. 
 
-\subsection{ {\sc CNN} } 
+\subsection{ {\sc CNN} } \label{sec:cnn}
 This method uses an optimized Convolutional Neural Network (CNN) to assign
 galaxies to redshift bins. 
  
@@ -688,10 +688,29 @@ interpretations).
 \label{table-settings}
 \end{table*}
 
-\subsection{ {\sc JaxCNN} }
-
-
-\subsection{ {\sc JaxResNet} }
+\subsection{{\sc JaxCNN \& JaxResNet} }
+ 
+This methi submitted by the author AP. 
+ 
+JaxCNN and JaxResNet are a convolutional neural network based algorithm that
+maps the relationship between the color-magnitude data of galaxies to their bin
+indices. Convolutional neural network (CNN) models, as described in section
+\ref{sec:cnn}, consist of several layers, each consisting of a linear
+convolution operator followed by polling layers and a nonlinear activation
+function. Residual Network (ResNet) models take one step further and learn the
+\textit{identity} mapping by skipping, or adding \textit{shortcut} connections
+to, one or more layers \citep{resnet}. ResNet helps solve the vanishing gradient
+problem, hence we can have a deeper neural network.
+ 
+JaxCNN uses 2-layer convolutional neural networks and JaxResNet uses a stack of
+3 layers consisting of $1 \times 1, 3 \times 3$, and $1 \times 1$ convolutions
+with shortcut connections added to each stack. Both methods use the Rectified
+Linear Unit (ReLU) activation function under the ADAM optimizer \cite{adam} with
+a learning rate of 0.001. 
+ 
+We chose the learning algorithm for both methods to minimize the reciprocal of
+the figure of merit $F$, where $F$ is defined in eqref{E:FOM}. We implement
+these models using the JAX-based Flax neural network library \cite{jax}. 
 
 
 \subsection{ {\sc NeuralNetwork 1 \& 2} }
@@ -857,7 +876,7 @@ $N$ output bins by optimizing the specified metric combination. The resulting ma
 interpretable, but also less constrained than ZotBin, so expected to achieve somewhat better performance.
 
 \subsection{ {\sc funbins} }
-This method uses the random forest algorithm described in section \ref{randomforest} to assign galaxies to tomographic bins. There are 3 options for determining the bins used to assign labels to the training data - \textit{log}, \textit{random}, and \textit{chi}. 
+This method uses the random forest algorithm described in section \ref{sec:randomforest} to assign galaxies to tomographic bins. There are 3 options for determining the bins used to assign labels to the training data - \textit{log}, \textit{random}, and \textit{chi}. 
 
 The first option, \textit{log}, calculates bin edges such that the number of galaxies in each bin grows logarithmically instead of being constant as in section 4.1. This option uses increasingly large bins for more distant galaxies and tests the relative importance of nearby galaxies.
 
@@ -866,7 +885,7 @@ The second option, \textit{random}, draws the intermediate bin edges from a unif
 The last option, \textit{chi}, calculates redshift bin edges whose corresponding comoving distances are equally spaced, using Planck15 \citep{Planck15} cosmology for the distance-redshift relationship. This should lead to roughly equal shot noise for the angular power in each bin. 
 This method was used in the scores shown below.
 
-Once the bin edges are determined by either of the methods above, the random forest is trained as described in section \ref{randomforest}.
+Once the bin edges are determined by either of the methods above, the random forest is trained as described in section \ref{sec:randomforest}.
 
 
 
