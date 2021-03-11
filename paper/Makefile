@@ -11,11 +11,12 @@ PLOTS = results/edge_comparison.pdf \
 BIB = $(ROOT).bib
 TEX := $(ROOT).tex
 PDF := $(ROOT).pdf
+AUTH = authors.tex
 
 
 all: $(PDF)
 
-$(PDF): $(PLOTS) $(TEX) $(BIB)
+$(PDF): $(PLOTS) $(TEX) $(BIB) $(AUTH)
 	pdflatex $(ROOT)
 	bibtex $(ROOT)
 	bibtex $(ROOT)
