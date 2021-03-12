@@ -55,6 +55,9 @@ methods_with_trained_edges = [
     "ZotNet",
 ]
 
+
+methods_reordered = [m for m in method_names if m in methods_with_trained_edges] + [m for m in method_names if m not in methods_with_trained_edges]
+
 metrics = ["SNR_ww", "SNR_gg", "SNR_3x2", "FOM_ww", "FOM_gg", "FOM_3x2", "FOM_DETF_ww", "FOM_DETF_gg", "FOM_DETF_3x2"]
 
 
@@ -425,7 +428,7 @@ def make_9bin_table(results, filename):
 
     n = 9
     f = open(filename, 'w')
-    for name in method_names:
+    for name in methods_reordered:
         disp_name = rf"{{\sc {name} }}".replace("_", r"\_").replace("myCombinedClassifiers", "Stacked Generalization")
         row = [disp_name]
         for i, bands in enumerate(['riz', 'griz']):
@@ -440,6 +443,8 @@ def make_9bin_table(results, filename):
 
         f.write(" & ".join(row))
         f.write("\\\\ \n")
+        if name == methods_with_trained_edges[-1]:
+            f.write("\\hline\n")
     f.close()
 
 

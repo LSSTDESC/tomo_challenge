@@ -427,7 +427,7 @@ These methods are described in full in \autoref{app:methods}.  Briefly, they wer
 	\item[\textsc{JaxCNN/JaxResnet}] two related CNN-based bin edge optimizers (AP)
 	\item[\textsc{NeuralNetwork1/2}] a dense network optimizing bin assignment for two metrics (AP)
 	\item[\textsc{PCACluster}] a Principal Component Analysis of fluxes then optimized clustering (DG)
-	\item[\textsc{Utopia}] a nearest-neighbour method, optimised in the limit of large representative training sets (AHW)
+	\item[\textsc{UTOPIA}] a nearest-neighbour method, optimised in the limit of large representative training sets (AHW)
 	\item[\textsc{ZotBin/ZotNet}] two related neural network methods with a preprocesing normalizing flow (DK)
 	\item[\textsc{FFNN}] a feed-forward neural network (EN)
 	\item[\textsc{FunBins}] a random forest with various nominal bin edge selection (AB)
@@ -615,7 +615,7 @@ binning choices. In each case, classification is done using griz bands on the Co
 Among methods with fixed bins, those using equal numbers in each tend to plateau at scores of
 120-140 in Table \ref{tab:cosmodc2}, suggesting that a range of machine learning models can
 effectively classify by bin, at least in this case of representative, extensive training
-information.  Notably, this is the case even for the UTOPIA entry, which uses the nearest 
+information.  Notably, this is the case even for the \textsc{UTOPIA} entry, which uses the nearest 
 training set neighbour to assign bins and thus is explicitly optimised
 for this idealised scenario; it should give an upper limit when using the same fixed bins.
 That other methods with the same nominal bin choice acheive scores close to it once again
@@ -979,14 +979,14 @@ the method was specifically  implemented so as to use only the minimum
 information contained within the available bands (by using magnitudes alone,
 without  any colours, etc.). 
 
-In this way UTOPIA is the simplest possible algorithm (utilising all available
+In this way \textsc{UTOPIA} is the simplest possible algorithm (utilising all available
 photometric bands) that one can  implement for tomography. It is also a method
 whose performance is optimal in the limit of an infinitely large,  perfectly
 representative training sample; i.e. the limit in which this challenge operates.
 As the requirements of perfect  training-sample representivity and large size
-are violated, UTOPIA ought to assign redshifts to reference  galaxies from
+are violated, \textsc{UTOPIA} ought to assign redshifts to reference  galaxies from
 increasingly distant regions of the multi-dimensional magnitude-space, resulting
-in poorer (i.e. unreliable) tomographic binning.  Therefore, UTOPIA acts as a warning against
+in poorer (i.e. unreliable) tomographic binning.  Therefore, \textsc{UTOPIA} acts as a warning against
 over-interpretation of the tomographic challenge results, as success in the
 challenge  need not translate to optimal-performance/usefulness under realistic
 survey conditions. Instead, the challenge results should be interpreted
@@ -1298,9 +1298,11 @@ Again, a requirement enforced by continuous integration could have checked this.
 Tables \ref{tab:full_dc2} and \ref{tab:full_buzz} show all calculated metrics when generating nine tomographic 
 bins for CosmoDC2 and Buzzard respectively. The \textit{ww} columns
 show weak-lensing metrics, \textit{gg} show galaxy clustering, and \textit{3x} the full 3x2pt metric.
+Methods above the horizontal line trained bin edges; methods below used fixed fiducial ones, though in some
+cases did some hand-tuning of them before submission.
 
-
-As in table \ref{tab:cosmodc2}, some values are missing due to failure or time-out of the method (*) or pathological bin assignments (-).
+As in table \ref{tab:cosmodc2}, some values are missing due to failure or time-out of the method (*) or 
+pathological bin assignments (-).  Failure rates were higher for the 9-bin runs than for the lower bin counts.
 
 
 \movetabledown=65mm
