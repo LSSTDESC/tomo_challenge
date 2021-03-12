@@ -27,10 +27,10 @@ $(PDF): $(PLOTS) $(TEX) $(BIB) $(AUTH)
 plots: $(PLOTS)
 
 results/%.pdf: results/make_figures.py
-	cd results; python make_figures.py
+	cd results; python3 make_figures.py
 
 results/tables/%.tex: results/make_figures.py
-	cd results; python make_figures.py
+	cd results; python3 make_figures.py
 
 clean:
 	rm -f $(ROOT).bbl $(ROOT).aux $(ROOT).blg $(ROOT).out $(ROOT).log $(ROOT).pdf texput.log

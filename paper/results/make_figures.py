@@ -413,6 +413,35 @@ def make_tex_tables(dc2, buzzard, dirname):
             print(fn)
             make_table(data, metric, fn)
 
+def make_9bin_table(results, filename):
+    N = np.array([3, 5, 7, 9])
+    data = {}
+    for row in results:
+        name  = row['method']
+        bands = row['bands']
+        bins = row['bins']
+        for metric in metrics:
+            data[name, bands, bins, metric] = row[metric]
+
+    n = 9
+    f = open(filename, 'w')
+    for name in method_names:
+        disp_name = rf"{{\sc {name} }}".replace("_", r"\_").replace("myCombinedClassifiers", "Stacked Generalization")
+        row = [disp_name]
+        for i, bands in enumerate(['riz', 'griz']):
+            for j, metric in enumerate(metrics):
+                val  = data.get((name, bands, n, metric), np.nan)
+                if np.isnan(val):
+                    row.append(f"--")
+                elif val == 0:
+                    row.append(f"*")
+                else:
+                    row.append(f"{val:.1f}")
+
+        f.write(" & ".join(row))
+        f.write("\\\\ \n")
+    f.close()
+
 
 if __name__ == '__main__':
     matplotlib.use('agg')
@@ -428,3 +457,5 @@ if __name__ == '__main__':
     plot_funbins_nz('funbins_nz.pdf')
     make_colour_colour("colour_colour.pdf")
     make_initial_nz("initial_data.pdf")
+    make_9bin_table(buzzard, "9bin_buzzard.tex")
+    make_9bin_table(dc2, "9bin_dc2.tex")
