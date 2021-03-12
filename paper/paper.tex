@@ -480,9 +480,12 @@ CosmoDC2 part of the challenge.}
 \label{tab:cosmodc2}
 \end{table*}
 
-
-Figure \ref{fig:funbin_nz} shows the number density obtained by the highest scoring method in
-the fiducial metric, {\sc funbins}, for both the riz and griz scenarios.
+The overall winning method in the 3x2pt case in the fiducial griz 3x2pt CosmoDC2 metric was \textsc{funbins},
+which used a random forest to assign bins, but chose nominal bin edges by splitting the range spanned
+by the sample into equal co-moving distance bins. As described in \autoref{sec:funbins},  this was designed
+to minimze the shot noise for the angular power in each bin, and this has proven successful. 
+Figure \ref{fig:funbin_nz} shows the number density obtained by this method, for both the riz and griz 
+scenarios, and an additional post-challenge run using the full Rubin ugrizy bands.
 It is clear from this that fears about restricted photometry catastrophically limiting
 the information needed for tomography are unfounded, at least in our idealised scenario.
 In both the CosmoDC2 and Buzzard analyses,
@@ -496,8 +499,18 @@ constraining power, which is discussed more in Section \ref{sec:gband}.
 For comparison, we also show results using all six LSST bands, ugrizy; these could not be used
 with the metacalibration method. The improvement in the sharpness of the bins is noticeable but not large,
 and does not translate into large increases in the figures of merit: the DETF score for CosmoDC2
-is 169.7, barely higher than the score for griz.  While this is only a general indication and not
-a thorough exploration, it is encouraging.
+is 169.7, barely higher than the score for griz, and this is also true for other metrics.   While this is only a general indication and not a thorough exploration, it is encouraging.
+
+
+\textsc{funbins} seems to be a good and stable general method, though several other methods perform as well
+or slightly better in other scenarios.  Notably, many methods reach the same plateau in lensing-only metrics,
+suggesting this is somewhat easier to optimize; this is consistent with the general reason that photometric
+redshifts suffice for lensing: the broad lensing kernels are less sensitive to small changes.
+
+Several of the 9-bin neural network methods perform well up to seven tomographic bins but fail when run with 
+nine.  This is presumably not an intrinsic feature of these methods, but depends on implementation details.
+Further development solving these challenges should be valuable, since they are the highest scoring seven-bin
+methods.
 
 \begin{figure}[htbp]
 % \centering
@@ -615,11 +628,8 @@ Stacked Generalization method similarly included manually tuned bin edges to max
 score for this scenario. The typical 15--20\% improvement in FoM scores when optimizing
 nominal bin edges makes clear that this easy win should be compelling.
 
-Notably, though, the method that received the highest overall score in Table \ref{tab:cosmodc2}, 
-{\sc funbins} did so with a simpler approach - it used a random forest to assign galaxies to bins,
-but chose nominal bin edges using an equal width bins in \emph{comoving distance} $\chi$, converting
-this to redshift using a fiducial cosmology. The success of this simple solution suggests this
-as an easy heuristic for well-optimized nominal edges.
+Notably, though, the winning \textsc{funbins} method used the simpler approach desribed above. The success of this simple and fast solution suggests this as an easy heuristic for well-optimized nominal edges, at least
+for cases where clustering-like metrics are important.
 
 \section{Conclusions} \label{sec:conclusion}
 The Tomography Challenge has proved a useful mechanism for encouraging the development
@@ -1165,7 +1175,7 @@ on the other hand, trains a neural network to directly map from the preprocessed
 $N$ output bins by optimizing the specified metric combination. The resulting map is not invertible, so less
 interpretable, but also less constrained than ZotBin, so expected to achieve somewhat better performance.
 
-\subsection{ {\sc funbins} }
+\subsection{ {\sc funbins} } \label{sec:funbins}
 This method uses the random forest algorithm described in section \ref{sec:randomforest} to assign galaxies to tomographic bins, but modifies the target bin edge selection method. There are 3 options for determining the edges used to assign labels to the training data: \textit{log}, \textit{random}, and \textit{chi}. 
 
 The first option, \textit{log}, calculates bin edges such that the number of galaxies in each bin grows logarithmically instead of being constant as in section 4.1. This option uses increasingly large bins for more distant galaxies and tests the relative importance of nearby galaxies.
@@ -1287,7 +1297,7 @@ Again, a requirement enforced by continuous integration could have checked this.
 \section{Full 9-bin results table}
 Tables \ref{tab:full_dc2} and \ref{tab:full_buzz} show all calculated metrics when generating nine tomographic 
 bins for CosmoDC2 and Buzzard respectively. The \textit{ww} columns
-show weak-lensing metrics, \textit{gg} whow galaxy clustering, and \textit{3x} the full 3x2pt metric.
+show weak-lensing metrics, \textit{gg} show galaxy clustering, and \textit{3x} the full 3x2pt metric.
 
 
 As in table \ref{tab:cosmodc2}, some values are missing due to failure or time-out of the method (*) or pathological bin assignments (-).
