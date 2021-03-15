@@ -6,7 +6,7 @@ from astropy.table import Table
 import matplotlib
 import subprocess
 import h5py
-
+import collections
 # set default styles
 
 
@@ -416,6 +416,17 @@ def make_tex_tables(dc2, buzzard, dirname):
             print(fn)
             make_table(data, metric, fn)
 
+
+def find_best(data, nbin):
+
+    best = collections.defaultdict(lambda: (-np.inf, ""))
+    for (name, bands, bins, metric), score in data.items():
+        if bins != nbin:
+            continue
+        # print(metric, bands, best[metric, bands, bins], (score, name), max(best[metric, bands, bins], (score, name)))
+        best[metric, bands] = max(best[metric, bands], (score, name))
+    return best
+
 def make_9bin_table(results, filename):
     N = np.array([3, 5, 7, 9])
     data = {}
@@ -427,7 +438,9 @@ def make_9bin_table(results, filename):
             data[name, bands, bins, metric] = row[metric]
 
     n = 9
+    best = find_best(data, n)
     f = open(filename, 'w')
+    print(best)
     for name in methods_reordered:
         disp_name = rf"{{\sc {name} }}".replace("_", r"\_").replace("myCombinedClassifiers", "Stacked Generalization")
         row = [disp_name]
@@ -439,7 +452,11 @@ def make_9bin_table(results, filename):
                 elif val == 0:
                     row.append(f"*")
                 else:
-                    row.append(f"{val:.1f}")
+                    if best[metric, bands][1] == name:
+                        row.append(f"\\textbf{{{val:.1f}}}")
+                        print("best ", metric, bands, name)
+                    else:
+                        row.append(f"{val:.1f}")
 
         f.write(" & ".join(row))
         f.write("\\\\ \n")
