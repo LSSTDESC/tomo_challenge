@@ -55,8 +55,10 @@ methods_with_trained_edges = [
     "ZotNet",
 ]
 
+methods_with_fixed_edges = [m for m in method_names if m not in methods_with_trained_edges]
 
-methods_reordered = [m for m in method_names if m in methods_with_trained_edges] + [m for m in method_names if m not in methods_with_trained_edges]
+
+methods_reordered = methods_with_trained_edges + methods_with_fixed_edges
 
 metrics = ["SNR_ww", "SNR_gg", "SNR_3x2", "FOM_ww", "FOM_gg", "FOM_3x2", "FOM_DETF_ww", "FOM_DETF_gg", "FOM_DETF_3x2"]
 
@@ -417,10 +419,12 @@ def make_tex_tables(dc2, buzzard, dirname):
             make_table(data, metric, fn)
 
 
-def find_best(data, nbin):
+def find_best(data, nbin, methods):
 
     best = collections.defaultdict(lambda: (-np.inf, ""))
     for (name, bands, bins, metric), score in data.items():
+        if name not in methods:
+            continue
         if bins != nbin:
             continue
         # print(metric, bands, best[metric, bands, bins], (score, name), max(best[metric, bands, bins], (score, name)))
@@ -438,9 +442,10 @@ def make_9bin_table(results, filename):
             data[name, bands, bins, metric] = row[metric]
 
     n = 9
-    best = find_best(data, n)
+    best1 = find_best(data, n, methods_with_trained_edges)
+    best2 = find_best(data, n, methods_with_fixed_edges)
     f = open(filename, 'w')
-    print(best)
+
     for name in methods_reordered:
         disp_name = rf"{{\sc {name} }}".replace("_", r"\_").replace("myCombinedClassifiers", "Stacked Generalization")
         row = [disp_name]
@@ -452,7 +457,7 @@ def make_9bin_table(results, filename):
                 elif val == 0:
                     row.append(f"*")
                 else:
-                    if best[metric, bands][1] == name:
+                    if best1[metric, bands][1] == name or best2[metric, bands][1] == name:
                         row.append(f"\\textbf{{{val:.1f}}}")
                         print("best ", metric, bands, name)
                     else:
