@@ -538,6 +538,12 @@ as it implies these methods are broadly stable to reasonable changes in the unde
 distribution, and hence on the survey properties.  The largest outlier comes from the 
 {\sc Neural Network} entry.
 
+This is not true of the overall winning method for large bin counts - as shown in the tables
+in \autoref{app:tables}, significantly more methods acheive a top-scoring spot in the Buzzard
+table \ref{tab:full_buzz} than in the CosmoDC2 table \ref{tab:full_dc2}. This reinforces the
+conclusions made below in \autoref{sec:train-vs-fix}, though of course the relatively noisy
+results make this difficult to interpret.
+
 The relatively broader spread in the lensing-only metric illustrates how our metric is dominated
 by the stronger constraining power in the clustering part of the data set.  This arises because
 we do not include a galaxy bias model in our FOM, and so the constraining power of the clustering
@@ -628,8 +634,11 @@ Stacked Generalization method similarly included manually tuned bin edges to max
 score for this scenario. The typical 15--20\% improvement in FoM scores when optimizing
 nominal bin edges makes clear that this easy win should be compelling.
 
-Notably, though, the winning \textsc{funbins} method used the simpler approach desribed above. The success of this simple and fast solution suggests this as an easy heuristic for well-optimized nominal edges, at least
-for cases where clustering-like metrics are important.
+Notably, though, the winning CosmoDC2 \textsc{funbins} method used the simpler approach desribed above. The 
+success of this simple and fast solution suggests this as an easy heuristic for well-optimized nominal edges, 
+at least for cases where clustering-like metrics are important.  Its relatively lower
+scores on the Buzzard metrics, as noted in \authoref{sec:metric-results}, does however further highlight
+the importance of science- and sample-specific training.
 
 \section{Conclusions} \label{sec:conclusion}
 The Tomography Challenge has proved a useful mechanism for encouraging the development
@@ -1295,7 +1304,7 @@ and some assumed that it was safe to hard-code specific paths to them or
 otherwise assume fixed data inputs.  This led to problems when switching to new test data sets. 
 Again, a requirement enforced by continuous integration could have checked this.
 
-\section{Full 9-bin results table}
+\section{Full 9-bin results table} \label{app:tables}
 Tables \ref{tab:full_dc2} and \ref{tab:full_buzz} show all calculated metrics when generating nine tomographic 
 bins for CosmoDC2 and Buzzard respectively. The \textit{ww} columns
 show weak-lensing metrics, \textit{gg} show galaxy clustering, and \textit{3x} the full 3x2pt metric.
