@@ -586,7 +586,7 @@ but until the end of the survey this is unlikely to be the limiting factor in ov
 \includegraphics[width=0.9\linewidth]{results/g_band_loss.pdf}
 \caption{The degradation in constraining power over all methods
  when comparing them on methods including and excluding
-the g-band, in terms of the ratio of the $w_0-w-a$ figure of merit.  The left-hand panel shows
+the g-band, in terms of the ratio of the $w_0-w_a$ figure of merit.  The left-hand panel shows
 results for the CosmoDC2 scenarios, and the right-hand panel for the Buzzard scenarios.  Colours
 indicate the number of bins used in the analysis.}
 \label{fig:loss}
@@ -637,7 +637,7 @@ nominal bin edges makes clear that this easy win should be compelling.
 Notably, though, the winning CosmoDC2 \textsc{funbins} method used the simpler approach desribed above. The 
 success of this simple and fast solution suggests this as an easy heuristic for well-optimized nominal edges, 
 at least for cases where clustering-like metrics are important.  Its relatively lower
-scores on the Buzzard metrics, as noted in \authoref{sec:metric-results}, does however further highlight
+scores on the Buzzard metrics, as noted in \autoref{sec:metric-results}, does however further highlight
 the importance of science- and sample-specific training.
 
 \section{Conclusions} \label{sec:conclusion}
@@ -653,6 +653,10 @@ is sufficient for specifying tomography even up to a large number of bins, if
 the training data is complete enough: degneracies between colour do not make this impossible.
 Excluding the g-band from the data reduces the constraining power by a noticeable but
 not catastrophic amount.
+
+The wide range in scores for nominally similar methods (for example, the several methods using
+neural network approaches) reminds us that, generically, the implementation details of machine
+learning methods can drastically affect their performance.
 
 Finally, we have shown that in general there is a signficant advantage to optimizing
 target bins afresh when considering a new science case; this can be a significant boost
