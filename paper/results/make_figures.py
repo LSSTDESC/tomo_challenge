@@ -84,7 +84,7 @@ def make_table(results, metric, filename):
 
     f = open(filename, 'w')
     for name in method_names:
-        disp_name = rf"{{\sc {name} }}".replace("_", r"\_").replace("myCombinedClassifiers", "Stacked Generalization")
+        disp_name = rf"{{\sc {name} }}".replace('TensorFlow_FFNN', 'FFNN').replace("_", r"\_").replace("myCombinedClassifiers", "Stacked Generalization")
         row = [disp_name]
         for i, bands in enumerate(['riz', 'griz']):
             for n in N:
@@ -447,7 +447,7 @@ def make_9bin_table(results, filename):
     f = open(filename, 'w')
 
     for name in methods_reordered:
-        disp_name = rf"{{\sc {name} }}".replace("_", r"\_").replace("myCombinedClassifiers", "Stacked Generalization")
+        disp_name = rf"{{\sc {name} }}".replace('TensorFlow_FFNN', 'FFNN').replace("_", r"\_").replace("myCombinedClassifiers", "Stacked Generalization")
         row = [disp_name]
         for i, bands in enumerate(['riz', 'griz']):
             for j, metric in enumerate(metrics):

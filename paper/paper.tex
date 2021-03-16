@@ -1207,8 +1207,19 @@ This entry was submitted by author EN.
 The method is a Feed Forward Neural Network (FFNN), a classic type of neural network.
 This implementation used the Keras API in the TensorFlow library. Three components, a flattener, and two 
 dense layers of ReLu neurons, were optimized by ADAM on the sparse categorical cross-entropy of the classifications.
-A MinMaxScaler was used to pre-process the data, and the training stopped when there was no improvement in the  
+A StandardScaler was used to pre-process the data, and the training stopped when there was no improvement in the  
 validation loss for three consecutive epochs, to avoid overfitting.
+
+The network is trained using the galaxies' magnitudes, colours and band-triplets as well as their errors to assign them to 
+the redshift bins.
+Prior to processing the training and validation data, the non-detection placeholder magnitudes (30.0) were replaced with 
+an approximation of the $1\sigma$ detection limit as an estimate for the sky noise threshold, where Signal to Noise ratio, 
+S/N, equals 1. We first compute the error equivalent of $dm = 2.5 \log(1 + N/S)$ where $dm \sim 0.7526$ 
+magnitudes for $N/S = 1$, and then fit a logarithmic model to the magnitude as a function of its error 
+for different bands in the training data. This gives us the magnitude corresponding to this limit 
+and in order to be consistent we use this value along with its error to replace the non-detections 
+everywhere during the process.
+
 
 
 \subsection{ {\sc mlpqna} }
