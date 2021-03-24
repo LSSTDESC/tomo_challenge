@@ -157,7 +157,8 @@ performed.  For Rubin, this means using only the $r$, $i$, $z$, and perhaps $g$ 
 therefore study how well we can perform tomography using only this limited photometric information.  In
 particular, this limitation prevent us from using the most obvious method for tomography,
 and computing a complete photometric probability density function (PDF) for each galaxy and assigning
-a bin using the mean or peak of that PDF.
+a bin using the mean or peak of that PDF\footnote{This only prevents us using other photometry for \emph{selection}, not for \emph{characterization} after objects have been selected, such as computing the overall
+number density $n(z)$ for a tomographic bin.}.
 
 Simulation methods can also be used to correct for selection biases, provided that they match the
 real data to high accuracy.  If we determine that limiting the bands we can use for tomography results
@@ -1305,7 +1306,7 @@ continuous integration tool with a mechanism for entrants to specify an environm
 container or a {\sc conda} requirements file) could have been used to simplify this and ensure
 all methods could be easily run by the organizers.
 
-Once additional issue, though, was that many methods required GPUs to train in a reasonable time,
+One additional issue, though, was that many methods required GPUs to train in a reasonable time,
 and specifying an environment on these systems can be more complicated.
 
 \subsection{Guidance on caching \& batch processing}
