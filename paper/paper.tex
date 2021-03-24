@@ -32,27 +32,16 @@
 % ======================================================================
 
 \begin{document}
-\title{The LSST DESC 3x2pt Tomography Optimization Challenge}
+\title{The LSST-DESC 3x2pt Tomography Optimization Challenge}
 \input{authors}
 
 \begin{abstract}
-In this paper we present the results of the DESC 3x2pt tomography challenge,
-which aimed to compare strategies for optimizing the photometric binning required
-for the main LSST 3x2pt analysis. This task is made particularly delicate in the
-context of a metacalibrated lensing catalog, as only the photometry from the
-bands  included in the metacalibration process (riz and potentially g) can be
-used to define this tomographic binning. Using a set of realistic simulations
-generating galaxy redshifts and simulated photometry, the goal of the
-challenge was to propose bin assignment strategies that maximized various
-figures of merit for a 3x2pt analysis. This challenge was highly idealized: it ignored
-spectroscopic completeness and limited size for the training sample, but was complex enough
-to address the main question of binning optimization. Based on the challenge
-dataset, we review and compare the different methods that have been proposed by
-participants. We find that even from this limited photometry information,
-various methods are able to yield binning schemes that achieve high figure-of-merit scores.
-We further find that the g band adds around 15\% to typical figures of merit, and
-that there is significant value in optimizing different bin assignments for specific
-science cases.
+This paper presents the results of the LSST-DESC 3x2pt tomography challenge, which served as a first step toward optimizing the tomographic binning strategy for the main LSST 3x2pt cosmology analysis. 
+The task of choosing an optimal tomographic binning scheme for a photometric survey is made particularly delicate in the context of a metacalibrated lensing catalog, as only the photometry from the bands included in the metacalibration process (traditionally, {\em riz} and potentially {\em g}) can be used in sample definition.
+The goal of the challenge was to collect and compare bin assignment strategies under various metrics of a standard 3x2pt cosmology analysis in a highly idealized setting to establish a baseline for realistically complex follow-up studies; 
+in this preliminary study, we used two sets of cosmological simulations of galaxy redshifts and photometry under a simple noise model neglecting outliers and variation in observing conditions, and contributed algorithms were provided with a representative and complete training set.
+We review and evaluate the entries to the challenge, finding that even from this limited photometry information, multiple algorithms yield binning schemes with high figure-of-merit scores.
+We further find that the {\em g} band improves metric performance by $\sim15\%$ and confirm that the optimal bin assignment strategy depends on the specific science case.
 \end{abstract}
 
 \keywords{methods: statistical -- dark energy  -- large-scale structure of the universe}
@@ -65,6 +54,8 @@ science cases.
 %===========================
 % BEGINNING OF THE MAIN TEXT
 %===========================
+
+% AIM: Suggestion: Use a macro for DESC because it shows up with and without expansion all over
 
 \section{Introduction}
 Weak gravitational lensing (WL) has emerged over the last decade as a powerful
@@ -89,8 +80,11 @@ perturbation theory and simulation results.  The method has been used in the Dar
 \citep{des-3x2pt}, and to combine Baryon Oscillation Spectroscopic Survey, BOSS, with the Kilo-Degree 
 Survey, KiDS \citep{kids-3x2pt}.
 
+% AIM: The next two paragraphs should present tomographic binning as an experimental design choice up front. 
+
 Most lensing and 3x2pt analyses have been performed \emph{tomographically}, 
 binning galaxies by redshift.
+% AIM: I get what this paragraph is saying, but it's worded ambiguously and can read as almost its exact opposite. I suggest rewording to specify more of the instances of "this," "that," and "it."
 This approach captures almost all the available information in lensing data, since it measures
 an integrated effect and so galaxies nearby in redshift probe very similar fields.  For photometric
 foreground samples it is similarly near-lossless, since redshift estimates of such galaxies have
@@ -100,12 +94,14 @@ model galaxy bias, intrinsic alignments, and other systematic errors en masse in
 While fully 3D methods have been proposed, prototyped, and shown to have significant promise, 
 \citep{heavens,kitching}, the tomographic approach remains the standard within the field.
 
+% AIM: typo in the next sentence {potentially the ease}
 We are free to assign galaxies to different tomographic bins in any way we wish; changing the choice
 can potentially the ease with which we can calibrate
 the bins, but any choice can lead to correct results. The bins need not even be purely tomographic: we can happily correlate bins with peaks at different redshifts if that is useful.
 We should choose, then, an assignment algorithm that maximises the constraining power for a science
 case of interest.  This challenge explores such algorithms.
 
+% AIM: Move the following sentence two paragraphs up to where tomography is introduced
 Tomographic 3x2pt measurements will be a key science goal in the upcoming \emph{Stage IV} surveys,
 including the Rubin Observatory \citep{rubin} and the Euclid and Roman space telescopes
 \citep{euclid,roman}. The general question of optimizing tomography was recently discussed in detail
@@ -113,7 +109,10 @@ in \citet{rainbow} using a self-organizing map approach to target up to five tom
 configuration they find that equally spaced redshift bins are a good proxy
 for an optimized method, but note, importantly, that we should not be constrained to trying to directly
 match our bin selections to specific tomographic bin edges.
+% AIM: Above sentence should cite other strategies as well.
 
+% AIM: insert comma {paper we}
+% AIM: messaging -- establish scope with the basic info now in the abstract
 In this paper we discuss and evaluate the related challenge
 of using a limited set of colour bands to make those assignments, motivated by requirements of using the
 metacalibration method for galaxy shape measurement to limit biases.  
@@ -170,6 +169,7 @@ factor.  Widening the prior on this factor decreases the overall constraining po
 
 \section{Challenge Design}
 
+% AIM: 2020, not 2019!
 The Dark Energy Science Collaboration (DESC) Tomographic Challenge was launched in May 2019 and 
 advertised among the LSST cosmology community, though it was open to outside entrants.
 
@@ -179,6 +179,7 @@ information in the final split data set; this is generally acheived by separatin
 redshift as much as possible.  Particpants were free to optimize or simply select nominal (target) 
 redshift bin edges from their training sample, but in either case had to classify galaxies into the 
 different bins.
+% AIM: We must explicitly state the assumptions that all methods were expected to be ML/training-based and that this is framed as a classification problem, and explain how that fits with the paradigm of how people think about tomography, which is traditionally framed as a very different redshift regression problem.
 
 \subsection{Philosophy}
 
@@ -200,15 +201,40 @@ level representation (see \autoref{sec:metrics}). The data set was also large en
 reasonably realistic test of methods at the large data volume required for upcoming surveys, where
 $10^9$ -- $10^{10}$ galaxies will be measured.
 
+% AIM: Was it actually advertised in Rubin beyond DESC at all?
 The challenge was open to any entrants, not just those already involved in DESC, but it was
 advertised primarily through Rubin, and so is perhaps best described as semi-public.
+% AIM: "tested and ran" --> "developed and tested" 
+% AIM: remove comma {locally, but}
+% AIM: Final tests used to generate results on secret test set were conducted on NERSC, no?
 Participants tested and ran their methods locally, but submitted code to be run as part of a central
 combined analysis on the NERSC supercomputing facility.  No prize was offered apart from recognition.
-
+% AIM: Don't specify NERSC up here before it's defined in Sec. 3.4.
 
 \subsection{Data}
 \label{sec:data}
 
+\begin{figure}[htbp]
+	% \centering
+	\includegraphics[width=0.9\linewidth]{results/initial_data.pdf}
+	% AIM: use alpha \neq 1
+	\caption{The underlying number density $n(z)$ for the two catalogs used in the challenge,
+		after the initial cuts described in the text.}
+	% AIM: specify /redshift/ number density
+	\label{fig:initial_nz}
+\end{figure}
+
+\begin{figure}[htbp]
+	% \centering
+	\includegraphics[width=0.9\linewidth]{results/colour_colour.pdf}
+	% AIM: use alpha \neq 1
+	\caption{A colour-colour diagram for the two catalogs used in the challenge, showing the bands
+		available to participants.}
+	\label{fig:colour_colour}
+\end{figure}
+
+% AIM: Rest of paper uses past tense so "run" --> "ran"
+% AIM: Train/Validate/Test set splitting should be described in post-processing rather than preamble, and assumption of ML/training-based approach should be stated explicitly in preamble to entire section.
 We run challenge entries on two data sets, CosmoDC2 and Buzzard, each of which is split into training, 
 validation, and testing components.  In each case participants were supplied with the training and 
 validation data, and the testing data was kept secret for final evaluation. In each case the three
@@ -216,6 +242,7 @@ data sets were random sub-selections of the full data sets, with the training an
 the full data each and the validation 50\%. In practice many entrants trained on a subset of
 this, so to make the final evaluation phase tractable we trained on 1M objects for both data sets.
 
+% AIM: We don't have to justify the second dataset unless we provide a reason why the first was insufficient. . . the presentation here needs some reworking.
 We used the second Buzzard catalog for two reasons.  First, to check the significance of
 a limitation of galaxy colour assignments in CosmoDC2, described below.  And second, to check
 for over-fitting in the design of models themselves, and thus to determine whether two
@@ -223,6 +250,7 @@ reasonable but different galaxy populations can be optimized by the same methods
 tell us whether our conclusions might be reasonable for real data. We discuss correlations
 between metric scores on the two data sets in Section \ref{sec:metric-results}.
 
+% AIM: typo {Each of these data set}
 Each of these data set come from cosmological simulations which provide truth values of galaxy magnitudes
 and sizes.  We simulate and add noise to the objects as described below.
 
@@ -254,6 +282,7 @@ and was one of the reasons for adpoting the additional Buzzard catalog.
 
 \subsubsection{Buzzard}
 
+% AIM: Say it was also used for DESC DC1 studies, cite e.g. PZ DC1 paper
 The Buzzard catalog was developed to support Dark Energy Survey Year 1 (DES-Y1)
 data analysis, and is described in detail in \citet{buzzard}.  It used dark
 matter simulations from L-GADGET2 \cite{gadget2} and then added galaxies using
@@ -268,8 +297,8 @@ After the post-processing and selections described below, and a cut to a
 specific geographic region,  we used around 20M objects from the Buzzard
 simulations.
 
-
 \subsubsection{Post-processing} \label{sec:data-proc}
+% AIM: Put the info from CosmoDC2/Buzzard pertaining to status after post-processing steps here instead.
 
 We add noise to the truth values in the extra-galactic catalogs to simulate real observations.
 In each case we simulate first year Rubin observations
@@ -282,32 +311,15 @@ $S/N > 10$, and a size cut $T / T_\mathrm{psf} > 0.5$, where
 $T$ is the trace $I_{xx} + I_{yy}$ of the moments matrix and measures the squared radius of the
 galaxy compared to that of a fixed Rubin PSF of size $0.75$ arc-seconds.
 
+% AIM: specify /redshift/ number density and provide n(z) symbol because it is used without introduction later
 The overall number density of the two data sets is shown in Figure \ref{fig:initial_nz},
 and a set of colour-colour diagrams  in Figure \ref{fig:colour_colour}.
-
-\begin{figure}[htbp]
-% \centering
-\includegraphics[width=0.9\linewidth]{results/initial_data.pdf}
-\caption{The underlying number density $n(z)$ for the two catalogs used in the challenge,
-after the initial cuts described in the text.}
-\label{fig:initial_nz}
-\end{figure}
-
-\begin{figure}[htbp]
-% \centering
-\includegraphics[width=0.9\linewidth]{results/colour_colour.pdf}
-\caption{A colour-colour diagram for the two catalogs used in the challenge, showing the bands
-available to participants.}
-\label{fig:colour_colour}
-\end{figure}
-
-
-
-
-
+% AIM: If submitting to AAS journal, colour --> color; if submitting to MNRAS, catalog --> catalogue
 
 \subsection{Metrics}
 \label{sec:metrics}
+% AIM: Change subsubsection titles to use the shorthand names for the metrics as they are referenced throughout the rest of the paper (SNR, w_{0}-w_{a} FOM, \Omega_{c}-\sigma_{8} FOM).
+% AIM: This should state that the three metrics are evaluated for clustering, lensing, and 3x2pt, so there are really nine metrics, not two!
 
 In this challenge we use only a lensing source (background) population, since the metacal requirements
 do not apply to the foreground lens sample. We do, however, calculate 3x2pt metrics using the
@@ -332,9 +344,11 @@ more stable calculation of metric 2.
 Metric 1 would be approximately measurable on real data without performing a full cosmology analysis,
 whereas metric 2 would be the final output of such an analysis.  They therefore test performance at what
 would be multiple stages in the wider pipeline.
-
+% AIM: Sounds dumb, but readers will appreciate a clear statement that higher is better for these metrics.
 
 \subsubsection{Metric 1: Sigal-to-noise}
+% AIM: Suggestion: merge Appendix A with this section because this really doesn't stand by itself
+
 Our first metric is the total signal-to-noise ratio of the power spectrum derived from the assigned
 $n_i(z)$ values:
 \begin{equation}
@@ -346,6 +360,7 @@ bin, in turn, and $C$ a Gaussian estimate of the covariance between them, as des
 \citet{takada_jain} and summarized in \autoref{app:theory}.   We compute this metric for lensing alone, clustering alone, and the full 3x2pt combination.
 
 \subsubsection{Metric 2: Figure-of-merit}
+% AIM: The title of this subsubsection should reflect that there are two FOM metrics.
 
 Metric 2 uses a figure of merit (FOM) based on that presented by the Dark Energy Task Force (DETF) \citep{detf}.  We 
 use the inverse area of a Fisher Matrix ellipse, which approximates the size in two axes 
@@ -360,11 +375,10 @@ DETF variant in which $p_1 = w_0$ and $p_2 = w_a$, representing the constraining
 evolution, and a version in which $p_1 = \Omega_c$ and $p_2 = \sigma_8$, representing constraining
 power on overall cosmic structure amplitude and its evolution.
 
-
-
-
 \subsection{Infrastructure}
 
+% AIM: We must acknowledge GitHub as a platform that enabled this challenge.
+% AIM: Suggestion to specify "subclass" and "superclass" up front for extra-thorough clarity.
 The challenge was structured as a python library, in which each classification
 method was a class.  The abstract base parent class, {\sc Tomographer}, 
 and other challenge machinery, performed initialization,
@@ -390,7 +404,10 @@ to amend it after the formal challenge period ended, though this was not always 
 
 \subsection{Control Methods}
 
+% AIM: Include the code names for these dummy/control methods up front
 Two control methods were used to test the challenge machinery and metrics.
+% AIM: Explicitly put this into the context of a controlled experiment.
+% AIM: Make a new paragraph for each control method.
 The first method randomly assigned galaxies to each tomographic bin, resulting
 in bins which each had the same $n(z)$, on average (the random noise fluctuations
 are very small when using this number of galaxies).  Using this method, we expect
@@ -402,13 +419,15 @@ splitting galaxies in equal-sized bins in this magnitude. We expect only a small
 increase in metric score with the number of bins, and also that the addition of the $g$-band
 should make no difference to scores.  Again, we find this to be true.
 
-
 \section{Submitted Methods} \label{sec:methods}
+% AIM: This should be a subsection of Challenge Design section above since it's really just a table of the submitted methods directing readers to the appendix for any detail.
 
+% AIM: typo: "Twenty five" --> "Twenty-five"
 Twenty five methods were submitted to the challenge, including the control methods described above.
 Most used one machine learning method of one type or another to perform the primary classification,
 rather than trying to perform a full photometric redshift analysis.  
 
+% AIM: These should be a pagewidth table, and we should use macros so the method names display consistently throughout paper.
 These methods are described in full in \autoref{app:methods}.  Briefly, they were (with the submitting authors listed in brackets):
 % \setlength{\itemsep}{0pt}%
 \begin{description*}
@@ -438,69 +457,89 @@ These methods are described in full in \autoref{app:methods}.  Briefly, they wer
 
 
 \section{Results \& Discussion} \label{sec:results}
+% AIM: Convert the first two subsections to the preamble of this section.
+% AIM: Preamble should include the tl;dr of "winners."
 
 \subsection{Result types}
+
+% AIM: Move this table to the appendix.
+\begin{table*}[]
+	\begin{tabular}{|l|llll|llll|}
+		\hline
+		& \multicolumn{4}{c|}{\textbf{riz}}      & \multicolumn{4}{c|}{\textbf{griz}}                                \\ \hline
+		\textbf{Method} & \textbf{3-bin} & \textbf{5-bin} & \textbf{7-bin} & \textbf{9-bin} & \textbf{3-bin} & \textbf{5-bin} & \textbf{7-bin} & \textbf{9-bin} \\ \hline
+		\input{results/tables/table_FOM_DETF_3x2_dc2.tex}
+		\hline
+	\end{tabular}
+	\caption{Values of the 3x2pt DETF ($w_0,w_a$) figure-of-merit achieved by entrant methods on the 
+		CosmoDC2 part of the challenge.}
+	\label{tab:cosmodc2}
+\end{table*}
 
 The methods described above were run on a data set, previously unseen by entrants but drawn
 from the same underlying population, of size 8.6M objects for CosmoDC2 and 5.4M objects for Buzzard.
 A complete suite of the metrics described in Section \ref{sec:metrics} was run on each of the two
-for each method.  In total, each method was run on 16 scenarios, each combination of: griz vs riz,
-Buzzard vs CosmoDC2, and 3,5,7, and 9 bins requested.  Nine metrics were calculated for each
+for each method.  In total, each method was run on 16 scenarios, each combination of: $griz$ vs. $riz$,
+Buzzard vs. CosmoDC2, and 3, 5, 7, and 9 bins requested.  Nine metrics were calculated for each
 scenario: clustering, lensing, and 3x2pt for each of the SNR metric (Equation \ref{eq:snr}), the $w_0-w_a$ 
 DETF FOM, and the $\Omega_c - \sigma_8$ FOM (Equation \ref{eq:fom}).
 
 
 \subsection{Overview}
+% AIM: Suggestion: Convert this subsection to a bulleted list to give it some structure harking to the detailed subsections to come. The short versions are long enough to come off as unsupported statements rather than previews of what will be demonstrated in subsequent subsections. 
 
 The DETF results for each method are shown in Table \ref{tab:cosmodc2}.  Complete results for all metrics
 for the nine-bin scenario only are shown in appendix tables \ref{tab:full_dc2} and \ref{tab:full_buzz}.  
-
+% AIM: Use autoref to appendix.
 In all these tables, missing entries are shown for two reasons.
 The first, marked with an asterisk, is when a method did not run for the given scenario,
 either due to memory overflow or taking an extremely long time.
 The second, marked with a dash, is when a method ran, but generated at least one bin with an extremely 
 small number count, such that the spectrum could not be calculated.
 
+% AIM: This is the first mention of this as a classification problem. We should mention this up in experimental design along with the assumption of ML/training-based methods, but also change "clasified" [SIC] to "assigned" for overall consistency (and maybe "that entrants clasified" --> "entrants to classify," and maybe reword post-semicolon part as "aside from the impact of reduced final sample size on the metrics, no penalty was applied for discarding galaxies entirely").
+% AIM: Also, the discussion of non-assignment should be its own subsection.
 The challenge did not require that entrants clasified all galaxies; ambiguous
 galaxies could be discarded at the cost of number density.  Several methods
 took advantage of this.  The ComplexSom method (see \autoref{sec:csom}) found
 it did not improve scores, but as noted in \autoref{sec:pqnld} this may be an artifact
 of the high density of the training data, and so could be explored in future challenges.
 
+\begin{figure}[htbp]
+	% \centering
+	\includegraphics[width=1\linewidth]{results/funbins_nz.pdf}
+	\caption{The tomographic $n(z)$ values generated by the winning method in the challenge, {\sc funbins},
+		generating nine bins with the CosmoDC2 data.
+		The upper panel shows results for the method applied to $riz$ bands, and the middle on $griz$. The
+		increased spread and overlap of the bins in the middle panel decreases the overall constraining
+		power and signal-to-noise.  The lower panel is for comparison and is not part of the challenge,
+		and illutrates results using all the $ugrizy$ bands.}
+	\label{fig:funbin_nz}
+\end{figure}
 
-\begin{table*}[]
-\begin{tabular}{|l|llll|llll|}
-\hline
-                & \multicolumn{4}{c|}{\textbf{riz}}      & \multicolumn{4}{c|}{\textbf{griz}}                                \\ \hline
-\textbf{Method} & \textbf{3-bin} & \textbf{5-bin} & \textbf{7-bin} & \textbf{9-bin} & \textbf{3-bin} & \textbf{5-bin} & \textbf{7-bin} & \textbf{9-bin} \\ \hline
-\input{results/tables/table_FOM_DETF_3x2_dc2.tex}
-\hline
-\end{tabular}
-\caption{Values of the 3x2pt DETF ($w_0,w_a$) figure-of-merit achieved by entrant methods on the 
-CosmoDC2 part of the challenge.}
-\label{tab:cosmodc2}
-\end{table*}
-
-The overall winning method in the 3x2pt case in the fiducial griz 3x2pt CosmoDC2 metric was \textsc{funbins},
+The overall winning method in the 3x2pt case in the fiducial $griz$ 3x2pt CosmoDC2 metric was \textsc{funbins},
 which used a random forest to assign bins, but chose nominal bin edges by splitting the range spanned
 by the sample into equal co-moving distance bins. As described in \autoref{sec:funbins},  this was designed
 to minimze the shot noise for the angular power in each bin, and this has proven successful. 
 Figure \ref{fig:funbin_nz} shows the number density obtained by this method, for both the riz and griz 
-scenarios, and an additional post-challenge run using the full Rubin ugrizy bands.
+scenarios, and an additional post-challenge run using the full Rubin $ugrizy$ bands.
+% AIM: Split paragraph here to distinguish topics of overall challenge winner and conclusions about band information limitation.
+% AIM: Put the caveat at the beginning of the following sentence rather than the end. Also, this claim is not well-supported even by Fig. 3. . . 
 It is clear from this that fears about restricted photometry catastrophically limiting
 the information needed for tomography are unfounded, at least in our idealised scenario.
 In both the CosmoDC2 and Buzzard analyses,
+% AIM: analyses --> data sets?
 even the $riz$ bands alone are sufficient to split objects into nine reasonably separated
 tomographic bins.  Once bins become this narrow the primary analysis concern will become the calibration 
 of overall bin $n(z)$ values, rather than initial tomography, so we consider this to be reassuring.
 
-There is a clear widening of the $n(z)$ when losing the g-band.  This widening leads to a loss in 
+There is a clear widening of the $n(z)$ when losing the $g$-band.  This widening leads to a loss in 
 constraining power, which is discussed more in Section \ref{sec:gband}.
 
-For comparison, we also show results using all six LSST bands, ugrizy; these could not be used
+For comparison, we also show results using all six LSST bands, $ugrizy$; these could not be used
 with the metacalibration method. The improvement in the sharpness of the bins is noticeable but not large,
 and does not translate into large increases in the figures of merit: the DETF score for CosmoDC2
-is 169.7, barely higher than the score for griz, and this is also true for other metrics.   While this is only a general indication and not a thorough exploration, it is encouraging.
+is 169.7, barely higher than the score for $griz$, and this is also true for other metrics.   While this is only a general indication and not a thorough exploration, it is encouraging.
 
 
 \textsc{funbins} seems to be a good and stable general method, though several other methods perform as well
@@ -512,20 +551,6 @@ Several of the 9-bin neural network methods perform well up to seven tomographic
 nine.  This is presumably not an intrinsic feature of these methods, but depends on implementation details.
 Further development solving these challenges should be valuable, since they are the highest scoring seven-bin
 methods.
-
-\begin{figure}[htbp]
-% \centering
-\includegraphics[width=1\linewidth]{results/funbins_nz.pdf}
-\caption{The tomographic $n(z)$ values generated by the winning method in the challenge, {\sc funbins},
-generating nine bins with the CosmoDC2 data.
-The upper panel shows results for the method applied to riz bands, and the middle on griz. The
-increased spread and overlap of the bins in the middle panel decreases the overall constraining
-power and signal-to-noise.  The lower panel is for comparison and is not part of the challenge,
-and illutrates results using all the ugrizy bands.}
-\label{fig:funbin_nz}
-\end{figure}
-
-
 
 \subsection{Metric comparisons} \label{sec:metric-results}
 Figure \ref{fig:metrics} shows a comparison of some of the different metrics used in the challenge.
@@ -1285,6 +1310,8 @@ An iterative precedure was used to progressively change the target bin edges to 
 
 
 \section{Mistakes} \label{sec:mistakes}
+% AIM: This should not be an appendix and should instead be part of the Results & Discussion section. They should not be presented as "mistakes" -- they are part of the experimental design and constitute caveats, which are simply facts, not subjective judgements.
+
 The challenge organizers made a number of mistakes when building and running the challenge.
 These do not invalidate our process or results, but we describe some of them here in the hope of
 being useful for future challenge designers.
