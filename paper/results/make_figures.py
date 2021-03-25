@@ -7,6 +7,7 @@ import matplotlib
 import subprocess
 import h5py
 import collections
+import matplotlib.pyplot as plt
 # set default styles
 
 
@@ -353,7 +354,7 @@ def make_initial_nz(filename):
     ax.hist(buzz_z, bins=50, histtype='step', label='Buzzard', linewidth=3, weights=w1)
     del buzz_z
     dc2_z = dc2['redshift_true'][:]
-    ax.hist(dc2_z, bins=50, histtype='step', label='CosmoDC2', linewidth=3, weights=w2)
+    ax.hist(dc2_z, bins=50, histtype='step', label='CosmoDC2', linewidth=3, weights=w2, alpha=0.7)
     ax.set_xlabel("z")
     ax.set_ylabel("Counts / $10^5$")
     ax.legend(frameon=True)
@@ -362,7 +363,7 @@ def make_initial_nz(filename):
     plt.close(fig)
 
 
-def colour_colour_cat(ax, cat, colour, thin, label):
+def colour_colour_cat(ax, cat, colour, thin, label, alpha):
     if 'g_mag' in cat.keys():
         fmt = '{}_mag'
     else:
@@ -377,8 +378,8 @@ def colour_colour_cat(ax, cat, colour, thin, label):
     gz = g - z
     iz = i - z
 
-    ax[0].scatter(gr, ri, c=colour, s=0.5, label=label)
-    ax[1].scatter(gz, iz, c=colour, s=0.5, label=label)
+    ax[0].scatter(gr, ri, c=colour, s=0.5, label=label, alpha=alpha)
+    ax[1].scatter(gz, iz, c=colour, s=0.5, label=label, alpha=alpha)
 
     ax[0].set_xlabel("g - r")
     ax[0].set_ylabel("r - i")
@@ -401,8 +402,8 @@ def make_colour_colour(filename):
     buzz = h5py.File(buzzard_file, 'r')
     dc2 = h5py.File(dc2_file, 'r')
 
-    colour_colour_cat(ax, buzz, blue_color, 4000, "Buzzard")
-    colour_colour_cat(ax, dc2, orange_color, 8000, "CosmoDC2")
+    colour_colour_cat(ax, buzz, blue_color, 4000, "Buzzard", alpha=1)
+    colour_colour_cat(ax, dc2, orange_color, 8000, "CosmoDC2", alpha=0.5)
 
     ax[0].legend(frameon=True)
     
@@ -472,7 +473,6 @@ def make_9bin_table(results, filename):
 
 if __name__ == '__main__':
     matplotlib.use('agg')
-    import matplotlib.pyplot as plt
     plt.style.use('StyleSheet.mplstyle')
 
     dc2 = load_table('cosmodc2')

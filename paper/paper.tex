@@ -36,8 +36,8 @@
 \input{authors}
 
 \begin{abstract}
-This paper presents the results of the LSST-DESC 3x2pt tomography challenge, which served as a first step toward optimizing the tomographic binning strategy for the main LSST 3x2pt cosmology analysis. 
-The task of choosing an optimal tomographic binning scheme for a photometric survey is made particularly delicate in the context of a metacalibrated lensing catalog, as only the photometry from the bands included in the metacalibration process (traditionally, {\em riz} and potentially {\em g}) can be used in sample definition.
+This paper presents the results of the Rubin Observatory Dark Energy Science Collaboration (DESC) 3x2pt tomography challenge, which served as a first step toward optimizing the tomographic binning strategy for the main DESC analysis. 
+The task of choosing an optimal tomographic binning scheme for a photometric survey is made particularly delicate in the context of a metacalibrated lensing catalog, as only the photometry from the bands included in the metacalibration process (usually {\em riz} and potentially {\em g}) can be used in sample definition.
 The goal of the challenge was to collect and compare bin assignment strategies under various metrics of a standard 3x2pt cosmology analysis in a highly idealized setting to establish a baseline for realistically complex follow-up studies; 
 in this preliminary study, we used two sets of cosmological simulations of galaxy redshifts and photometry under a simple noise model neglecting outliers and variation in observing conditions, and contributed algorithms were provided with a representative and complete training set.
 We review and evaluate the entries to the challenge, finding that even from this limited photometry information, multiple algorithms yield binning schemes with high figure-of-merit scores.
@@ -54,8 +54,6 @@ We further find that the {\em g} band improves metric performance by $\sim15\%$ 
 %===========================
 % BEGINNING OF THE MAIN TEXT
 %===========================
-
-% AIM: Suggestion: Use a macro for DESC because it shows up with and without expansion all over
 
 \section{Introduction}
 Weak gravitational lensing (WL) has emerged over the last decade as a powerful
@@ -76,44 +74,45 @@ In this method, two-point correlations are computed among and between two sample
 background (source) galaxies and the locations of foreground galaxies, which trace foreground
 dark matter haloes.  The three combinations (source-source, source-lens, and lens-lens) are
 measured in either Fourier or configuration space, and can be predicted from a combination of 
-perturbation theory and simulation results.  The method has been used in the Dark Energy Survey, DES
+perturbation theory and simulation results.  The method has been used in the Dark Energy Survey, DES, 
 \citep{des-3x2pt}, and to combine Baryon Oscillation Spectroscopic Survey, BOSS, with the Kilo-Degree 
 Survey, KiDS \citep{kids-3x2pt}.
 
-% AIM: The next two paragraphs should present tomographic binning as an experimental design choice up front. 
-
-Most lensing and 3x2pt analyses have been performed \emph{tomographically}, 
+Most lensing and 3x2pt analyses have chosen to analyze data \emph{tomographically}, 
 binning galaxies by redshift.
-% AIM: I get what this paragraph is saying, but it's worded ambiguously and can read as almost its exact opposite. I suggest rewording to specify more of the instances of "this," "that," and "it."
-This approach captures almost all the available information in lensing data, since it measures
+This approach captures almost all the available information in lensing data, since lensing measures
 an integrated effect and so galaxies nearby in redshift probe very similar fields.  For photometric
-foreground samples it is similarly near-lossless, since redshift estimates of such galaxies have
+foreground samples, tomography also loses little information when reasonably narrow bins are used,
+since redshift estimates of such galaxies have
 large uncertainties\footnote{Spectroscopic foreground samples may be more likely to see significant 
 gains from moving beyond tomographic methods.}.  Binning galaxies by approximate redshift also lets us 
 model galaxy bias, intrinsic alignments, and other systematic errors en masse in a more tractable way.
 While fully 3D methods have been proposed, prototyped, and shown to have significant promise, 
 \citep{heavens,kitching}, the tomographic approach remains the standard within the field.
+Tomographic 3x2pt measurements will be a key science goal in the upcoming \emph{Stage IV} surveys,
+including the Rubin Observatory \citep{rubin} and the Euclid and Roman space telescopes
+\citep{euclid,roman}.
 
-% AIM: typo in the next sentence {potentially the ease}
 We are free to assign galaxies to different tomographic bins in any way we wish; changing the choice
-can potentially the ease with which we can calibrate
-the bins, but any choice can lead to correct results. The bins need not even be purely tomographic: we can happily correlate bins with peaks at different redshifts if that is useful.
+can potentially affect the ease with which we can calibrate
+the bins, but any choice can lead to correct results. The bins need not even be purely tomographic: we can happily correlate bins with number density peaks at different redshifts if that is useful.
 We should choose, then, an assignment algorithm that maximises the constraining power for a science
 case of interest.  This challenge explores such algorithms.
 
-% AIM: Move the following sentence two paragraphs up to where tomography is introduced
-Tomographic 3x2pt measurements will be a key science goal in the upcoming \emph{Stage IV} surveys,
-including the Rubin Observatory \citep{rubin} and the Euclid and Roman space telescopes
-\citep{euclid,roman}. The general question of optimizing tomography was recently discussed in detail
+Various recent work have explored general tomographic binning strategies. The general question of optimization
+was recently discussed in detail
 in \citet{rainbow} using a self-organizing map approach to target up to five tomographic bins.  For this
 configuration they find that equally spaced redshift bins are a good proxy
 for an optimized method, but note, importantly, that we should not be constrained to trying to directly
-match our bin selections to specific tomographic bin edges.
-% AIM: Above sentence should cite other strategies as well.
+match our bin selections to specific tomographic bin edges. \citet{taylor18} considered using
+fine tomographic bins as an alternative to fully 3D lensing, and found that the strategy of equal numbers
+per bin is less effective at high redshift, a result we will echo in this paper. The fine-binning strategy
+also allows a set of nulling methods to be applied, offering various advantages in avoiding poorly-understood
+regimes \citep{taylor18b,bnt,xcut}.
 
-% AIM: insert comma {paper we}
 % AIM: messaging -- establish scope with the basic info now in the abstract
-In this paper we discuss and evaluate the related challenge
+This paper is part of preparations for the analysis of Legacy Survey of Space and Time (LSST) data at the Rubin Observatory, being run by the Dark Energy Science Collaboration (DESC).
+In it, we discuss and evaluate the related challenge
 of using a limited set of colour bands to make those assignments, motivated by requirements of using the
 metacalibration method for galaxy shape measurement to limit biases.  
 A similar question, with different motivations, was explored in \citet{jain}, who find that 3-band 
@@ -121,8 +120,9 @@ gri tomography could be effective for tomographic selection, a result we will ec
 challenge using simulated Rubin-like data with a range of methods submitted by different teams.  We explore how many tomographic bins we can effectively generate using only a subset of bins, and compare methods submitted to the challenge.
 
 In \autoref{sec:motivation} we explain the need for methods that work on limited sets of bands in the context of upcoming lensing surveys. In \autoref{sec:data} we describe the simulated data used in the challenge.
-\autoref{sec:methods} briefly summarizes the submitted methods; they are described in much more detail in \autoref{app:methods}.  In \autoref{sec:results} we discuss the
-results of the challenge, and then conclude in \autoref{sec:conclusion}.
+Section \ref{sec:results} briefly describes the entrants to the challenge, and discusses their performance (full
+method details are given in appendix \ref{app:methods}).
+ We conclude in \autoref{sec:conclusion}.
 
 \section{Motivation}
 \label{sec:motivation}
@@ -135,7 +135,7 @@ reconvolved before measurement, allowing one to directly compute the response of
 to underlying shear and correct for it when computing two-point measurements.  This can
 almost completely remove errors due to model and estimator (noise) bias from WL data, at least
 when PSFs are well-measured and oversampled by the pixel grid.  The method has been successfully
-applied in the Dark Energy Survey Year 1 and Year 3 analyses \citep{des-y1-cat, des-y3-cat},
+applied in the DES Year 1 and Year 3 analyses \citep{des-y1-cat, des-y3-cat},
 and application to early Rubin data is planned.
 
 Furthermore, metacal provides a solution to the pernicious and general problem of
@@ -169,8 +169,7 @@ factor.  Widening the prior on this factor decreases the overall constraining po
 
 \section{Challenge Design}
 
-% AIM: 2020, not 2019!
-The Dark Energy Science Collaboration (DESC) Tomographic Challenge was launched in May 2019 and 
+The DESC Tomographic Challenge was launched in May 2020 and 
 advertised among the LSST cosmology community, though it was open to outside entrants.
 
 In the challenge, participants assigned simulated galaxies to tomographic bins,
@@ -179,7 +178,13 @@ information in the final split data set; this is generally acheived by separatin
 redshift as much as possible.  Particpants were free to optimize or simply select nominal (target) 
 redshift bin edges from their training sample, but in either case had to classify galaxies into the 
 different bins.
-% AIM: We must explicitly state the assumptions that all methods were expected to be ML/training-based and that this is framed as a classification problem, and explain how that fits with the paradigm of how people think about tomography, which is traditionally framed as a very different redshift regression problem.
+
+This differs from many redshift estimation questions because we are not at all concerned with estimates
+of individual galaxy redshifts; instead, this challenge was desgined as a classification and bin-optimization
+problem, amenable to more direct machine-learning methods.  As such we used the training / validation / testing
+approach, as standard in machine-learning analyses.
+The determination of the $n(z)$ of the recovered
+bins (whether with per-galaxy estimates or otherwse) was not part of the challenge.
 
 \subsection{Philosophy}
 
@@ -201,15 +206,11 @@ level representation (see \autoref{sec:metrics}). The data set was also large en
 reasonably realistic test of methods at the large data volume required for upcoming surveys, where
 $10^9$ -- $10^{10}$ galaxies will be measured.
 
-% AIM: Was it actually advertised in Rubin beyond DESC at all?
 The challenge was open to any entrants, not just those already involved in DESC, but it was
 advertised primarily through Rubin, and so is perhaps best described as semi-public.
-% AIM: "tested and ran" --> "developed and tested" 
-% AIM: remove comma {locally, but}
-% AIM: Final tests used to generate results on secret test set were conducted on NERSC, no?
-Participants tested and ran their methods locally, but submitted code to be run as part of a central
-combined analysis on the NERSC supercomputing facility.  No prize was offered apart from recognition.
-% AIM: Don't specify NERSC up here before it's defined in Sec. 3.4.
+Participants developed and tested their methods locally but submitted code to be run as part of a central
+combined analysis at the National Energy Research
+Supercomputing Center (NERSC), where the final tests and metric evaluation were conducted.  No prize was offered apart from recognition.
 
 \subsection{Data}
 \label{sec:data}
@@ -217,47 +218,39 @@ combined analysis on the NERSC supercomputing facility.  No prize was offered ap
 \begin{figure}[htbp]
 	% \centering
 	\includegraphics[width=0.9\linewidth]{results/initial_data.pdf}
-	% AIM: use alpha \neq 1
-	\caption{The underlying number density $n(z)$ for the two catalogs used in the challenge,
+	\caption{The underlying redshift number density $n(z)$ for the two catalogs used in the challenge,
 		after the initial cuts described in the text.}
-	% AIM: specify /redshift/ number density
 	\label{fig:initial_nz}
 \end{figure}
 
 \begin{figure}[htbp]
 	% \centering
 	\includegraphics[width=0.9\linewidth]{results/colour_colour.pdf}
-	% AIM: use alpha \neq 1
 	\caption{A colour-colour diagram for the two catalogs used in the challenge, showing the bands
 		available to participants.}
 	\label{fig:colour_colour}
 \end{figure}
 
-% AIM: Rest of paper uses past tense so "run" --> "ran"
-% AIM: Train/Validate/Test set splitting should be described in post-processing rather than preamble, and assumption of ML/training-based approach should be stated explicitly in preamble to entire section.
-We run challenge entries on two data sets, CosmoDC2 and Buzzard, each of which is split into training, 
+We ran challenge entries on two data sets, CosmoDC2 and Buzzard, each of which is split into training, 
 validation, and testing components.  In each case participants were supplied with the training and 
 validation data, and the testing data was kept secret for final evaluation. In each case the three
 data sets were random sub-selections of the full data sets, with the training and testing sets 25\% of 
 the full data each and the validation 50\%. In practice many entrants trained on a subset of
 this, so to make the final evaluation phase tractable we trained on 1M objects for both data sets.
 
-% AIM: We don't have to justify the second dataset unless we provide a reason why the first was insufficient. . . the presentation here needs some reworking.
-We used the second Buzzard catalog for two reasons.  First, to check the significance of
-a limitation of galaxy colour assignments in CosmoDC2, described below.  And second, to check
+Using two catalogs allows us to check
 for over-fitting in the design of models themselves, and thus to determine whether two
 reasonable but different galaxy populations can be optimized by the same methods; this will
 tell us whether our conclusions might be reasonable for real data. We discuss correlations
 between metric scores on the two data sets in Section \ref{sec:metric-results}.
 
-% AIM: typo {Each of these data set}
-Each of these data set come from cosmological simulations which provide truth values of galaxy magnitudes
+Each of these data sets come from cosmological simulations which provide truth values of galaxy magnitudes
 and sizes.  We simulate and add noise to the objects as described below.
 
 \subsubsection{CosmoDC2}
 
-The CosmoDC2 simulation was designed to support the Dark Energy Science
-Collaboration and is described in detail in \citet{cosmodc2}.  It covers 440
+The CosmoDC2 simulation was designed to support the DESC and 
+is described in detail in \citet{cosmodc2}.  It covers 440
 deg${}^2$ of sky, and used the dark matter particles from the Outer Rim
 simulations \citep{outer_rim}.  The UniverseMachine \citep{universe_machine}
 simulations were then used, with the GalSampler technique \citep{galsampler},
@@ -270,21 +263,19 @@ on an additional DESC simulation, AlphaQ, and included all the LSST bands.  The
 simulation is complete to $r=28$, and contains objects up to redshift 3.  We
 include the ultra-faint galaxies, not assigned to a specific halo, in our sample.
 
-After the post-processing and selections described below, and a cut to a specific geographic region, 
-we used around 36M objects from the CosmoDC2 simulations.
-
 One limitation of the CosmoDC2 catalogs, found as part of the challenge,
 was that the matching to Galacticus led to only a limited number of SEDs being
 used at high redshifts, and thus too many galaxies in the simulations sharing
 similar characteristics at these redshifts, such as colour-colour relations.
 It was unknown whether this limitation would have any practical impact on the challenge,
-and was one of the reasons for adpoting the additional Buzzard catalog.
+and was another reason for adpoting the additional Buzzard catalog.
 
 \subsubsection{Buzzard}
 
-% AIM: Say it was also used for DESC DC1 studies, cite e.g. PZ DC1 paper
-The Buzzard catalog was developed to support Dark Energy Survey Year 1 (DES-Y1)
-data analysis, and is described in detail in \citet{buzzard}.  It used dark
+The Buzzard catalog was developed to support DES Year 1 (DES-Y1)
+data analysis, and is described in detail in \citet{buzzard}.
+It has previously been used in DESC analyses, for example in \citet{dc1_pz}.
+The catalog used dark
 matter simulations from L-GADGET2 \cite{gadget2} and then added galaxies using
 an algorithm that matches a set of galaxy
 property probability densities to data using sub-halo abundance matching. 
@@ -293,12 +284,7 @@ and were shown to be a good
 match (after appropriate selections) to DES-Y1 observable catalogs.  Magnitudes
 using the LSST band passes were provided in the catalog.
 
-After the post-processing and selections described below, and a cut to a
-specific geographic region,  we used around 20M objects from the Buzzard
-simulations.
-
 \subsubsection{Post-processing} \label{sec:data-proc}
-% AIM: Put the info from CosmoDC2/Buzzard pertaining to status after post-processing steps here instead.
 
 We add noise to the truth values in the extra-galactic catalogs to simulate real observations.
 In each case we simulate first year Rubin observations
@@ -311,23 +297,25 @@ $S/N > 10$, and a size cut $T / T_\mathrm{psf} > 0.5$, where
 $T$ is the trace $I_{xx} + I_{yy}$ of the moments matrix and measures the squared radius of the
 galaxy compared to that of a fixed Rubin PSF of size $0.75$ arc-seconds.
 
-% AIM: specify /redshift/ number density and provide n(z) symbol because it is used without introduction later
-The overall number density of the two data sets is shown in Figure \ref{fig:initial_nz},
+After this seection, and cuts to contiguous geographic regions, we used around 20M objects from the Buzzard
+simulations and around 36M objects the CosmoDC2 simulations.
+
+
+The overall number density $n(z)$ of the two data sets is shown in Figure \ref{fig:initial_nz},
 and a set of colour-colour diagrams  in Figure \ref{fig:colour_colour}.
-% AIM: If submitting to AAS journal, colour --> color; if submitting to MNRAS, catalog --> catalogue
 
 \subsection{Metrics}
 \label{sec:metrics}
-% AIM: Change subsubsection titles to use the shorthand names for the metrics as they are referenced throughout the rest of the paper (SNR, w_{0}-w_{a} FOM, \Omega_{c}-\sigma_{8} FOM).
-% AIM: This should state that the three metrics are evaluated for clustering, lensing, and 3x2pt, so there are really nine metrics, not two!
 
 In this challenge we use only a lensing source (background) population, since the metacal requirements
 do not apply to the foreground lens sample. We do, however, calculate 3x2pt metrics using the
 same source and lens populations, both because this scenario is one that will be used in some analyses,
 and because clustering-like statistics of lensing samples are important for studies of intrinsic
-alignments. We use two different sets of metrics, one based on the over signal to noise of the spectra 
+alignments. We use three different sets of metrics, one based on the over signal to noise of the spectra 
 derived from the samples, and one based on a figure-of-merit for the constraints that would be obtained 
 using them. The relationships between these metrics in our results is discussed in \autoref{sec:metric-results}.
+We compute each metric on three different sets of summary statistics: lensing-alone, clustering-alone,
+and the full 3x2pt. We therefore compute a total of nine values for each bin selection.
 
 For each bin $i$ generated by a challenge entry, we make a histogram of the true redshifts 
 of each galaxy assigned to the bin.  This is then used as our number density $n_i(z)$ in the metrics 
@@ -342,14 +330,13 @@ predictions using the JAX library \citep{jax}.  In production we use the latter 
 more stable calculation of metric 2.
 
 Metric 1 would be approximately measurable on real data without performing a full cosmology analysis,
-whereas metric 2 would be the final output of such an analysis.  They therefore test performance at what
-would be multiple stages in the wider pipeline.
-% AIM: Sounds dumb, but readers will appreciate a clear statement that higher is better for these metrics.
+whereas metrics 2 and 3 would be the final output of such an analysis.  They therefore test performance at what
+would be multiple stages in the wider pipeline. In each case the metrics are constructed so that a larger
+value is a better score.
 
-\subsubsection{Metric 1: Sigal-to-noise}
-% AIM: Suggestion: merge Appendix A with this section because this really doesn't stand by itself
+\subsubsection{Metric 1: SNR}
 
-Our first metric is the total signal-to-noise ratio of the power spectrum derived from the assigned
+Our first metric is the total signal-to-noise ratio (SNR) of the power spectrum derived from the assigned
 $n_i(z)$ values:
 \begin{equation}
     S = \mu^{T} C^{-1} \mu
@@ -359,8 +346,7 @@ where $\mu$ is a stack of the theoretical predictions for the $C_\ell$ spectra f
 bin, in turn, and $C$ a Gaussian estimate of the covariance between them, as described in
 \citet{takada_jain} and summarized in \autoref{app:theory}.   We compute this metric for lensing alone, clustering alone, and the full 3x2pt combination.
 
-\subsubsection{Metric 2: Figure-of-merit}
-% AIM: The title of this subsubsection should reflect that there are two FOM metrics.
+\subsubsection{Metrics 2 \& 3: $w_{0}-w_{a}$ and $\Omega_c-\sigma_8$ FOMs}
 
 Metric 2 uses a figure of merit (FOM) based on that presented by the Dark Energy Task Force (DETF) \citep{detf}.  We 
 use the inverse area of a Fisher Matrix ellipse, which approximates the size in two axes 
@@ -377,11 +363,9 @@ power on overall cosmic structure amplitude and its evolution.
 
 \subsection{Infrastructure}
 
-% AIM: We must acknowledge GitHub as a platform that enabled this challenge.
-% AIM: Suggestion to specify "subclass" and "superclass" up front for extra-thorough clarity.
 The challenge was structured as a python library, in which each classification
-method was a class.  The abstract base parent class, {\sc Tomographer}, 
-and other challenge machinery, performed initialization,
+method was a subclass of an abstract base parent superclass, {\sc Tomographer}.
+The superclass, and other challenge machinery, performed initialization,
 configuration option handling, data loading, and computing derived quantities
 such as colours from magnitudes.
 
@@ -391,12 +375,11 @@ was required to accept as an argument an array or dictionary of galaxy propertie
 (magnitudes, and, optionally, sizes, errors, and colours).  The {\sc train} method
 was also passed an array of true redshift values, which could be used however they wished.
 Methods were submitted to the challenge in the form of a pull request to the challenge
-repostitory\footnote{\url{http://github.com/LSSTDESC/tomo_challenge}}.
+repostitory on GitHub\footnote{\url{http://github.com/LSSTDESC/tomo_challenge}}.
 
 The training and validation parts of the data set were made available for training
 and hyper-parameter tuning. Once the challenge period was complete, the algorithms
-were collected from the pull requests and run at the National Energy Research
-Supercomputing Center (NERSC). If a method failed due to a difference in the
+were collected from the pull requests and run at NERSC. If a method failed due to a difference in the
 runtime environment or the hardware at NERSC, the participants and organizers tried
 to amend it after the formal challenge period ended, though this was not always possible.
 
@@ -404,65 +387,68 @@ to amend it after the formal challenge period ended, though this was not always 
 
 \subsection{Control Methods}
 
-% AIM: Include the code names for these dummy/control methods up front
-Two control methods were used to test the challenge machinery and metrics.
-% AIM: Explicitly put this into the context of a controlled experiment.
-% AIM: Make a new paragraph for each control method.
-The first method randomly assigned galaxies to each tomographic bin, resulting
+Two ``control'' methods were used to test the challenge machinery and ensure
+that metrics behaved appropriately in specific limits.
+
+The \textsc{Random} algorithm randomly assigned galaxies to each tomographic bin, resulting
 in bins which each had the same $n(z)$, on average (the random noise fluctuations
 are very small when using this number of galaxies).  Using this method, we expect
 that increasing the number of bins should not increase any metric score, since bins are
 maximally correlated.  We find this to be true for all our metrics.
 
-Second, we used a method which used only the $i$-band to select tomographic bins,
+The \textsc{IBandOnly} method used only the $i$-band to select tomographic bins,
 splitting galaxies in equal-sized bins in this magnitude. We expect only a small
 increase in metric score with the number of bins, and also that the addition of the $g$-band
 should make no difference to scores.  Again, we find this to be true.
 
-\section{Submitted Methods} \label{sec:methods}
-% AIM: This should be a subsection of Challenge Design section above since it's really just a table of the submitted methods directing readers to the appendix for any detail.
 
-% AIM: typo: "Twenty five" --> "Twenty-five"
-Twenty five methods were submitted to the challenge, including the control methods described above.
-Most used one machine learning method of one type or another to perform the primary classification,
+
+\section{Methods \& Results} \label{sec:results}
+
+
+Twenty-five methods were submitted to the challenge, including the control methods described above.
+Most used machine learning methods of various types to perform the primary classification,
 rather than trying to perform a full photometric redshift analysis.  
+These methods are listed in \autoref{tab:entrants} and described in full in \autoref{app:methods}.
 
-% AIM: These should be a pagewidth table, and we should use macros so the method names display consistently throughout paper.
-These methods are described in full in \autoref{app:methods}.  Briefly, they were (with the submitting authors listed in brackets):
-% \setlength{\itemsep}{0pt}%
-\begin{description*}
-	\item[\textsc{Random}] the random assignment control method (organizers)
-	\item[\textsc{IBandOnly}] the i-band only control method (organizers)
-	\item[\textsc{RandomForest}] a collection of individual decision trees (organizers)
-	\item[\textsc{LSTM}] a Long Short-Term Memory neural network (CRB, BMOF, GT, ESC, EJG)
-	\item[\textsc{AutokerasLSTM}] an automaticaly configured LSTM variant\footnote{A technical problem, involving conflicting versions of libraries and incompatible hardware, meant that AutoKerasLSTM could not be run in the final challenge.} (CRB, BMOF, GT, ESC, EJG)
-	\item[\textsc{LGBM}] a Light Gradient Boosted Machine, a histogram-based tree algorthm (CRB, BMOF, GT, ESC, EJG)
-	\item[\textsc{TCN}] a Temporal Convolution Network (CRB, BMOF, GT, ESC, EJG)
-	\item[\textsc{CNN}] a Convolutional Neural Network (CRB, BMOF, GT, ESC, EJG)
-	\item[\textsc{Ensemble}] a combination of three other network methods (CRB, BMOF, GT, ESC, EJG)
-	\item[\textsc{SimpleSOM}] a Self-Organizing Map (AHW)
-	\item[\textsc{PQNLD}] an extension of {\sc SimpleSom} combining with template-based redshift estimation (AHW)
-	\item[\textsc{ComplexSOM}] an extension of {\sc SimpleSom} with an additional assignment optimization (DA, AHW, AN, EG, AB)
-	\item[\textsc{GPzBinning}] a Gaussian Process redshift estimator and binner (PH)
-	\item[\textsc{JaxCNN/JaxResnet}] two related CNN-based bin edge optimizers (AP)
-	\item[\textsc{NeuralNetwork1/2}] a dense network optimizing bin assignment for two metrics (AP)
-	\item[\textsc{PCACluster}] a Principal Component Analysis of fluxes then optimized clustering (DG)
-	\item[\textsc{UTOPIA}] a nearest-neighbour method, optimised in the limit of large representative training sets (AHW)
-	\item[\textsc{ZotBin/ZotNet}] two related neural network methods with a preprocesing normalizing flow (DK)
-	\item[\textsc{FFNN}] a feed-forward neural network (EN)
-	\item[\textsc{FunBins}] a random forest with various nominal bin edge selection (AB)
-	\item[\textsc{MLPQNA}] a multi-layer perceptron (SC and MB)
-	\item[\textsc{Stacked Generalization}] an combination of gradient tree boosting and logistic regression (JEC)
-\end{description*}
+\begin{table*}[]
+	\begin{tabular}{|l|p{8cm}|c|}
+	\hline
+	\textbf{Name} & \textbf{Description} & \textbf{Submitters} \\
+	\hline
+	\textsc{Random} & Random assignment (control method)  & Organizers \\
+	\textsc{IBandOnly} & i-band only (control method)  & Organizers \\
+	\textsc{RandomForest} & A collection of individual decision trees & Organizers \\
+	\textsc{LSTM} & Long Short-Term Memory neural network & CRB, BF, GT, ESC, EJG \\
+	\textsc{AutokerasLSTM}\tablenotemark{a} & Automaticaly configured LSTM variant. & CRB, BF, GT, ESC, EJG \\
+	\textsc{LGBM} & Light Gradient Boosted Machine & CRB, BF, GT, ESC, EJG \\
+	\textsc{TCN} & Temporal Convolution Network & CRB, BF, GT, ESC, EJG \\
+	\textsc{CNN} & Convolutional Neural Network & CRB, BF, GT, ESC, EJG \\
+	\textsc{Ensemble} & Combination of three other network methods & CRB, BF, GT, ESC, EJG \\
+	\textsc{SimpleSOM} & Self-Organizing Map & AHW \\
+	\textsc{PQNLD} & Extension of {\sc SimpleSom} combining with template-based redshift estimation & AHW \\
+	\textsc{UTOPIA} & Nearest-neighbours, optimised in the limit of large representative training sets & AHW \\
+	\textsc{ComplexSOM} & Extension of {\sc SimpleSom} with an additional assignment optimization & DA, AHW, AN, EG, AB \\
+	\textsc{GPzBinning} & Gaussian Process redshift estimator and binner & PH \\
+	\textsc{JaxCNN/JaxResnet} & Two related CNN-based bin edge optimizers & AP \\
+	\textsc{NeuralNetwork1/2} & Dense network optimizing bin assignment for two metrics & AP \\
+	\textsc{PCACluster} & Principal Component Analysis of fluxes then optimized clustering & DG \\
+	\textsc{ZotBin/ZotNet} & Two related neural network methods with a preprocesing normalizing flow & DK \\
+	\textsc{FFNN} & Deed-forward neural network & EN \\
+	\textsc{FunBins} & Random forest with various nominal bin edge selection & AB \\
+	\textsc{MLPQNA} & Multi-layer perceptron & SC, MB \\
+	\textsc{Stacked Generalization} & Combination of gradient tree boosting and logistic regression & JEC\\
+	\hline
+	\end{tabular}
+	\caption{Methods entered into the challenge. The algorithms are described more fully in \autoref{app:methods}.}
+	\label{tab:entrants}
+	\tablenotetext{a}{A technical problem, involving conflicting versions of libraries and incompatible hardware, meant that AutoKerasLSTM could not be run in the final challenge.}
+\end{table*}
 
 
-\section{Results \& Discussion} \label{sec:results}
-% AIM: Convert the first two subsections to the preamble of this section.
-% AIM: Preamble should include the tl;dr of "winners."
 
 \subsection{Result types}
 
-% AIM: Move this table to the appendix.
 \begin{table*}[]
 	\begin{tabular}{|l|llll|llll|}
 		\hline
@@ -485,7 +471,7 @@ scenario: clustering, lensing, and 3x2pt for each of the SNR metric (Equation \r
 DETF FOM, and the $\Omega_c - \sigma_8$ FOM (Equation \ref{eq:fom}).
 
 
-\subsection{Overview}
+\subsection{Results Overview}
 % AIM: Suggestion: Convert this subsection to a bulleted list to give it some structure harking to the detailed subsections to come. The short versions are long enough to come off as unsupported statements rather than previews of what will be demonstrated in subsequent subsections. 
 
 The DETF results for each method are shown in Table \ref{tab:cosmodc2}.  Complete results for all metrics
@@ -522,13 +508,13 @@ which used a random forest to assign bins, but chose nominal bin edges by splitt
 by the sample into equal co-moving distance bins. As described in \autoref{sec:funbins},  this was designed
 to minimze the shot noise for the angular power in each bin, and this has proven successful. 
 Figure \ref{fig:funbin_nz} shows the number density obtained by this method, for both the riz and griz 
-scenarios, and an additional post-challenge run using the full Rubin $ugrizy$ bands.
-% AIM: Split paragraph here to distinguish topics of overall challenge winner and conclusions about band information limitation.
+scenarios, and an additional post-challenge run using the full Rubin $ugrizy$ bands, the metric results for
+which were close to those of the $griz$ analysis. 
+
 % AIM: Put the caveat at the beginning of the following sentence rather than the end. Also, this claim is not well-supported even by Fig. 3. . . 
 It is clear from this that fears about restricted photometry catastrophically limiting
 the information needed for tomography are unfounded, at least in our idealised scenario.
-In both the CosmoDC2 and Buzzard analyses,
-% AIM: analyses --> data sets?
+In both the CosmoDC2 and Buzzard data sets,
 even the $riz$ bands alone are sufficient to split objects into nine reasonably separated
 tomographic bins.  Once bins become this narrow the primary analysis concern will become the calibration 
 of overall bin $n(z)$ values, rather than initial tomography, so we consider this to be reassuring.
@@ -773,7 +759,7 @@ galaxy sizes to bin indices.  We use the {\sc scikit-learn} implementation of th
 \subsection{ {\sc LSTM} } 
 \label{ClecioLSTM} 
 Methods \ref{ClecioLSTM} - \ref{ClecioEnsemble} were
-submitted by a team of authors CRB, BMOF, GT, ESC, and EJG.  All were built using TensorFlow and/or Keras, and
+submitted by a team of authors CRB, BF, GT, ESC, and EJG.  All were built using TensorFlow and/or Keras, and
 chose bin edges such that an equal number of galaxies is assigned to each bin, and trained the
 network using the galaxies' magnitudes and colours. 
 
