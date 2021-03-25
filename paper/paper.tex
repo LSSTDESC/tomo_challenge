@@ -110,7 +110,6 @@ per bin is less effective at high redshift, a result we will echo in this paper.
 also allows a set of nulling methods to be applied, offering various advantages in avoiding poorly-understood
 regimes \citep{taylor18b,bnt,xcut}.
 
-% AIM: messaging -- establish scope with the basic info now in the abstract
 This paper is part of preparations for the analysis of Legacy Survey of Space and Time (LSST) data at the Rubin Observatory, being run by the Dark Energy Science Collaboration (DESC).
 In it, we discuss and evaluate the related challenge
 of using a limited set of colour bands to make those assignments, motivated by requirements of using the
@@ -176,7 +175,7 @@ In the challenge, participants assigned simulated galaxies to tomographic bins,
 using only their (g)riz bands and associated errors, and the galay size.  Their goal was to maximize the cosmological
 information in the final split data set; this is generally acheived by separating different bins by 
 redshift as much as possible.  Particpants were free to optimize or simply select nominal (target) 
-redshift bin edges from their training sample, but in either case had to classify galaxies into the 
+redshift bin edges from their training sample, but in either case had to assign galaxies into the 
 different bins.
 
 This differs from many redshift estimation questions because we are not at all concerned with estimates
@@ -363,7 +362,7 @@ power on overall cosmic structure amplitude and its evolution.
 
 \subsection{Infrastructure}
 
-The challenge was structured as a python library, in which each classification
+The challenge was structured as a python library, in which each assignment
 method was a subclass of an abstract base parent superclass, {\sc Tomographer}.
 The superclass, and other challenge machinery, performed initialization,
 configuration option handling, data loading, and computing derived quantities
@@ -472,24 +471,15 @@ DETF FOM, and the $\Omega_c - \sigma_8$ FOM (Equation \ref{eq:fom}).
 
 
 \subsection{Results Overview}
-% AIM: Suggestion: Convert this subsection to a bulleted list to give it some structure harking to the detailed subsections to come. The short versions are long enough to come off as unsupported statements rather than previews of what will be demonstrated in subsequent subsections. 
-
 The DETF results for each method are shown in Table \ref{tab:cosmodc2}.  Complete results for all metrics
-for the nine-bin scenario only are shown in appendix tables \ref{tab:full_dc2} and \ref{tab:full_buzz}.  
-% AIM: Use autoref to appendix.
+for the nine-bin scenario only are shown in appendix tables \ref{tab:full_dc2} and \autoref{tab:full_buzz}.  
+
 In all these tables, missing entries are shown for two reasons.
 The first, marked with an asterisk, is when a method did not run for the given scenario,
 either due to memory overflow or taking an extremely long time.
 The second, marked with a dash, is when a method ran, but generated at least one bin with an extremely 
 small number count, such that the spectrum could not be calculated.
 
-% AIM: This is the first mention of this as a classification problem. We should mention this up in experimental design along with the assumption of ML/training-based methods, but also change "clasified" [SIC] to "assigned" for overall consistency (and maybe "that entrants clasified" --> "entrants to classify," and maybe reword post-semicolon part as "aside from the impact of reduced final sample size on the metrics, no penalty was applied for discarding galaxies entirely").
-% AIM: Also, the discussion of non-assignment should be its own subsection.
-The challenge did not require that entrants clasified all galaxies; ambiguous
-galaxies could be discarded at the cost of number density.  Several methods
-took advantage of this.  The ComplexSom method (see \autoref{sec:csom}) found
-it did not improve scores, but as noted in \autoref{sec:pqnld} this may be an artifact
-of the high density of the training data, and so could be explored in future challenges.
 
 \begin{figure}[htbp]
 	% \centering
@@ -508,12 +498,13 @@ which used a random forest to assign bins, but chose nominal bin edges by splitt
 by the sample into equal co-moving distance bins. As described in \autoref{sec:funbins},  this was designed
 to minimze the shot noise for the angular power in each bin, and this has proven successful. 
 Figure \ref{fig:funbin_nz} shows the number density obtained by this method, for both the riz and griz 
-scenarios, and an additional post-challenge run using the full Rubin $ugrizy$ bands, the metric results for
-which were close to those of the $griz$ analysis. 
+scenarios, and an additional post-challenge run using the full Rubin $ugrizy$ bands.  The metrics
+obtained with \textsc{funbins} on $ugrizy$ are barely higher than those with $griz$ -- the largest
+increase is 8\% for the $\Omega_c-\sigma_8$ metric, with the remainder all 5\% or less.
 
-% AIM: Put the caveat at the beginning of the following sentence rather than the end. Also, this claim is not well-supported even by Fig. 3. . . 
-It is clear from this that fears about restricted photometry catastrophically limiting
-the information needed for tomography are unfounded, at least in our idealised scenario.
+It is clear from this that, at least in our idealised scenario,  fears about restricted photometry 
+catastrophically limiting
+the information needed for tomography are unfounded.
 In both the CosmoDC2 and Buzzard data sets,
 even the $riz$ bands alone are sufficient to split objects into nine reasonably separated
 tomographic bins.  Once bins become this narrow the primary analysis concern will become the calibration 
@@ -537,6 +528,13 @@ Several of the 9-bin neural network methods perform well up to seven tomographic
 nine.  This is presumably not an intrinsic feature of these methods, but depends on implementation details.
 Further development solving these challenges should be valuable, since they are the highest scoring seven-bin
 methods.
+
+\subsection{Non-assignment}
+The challenge did not require entrants to assign all galaxies to bins; aside from the impact of reduced final sample size on the metrics, no penalty was applied for discarding galaxies entirely.  Several methods
+took advantage of this.  The ComplexSom method (see \autoref{sec:csom}) found
+it did not improve scores, but as noted in \autoref{sec:pqnld} this may be an artifact
+of the high density of the training data, and so could be explored in future challenges.
+
 
 \subsection{Metric comparisons} \label{sec:metric-results}
 Figure \ref{fig:metrics} shows a comparison of some of the different metrics used in the challenge.
@@ -1296,8 +1294,6 @@ An iterative precedure was used to progressively change the target bin edges to 
 
 
 \section{Mistakes} \label{sec:mistakes}
-% AIM: This should not be an appendix and should instead be part of the Results & Discussion section. They should not be presented as "mistakes" -- they are part of the experimental design and constitute caveats, which are simply facts, not subjective judgements.
-
 The challenge organizers made a number of mistakes when building and running the challenge.
 These do not invalidate our process or results, but we describe some of them here in the hope of
 being useful for future challenge designers.
@@ -1334,7 +1330,7 @@ and some assumed that it was safe to hard-code specific paths to them or
 otherwise assume fixed data inputs.  This led to problems when switching to new test data sets. 
 Again, a requirement enforced by continuous integration could have checked this.
 
-\section{Full 9-bin results table} \label{app:tables}
+\section{Full 9-bin results tables} \label{app:tables}
 Tables \ref{tab:full_dc2} and \ref{tab:full_buzz} show all calculated metrics when generating nine tomographic 
 bins for CosmoDC2 and Buzzard respectively. The \textit{ww} columns
 show weak-lensing metrics, \textit{gg} show galaxy clustering, and \textit{3x} the full 3x2pt metric.
