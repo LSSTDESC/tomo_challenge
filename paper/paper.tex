@@ -37,7 +37,7 @@
 
 \begin{abstract}
 This paper presents the results of the Rubin Observatory Dark Energy Science Collaboration (DESC) 3x2pt tomography challenge, which served as a first step toward optimizing the tomographic binning strategy for the main DESC analysis. 
-The task of choosing an optimal tomographic binning scheme for a photometric survey is made particularly delicate in the context of a metacalibrated lensing catalog, as only the photometry from the bands included in the metacalibration process (usually {\em riz} and potentially {\em g}) can be used in sample definition.
+The task of choosing an optimal tomographic binning scheme for a photometric survey is made particularly delicate in the context of a metacalibrated lensing catalogue, as only the photometry from the bands included in the metacalibration process (usually {\em riz} and potentially {\em g}) can be used in sample definition.
 The goal of the challenge was to collect and compare bin assignment strategies under various metrics of a standard 3x2pt cosmology analysis in a highly idealized setting to establish a baseline for realistically complex follow-up studies; 
 in this preliminary study, we used two sets of cosmological simulations of galaxy redshifts and photometry under a simple noise model neglecting outliers and variation in observing conditions, and contributed algorithms were provided with a representative and complete training set.
 We review and evaluate the entries to the challenge, finding that even from this limited photometry information, multiple algorithms yield binning schemes with high figure-of-merit scores.
@@ -145,7 +145,7 @@ magnitude.  It follows that a cut (or re-weighting) on galaxy magnitudes, or on 
 from  them, will induce a shear bias since galaxies will preferentially fall either side of the cut
 depending on their shear.  Within metacal, we can compute and thus account for this bias
 very accurately, by performing the cut on both
-sheared variants of the catalog, and measuring the difference between the post-cut shear in the two
+sheared variants of the catalogue, and measuring the difference between the post-cut shear in the two
 variants.  In DES the corrected biases were found up to around 4\%, far larger than
 the requirements for the current generation of surveys \citep{des-y1-cat}.
 
@@ -191,7 +191,7 @@ Since this was a preliminary challenge designed to explore whether it is possibl
 to use only the (g)riz bands for tomography, we chose to simplify several aspects of the data.  In realistic 
 situations we will have access to limited sized training sets for WL photometric redshifts, since 
 spectra are time-consuming to obtain.  These training sets will also be highly incomplete compared
-to full catalogs, especially at faint magnitudes where spectroscopic coverage is sparse.  In this
+to full catalogues, especially at faint magnitudes where spectroscopic coverage is sparse.  In this
 challenge we avoided both these issues -- the training samples we provided (see \autoref{sec:data}) were comparable
 in size to the testing sample, and drawn from the same population.  Given this, the challenge
 represents a best-case scenario -- if no method succeeded on this easier case then more realistic
@@ -217,7 +217,7 @@ Supercomputing Center (NERSC), where the final tests and metric evaluation were 
 \begin{figure}[htbp]
 	% \centering
 	\includegraphics[width=0.9\linewidth]{results/initial_data.pdf}
-	\caption{The underlying redshift number density $n(z)$ for the two catalogs used in the challenge,
+	\caption{The underlying redshift number density $n(z)$ for the two catalogues used in the challenge,
 		after the initial cuts described in the text.}
 	\label{fig:initial_nz}
 \end{figure}
@@ -225,7 +225,7 @@ Supercomputing Center (NERSC), where the final tests and metric evaluation were 
 \begin{figure}[htbp]
 	% \centering
 	\includegraphics[width=0.9\linewidth]{results/colour_colour.pdf}
-	\caption{A colour-colour diagram for the two catalogs used in the challenge, showing the bands
+	\caption{A colour-colour diagram for the two catalogues used in the challenge, showing the bands
 		available to participants.}
 	\label{fig:colour_colour}
 \end{figure}
@@ -237,7 +237,7 @@ data sets were random sub-selections of the full data sets, with the training an
 the full data each and the validation 50\%. In practice many entrants trained on a subset of
 this, so to make the final evaluation phase tractable we trained on 1M objects for both data sets.
 
-Using two catalogs allows us to check
+Using two catalogues allows us to check
 for over-fitting in the design of models themselves, and thus to determine whether two
 reasonable but different galaxy populations can be optimized by the same methods; this will
 tell us whether our conclusions might be reasonable for real data. We discuss correlations
@@ -262,36 +262,36 @@ on an additional DESC simulation, AlphaQ, and included all the LSST bands.  The
 simulation is complete to $r=28$, and contains objects up to redshift 3.  We
 include the ultra-faint galaxies, not assigned to a specific halo, in our sample.
 
-One limitation of the CosmoDC2 catalogs, found as part of the challenge,
+One limitation of the CosmoDC2 catalogues, found as part of the challenge,
 was that the matching to Galacticus led to only a limited number of SEDs being
 used at high redshifts, and thus too many galaxies in the simulations sharing
 similar characteristics at these redshifts, such as colour-colour relations.
 It was unknown whether this limitation would have any practical impact on the challenge,
-and was another reason for adpoting the additional Buzzard catalog.
+and was another reason for adpoting the additional Buzzard catalogue.
 
 \subsubsection{Buzzard}
 
-The Buzzard catalog was developed to support DES Year 1 (DES-Y1)
+The Buzzard catalogue was developed to support DES Year 1 (DES-Y1)
 data analysis, and is described in detail in \citet{buzzard}.
 It has previously been used in DESC analyses, for example in \citet{dc1_pz}.
-The catalog used dark
+The catalogue used dark
 matter simulations from L-GADGET2 \cite{gadget2} and then added galaxies using
 an algorithm that matches a set of galaxy
 property probability densities to data using sub-halo abundance matching. 
 Buzzard galaxies extend to around redshift 2.3 (significantly shallower than CosmoDC2)
 and were shown to be a good
-match (after appropriate selections) to DES-Y1 observable catalogs.  Magnitudes
-using the LSST band passes were provided in the catalog.
+match (after appropriate selections) to DES-Y1 observable catalogues.  Magnitudes
+using the LSST band passes were provided in the catalogue.
 
 \subsubsection{Post-processing} \label{sec:data-proc}
 
-We add noise to the truth values in the extra-galactic catalogs to simulate real observations.
+We add noise to the truth values in the extra-galactic catalogues to simulate real observations.
 In each case we simulate first year Rubin observations
 using the DESC {\sc TXPipe} framework\footnote{\url{https://github.com/LSSTDESC/TXPipe}}, following the methodology of \citet{ivezic_jones_lupton}
 and assuming the numerical values for telescope and sky characteristics therein.
 
 In both simulations we add two cuts to approximately simulate the selection used in a real
-lensing catalog.  In both cases we apply a cut on the combined $riz$ signal to noise of
+lensing catalogue.  In both cases we apply a cut on the combined $riz$ signal to noise of
 $S/N > 10$, and a size cut $T / T_\mathrm{psf} > 0.5$, where
 $T$ is the trace $I_{xx} + I_{yy}$ of the moments matrix and measures the squared radius of the
 galaxy compared to that of a fixed Rubin PSF of size $0.75$ arc-seconds.
