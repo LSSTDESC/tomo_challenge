@@ -178,6 +178,12 @@ redshift as much as possible.  Particpants were free to optimize or simply selec
 redshift bin edges from their training sample, but in either case had to assign galaxies into the 
 different bins.
 
+This meant there were two ways to obtain higher scores: either to improve the choice of nominal bin
+edges, or to find better ways to assign objects to those edges.  This was a sub-optimal design decision:
+separating the two issues would have enabled us to more easily delineate the advantages of different methods. 
+This can be explored retrospectively, since we know what approach methods took, but would have been
+easier in advance.  This and other mistakes in designing the challenge are described in \autoref{sec:mistakes}.
+
 This differs from many redshift estimation questions because we are not at all concerned with estimates
 of individual galaxy redshifts; instead, this challenge was desgined as a classification and bin-optimization
 problem, amenable to more direct machine-learning methods.  As such we used the training / validation / testing
@@ -206,7 +212,7 @@ reasonably realistic test of methods at the large data volume required for upcom
 $10^9$ -- $10^{10}$ galaxies will be measured.
 
 The challenge was open to any entrants, not just those already involved in DESC, but it was
-advertised primarily through Rubin, and so is perhaps best described as semi-public.
+advertised through Rubin, and so is perhaps best described as semi-public.
 Participants developed and tested their methods locally but submitted code to be run as part of a central
 combined analysis at the National Energy Research
 Supercomputing Center (NERSC), where the final tests and metric evaluation were conducted.  No prize was offered apart from recognition.
@@ -1299,7 +1305,8 @@ These do not invalidate our process or results, but we describe some of them her
 being useful for future challenge designers.
 
 \subsection{Splitting nominal bin choice from assignment}
-There were two ways to obtain good scores in the challenge: either one could choose the best
+As noted in the main test, there were two ways to obtain good scores in the challenge: 
+either a team could choose the best
 nominal bin edges, or find the best method to put galaxies into those bins once they are chosen.
 These two are not completely disconnected: some theoretically powerful choices of nominal edges
 could prove impossible to assign in practice.  But it would still have been useful to separate
