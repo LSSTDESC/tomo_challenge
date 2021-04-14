@@ -521,11 +521,12 @@ constraining power, which is discussed more in Section \ref{sec:gband}.
 
 For comparison, we also show results using all six LSST bands, $ugrizy$; these could not be used
 with the metacalibration method. The improvement in the sharpness of the bins is noticeable but not large.
-We quantify this in Figure \ref{fig:overlap}, which shows the fraction of objects assigned to each
-bin that are actually in another redshift range, together with the total fraction of mis-assigned galaxies 
-over all the bins, for each set of bands. This illustrates how adding the $g$ band improves the assigment
-for almost every pair of bins, and reduce the total mis-assigned fraction by a factor of three to the 
-point where a significant majority of galaxies are in the right bin.  Further adding the remaining $u$ and $y$
+We quantify this in Figure \ref{fig:overlap}, which shows the fraction of objects that are in ambiguous
+redshift slices, defined as objects in redshift ranges where there are more objects assigned to another 
+tomographic bin.  The total fraction of such objects is also shown. This illustrates how adding the $g$ band 
+improves the assigment
+for almost every pair of bins, and reduce the ambiguous fraction by a factor of three to the 
+point where a significant majority of galaxies are clearly assigned.  Further adding the remaining $u$ and $y$
 bands improves the assignment in a way that is smaller in both relative and absolute terms.
 This latter addition also does not translate into large increases in the figures of merit: the 
 DETF score for CosmoDC2 is 169.7, barely higher than the score for $griz$, and this is also true for other 
@@ -535,11 +536,13 @@ metrics.   While this is only a general indication and not a thorough exploratio
 \begin{figure*}[htbp]
 % \centering
 \includegraphics[width=0.9\linewidth]{results/nzoverlap_dc2_funbins.pdf}
-\caption{The fraction of total objects mis-assigned from each bin to each other bin in the winning 
-\textsc{funbins} method for different choices of bands.  The $x$- and $y$-axes show tomographic bin indices, 
+\caption{The fraction of total objects assigned to each tomographic bin that are ambiguously assigned, for 
+the \textsc{funbins} tomograph method and three choices of bands.  The $x$- and $y$-axes 
+show tomographic bin indices, 
 and the color represents the fraction of objects (compared to the total number in the challenge) that are 
-mis-assigned from each bin to each other.  The total-overlap figure gives the total fraction of objects
-that are mis-assigned over all bins, and is the sum of all the values.}
+at redshifts dominated by different tomographic to the ones they are assigned.
+The total-overlap figure gives the total fraction of objects
+that are ambiguous over all bins, and is the sum of all the values.}
 \label{fig:overlap}
 \end{figure*}
 
