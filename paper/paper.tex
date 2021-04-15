@@ -1301,9 +1301,10 @@ This method was submitted by author JEC.
 \emph{Stacked generalization} consists of stacking the output of several individual estimators and 
 using a classifier to compute the final prediction. Stacking methods use the strength of each 
 individual estimator by using their outputs as input of a final estimator.  This entry stacked
-a \emph{Gradient Tree Boosting} (GTB) classifier and then used a Logistic Regression as the final step.
+\emph{Gradient Boosted Trees} (GBT) classifiers with standard Random Forests (RFs), and then used a Logistic 
+Regression as the final step.
 
-GTB is a machine learning method which combines decision trees (like the Random Forest, RF)
+A GBT is a machine learning method which combines decision trees (like the standard RF)
 by performing a weighted mean average of individual trees \citep{Friedman:2002we,RefWorks:1634}. 
 The prediction $F(X)$ of the ensemble of trees for a new sample $X$ is given by
 \begin{equation}
@@ -1318,11 +1319,14 @@ unlike RF. It suffers from the opposite problem to RF's overfitting, and is subj
 to high bias, so one generally combines many weak individual learners.
 
 The two methods have their own systematics; they notably differ in the feature importances. Stacking 
-the two is therefore especially effective.  The submitted method used {\sc SKLearn}, and used 50 models 
-of each type combined using its {\sc StackingClassifier}.
+the two is therefore especially effective.  The submitted method combined 50 GBTs with
+50 RFs using the {\sc SKLearn} {\sc StackingClassifier}.
 
 An iterative precedure was used to progressively change the target bin edges to optimize one of the metrics (FOMs or SNRs) between the trainings of the classifiers. In general, we recover different choices for each statistic, but the differences are relatively marginal. This procedure was done by hand for this challenge, but could be automated and applied to any kind of classifier.
 
+Although this entry stacked GBTs and RFs, the same approach can be used more generally, such as using
+one classifier optimized for high redshift and another for low, or one classifier for an SNR metric
+and a second for an FOM metric.  This makes stacking approaches particularly flexible.
 
 
 \section{Mistakes} \label{sec:mistakes}
