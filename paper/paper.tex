@@ -75,8 +75,8 @@ background (source) galaxies and the locations of foreground galaxies, which tra
 dark matter haloes.  The three combinations (source-source, source-lens, and lens-lens) are
 measured in either Fourier or configuration space, and can be predicted from a combination of 
 perturbation theory and simulation results.  The method has been used in the Dark Energy Survey, DES, 
-\citep{des-3x2pt}, and to combine Baryon Oscillation Spectroscopic Survey, BOSS, with the Kilo-Degree 
-Survey, KiDS \citep{kids-3x2pt}.
+\citep{des-3x2pt}, and to combine the Kilo-Degree 
+Survey, KiDS with spectroscopic surveys \citep{kids-3x2pt, kids_gama, kids_2df}.
 
 Most lensing and 3x2pt analyses have chosen to analyze data \emph{tomographically}, 
 binning galaxies by redshift.
@@ -101,10 +101,13 @@ case of interest.  This challenge explores such algorithms.
 
 Various recent work have explored general tomographic binning strategies. The general question of optimization
 was recently discussed in detail
-in \citet{rainbow} using a self-organizing map approach to target up to five tomographic bins.  For this
+in \citet{rainbow} using a self-organizing map (SOM) approach to target up to five tomographic bins.  For this
 configuration they find that equally spaced redshift bins are a good proxy
 for an optimized method, but note, importantly, that we should not be constrained to trying to directly
-match our bin selections to specific tomographic bin edges. \citet{taylor18} considered using
+match our bin selections to specific tomographic bin edges. 
+They also highlight the utility of rejecting outlier or hard-to-classify objects from samples, and the ability of SOMs
+to do so cleanly.
+\citet{taylor18} considered using
 fine tomographic bins as an alternative to fully 3D lensing, and found that the strategy of equal numbers
 per bin is less effective at high redshift, a result we will echo in this paper. The fine-binning strategy
 also allows a set of nulling methods to be applied, offering various advantages in avoiding poorly-understood
@@ -114,11 +117,11 @@ This paper is part of preparations for the analysis of Legacy Survey of Space an
 In it, we discuss and evaluate the related challenge
 of using a limited set of colour bands to make those assignments, motivated by requirements of using the
 metacalibration method for galaxy shape measurement to limit biases.  
-A similar question, with different motivations, was explored in \citet{jain}, who find that 3-band 
-gri tomography could be effective for tomographic selection, a result we will echo here in a new context: in this paper we describe the results of a 
+A similar question, with different motivations, was explored in \citet{jain}, who found that 3-band 
+$gri$ tomography could be effective for tomographic selection, a result we will echo here in a new context: in this paper we describe the results of a 
 challenge using simulated Rubin-like data with a range of methods submitted by different teams.  We explore how many tomographic bins we can effectively generate using only a subset of bins, and compare methods submitted to the challenge.
 
-In \autoref{sec:motivation} we explain the need for methods that work on limited sets of bands in the context of upcoming lensing surveys. In \autoref{sec:data} we describe the simulated data used in the challenge.
+In \autoref{sec:motivation} we explain the need for methods that work on limited sets of bands in the context of upcoming lensing surveys. In \autoref{sec:design} we describe the design of the challenge and the simulated data used in it.
 Section \ref{sec:results} briefly describes the entrants to the challenge, and discusses their performance (full
 method details are given in appendix \ref{app:methods}).
  We conclude in \autoref{sec:conclusion}.
@@ -142,7 +145,7 @@ Furthermore, metacal provides a solution to the pernicious and general problem o
 that are
 highly covariant with those on other galaxy properties, including size and, most importantly, flux and
 magnitude.  It follows that a cut (or re-weighting) on galaxy magnitudes, or on any quantity derived
-from  them, will induce a shear bias since galaxies will preferentially fall either side of the cut
+from  them, will induce a shear bias since galaxies will preferentially fall on either side of the cut
 depending on their shear.  Within metacal, we can compute and thus account for this bias
 very accurately, by performing the cut on both
 sheared variants of the catalogue, and measuring the difference between the post-cut shear in the two
@@ -153,27 +156,28 @@ In summary: metacal allows us to correct for significant selection biases, but o
 are performed using only bands in which the PSF is measured well enough for deconvolution to be
 performed.  For Rubin, this means using only the $r$, $i$, $z$, and perhaps $g$ bands.  In this work we
 therefore study how well we can perform tomography using only this limited photometric information.  In
-particular, this limitation prevent us from using the most obvious method for tomography,
+particular, this limitation prevents us from using the most obvious method for tomography,
 and computing a complete photometric probability density function (PDF) for each galaxy and assigning
 a bin using the mean or peak of that PDF\footnote{This only prevents us using other photometry for \emph{selection}, not for \emph{characterization} after objects have been selected, such as computing the overall
 number density $n(z)$ for a tomographic bin.}.
 
 Simulation methods can also be used to correct for selection biases, provided that they match the
 real data to high accuracy.  If we determine that limiting the bands we can use for tomography results
-in a significant decrease in our overall signal-to-noise, outweighing the gain from the improved shape
+in a significant decrease in our overall 3x2pt signal-to-noise, outweighing the gain from the improved shape
 calibration then this might suggest moving to rely more on such methods\footnote{One can account for
 residual shear estimation uncertainty during parameter estimation by marginalizing over an unknown
 factor.  Widening the prior on this factor decreases the overall constraining power of the analysis.}.
+Constructing simulations with the required fidelity is challenging at Rubin-level accuracy and requires
+careful comparison to deep field data.
 
 
-\section{Challenge Design}
+\section{Challenge Design} \label{sec:design}
 
-The DESC Tomographic Challenge was launched in May 2020 and 
-advertised among the LSST cosmology community, though it was open to outside entrants.
+The DESC Tomographic Challenge opened in May 2020 and accepted entries until September 2020.
 
 In the challenge, participants assigned simulated galaxies to tomographic bins,
 using only their (g)riz bands and associated errors, and the galay size.  Their goal was to maximize the cosmological
-information in the final split data set; this is generally acheived by separating different bins by 
+information in the final split data set; this is generally achieved by separating different bins by 
 redshift as much as possible.  Particpants were free to optimize or simply select nominal (target) 
 redshift bin edges from their training sample, but in either case had to assign galaxies into the 
 different bins.
@@ -189,7 +193,7 @@ of individual galaxy redshifts; instead, this challenge was desgined as a classi
 problem, amenable to more direct machine-learning methods.  As such we used the training / validation / testing
 approach, as standard in machine-learning analyses.
 The determination of the $n(z)$ of the recovered
-bins (whether with per-galaxy estimates or otherwse) was not part of the challenge.
+bins (whether with per-galaxy estimates or otherwise) was not part of the challenge.
 
 \subsection{Philosophy}
 
@@ -254,7 +258,7 @@ and sizes.  We simulate and add noise to the objects as described below.
 
 \subsubsection{CosmoDC2}
 
-The CosmoDC2 simulation was designed to support the DESC and 
+The CosmoDC2 simulation was designed to support DESC and 
 is described in detail in \citet{cosmodc2}.  It covers 440
 deg${}^2$ of sky, and used the dark matter particles from the Outer Rim
 simulations \citep{outer_rim}.  The UniverseMachine \citep{universe_machine}
@@ -277,7 +281,7 @@ and was another reason for adpoting the additional Buzzard catalogue.
 
 \subsubsection{Buzzard}
 
-The Buzzard catalogue was developed to support DES Year 1 (DES-Y1)
+The Buzzard catalogue was developed to support the DES Year 1 (DES-Y1)
 data analysis, and is described in detail in \citet{buzzard}.
 It has previously been used in DESC analyses, for example in \citet{dc1_pz}.
 The catalogue used dark
@@ -303,7 +307,7 @@ $T$ is the trace $I_{xx} + I_{yy}$ of the moments matrix and measures the square
 galaxy compared to that of a fixed Rubin PSF of size $0.75$ arc-seconds.
 
 After this section, and cuts to contiguous geographic regions, we used around 20M objects from the Buzzard
-simulations and around 36M objects the CosmoDC2 simulations.
+simulations and around 36M objects from the CosmoDC2 simulations.
 
 
 The overall number density $n(z)$ of the two data sets is shown in Figure \ref{fig:initial_nz},
@@ -316,8 +320,8 @@ In this challenge we use only a lensing source (background) population, since th
 do not apply to the foreground lens sample. We do, however, calculate 3x2pt metrics using the
 same source and lens populations, both because this scenario is one that will be used in some analyses,
 and because clustering-like statistics of lensing samples are important for studies of intrinsic
-alignments. We use three different sets of metrics, one based on the over signal to noise of the spectra 
-derived from the samples, and one based on a figure-of-merit for the constraints that would be obtained 
+alignments. We use three different sets of metrics, one based on the overall signal to noise of the spectra 
+derived from the samples, and two based on a figure-of-merit for the constraints that would be obtained 
 using them. The relationships between these metrics in our results is discussed in \autoref{sec:metric-results}.
 We compute each metric on three different sets of summary statistics: lensing-alone, clustering-alone,
 and the full 3x2pt. We therefore compute a total of nine values for each bin selection.
@@ -348,7 +352,7 @@ $n_i(z)$ values:
 \label{eq:snr}
 \end{equation}
 where $\mu$ is a stack of the theoretical predictions for the $C_\ell$ spectra for each tomographic 
-bin, in turn, and $C$ a Gaussian estimate of the covariance between them, as described in
+bin, in turn, and $C$ a estimate of the covariance between them, making the approximation that the underlying density field has a Gaussian distribution as described in
 \citet{takada_jain} and summarized in \autoref{app:theory}.   We compute this metric for lensing alone, clustering alone, and the full 3x2pt combination.
 
 \subsubsection{Metrics 2 \& 3: $w_{0}-w_{a}$ and $\Omega_c-\sigma_8$ FOMs}
@@ -364,7 +368,10 @@ of the posterior PDF one would obtain on analysing the spectra:
 where $[F^{-1}]_{p_1, p_2}$ extracts the 2x2 matrix for two parameters.  We use both the original
 DETF variant in which $p_1 = w_0$ and $p_2 = w_a$, representing the constraining power on dark energy 
 evolution, and a version in which $p_1 = \Omega_c$ and $p_2 = \sigma_8$, representing constraining
-power on overall cosmic structure amplitude and its evolution.
+power on overall cosmic structure amplitude and its evolution. In each case the complete parameter space consists
+of the eight $w_0w_aCDM$ cosmological parameters. This simplified measure does not include any nuisance
+parameters modelling systematic errors in the analysis (most importantly the galaxy bias parameters in the clustering 
+spectra), and like all Fisher analyses approximates posterior constraints as Gaussian. 
 
 \subsection{Infrastructure}
 
@@ -468,7 +475,7 @@ These methods are listed in \autoref{tab:entrants} and described in full in \aut
 \end{table*}
 
 The methods described above were run on a data set, previously unseen by entrants but drawn
-from the same underlying population, of size 8.6M objects for CosmoDC2 and 5.4M objects for Buzzard.
+from the same underlying population, of size 8.6M objects for CosmoDC2 (our fiducial simulation) and 5.4M objects for Buzzard.
 A complete suite of the metrics described in Section \ref{sec:metrics} was run on each of the two
 for each method.  In total, each method was run on 16 scenarios, each combination of: $griz$ vs. $riz$,
 Buzzard vs. CosmoDC2, and 3, 5, 7, and 9 bins requested.  Nine metrics were calculated for each
@@ -499,9 +506,15 @@ small number count, such that the spectrum could not be calculated.
 	\label{fig:funbin_nz}
 \end{figure}
 
-The overall winning method in the 3x2pt case in the fiducial $griz$ 3x2pt CosmoDC2 metric was \textsc{funbins},
+Before the challenge began we somewhat arbitrarily chose 
+the 9-bin 3x2pt $griz$ CosmoDC2 $w_0-w_a$ metric as the fiducial scenario on which
+an overall winning method would be selected.
+By this criterion the best method was, by a small margin, \textsc{funbins},
 which used a random forest to assign bins, but chose nominal bin edges by splitting the range spanned
-by the sample into equal co-moving distance bins. As described in \autoref{sec:funbins},  this was designed
+by the sample into equal co-moving distance bins. 
+Other methods performed better in other branches of the challenge; in particular we note \textsc{ZotNet}, \textsc{Stacked Generalization}, and \textsc{NeuralNetwork} (see sections \ref{sec:zot}, \ref{sec:stackgen}, and \ref{sec:nn} respectively), which each won more than three 9-bin scenarios.
+
+As described in \autoref{sec:funbins},  \textsc{funbins} was designed
 to minimze the shot noise for the angular power in each bin, and this has proven successful. 
 Figure \ref{fig:funbin_nz} shows the number density obtained by this method, for both the riz and griz 
 scenarios, and an additional post-challenge run using the full Rubin $ugrizy$ bands.  The metrics
@@ -527,16 +540,16 @@ tomographic bin.  The total fraction of such objects is also shown. This illustr
 improves the assigment
 for almost every pair of bins, and reduce the ambiguous fraction by a factor of three to the 
 point where a significant majority of galaxies are clearly assigned.  Further adding the remaining $u$ and $y$
-bands improves the assignment in a way that is smaller in both relative and absolute terms.
+bands improves the assignment in a way that is smaller, though not insignificant, in both relative and absolute terms.
 This latter addition also does not translate into large increases in the figures of merit: the 
-DETF score for CosmoDC2 is 169.7, barely higher than the score for $griz$, and this is also true for other 
+DETF score for CosmoDC2 is 169.7, barely higher than its score of 167.2 for $griz$, and this is also true for other 
 metrics.   While this is only a general indication and not a thorough exploration, it is encouraging.
 
 
 \begin{figure*}[htbp]
 % \centering
 \includegraphics[width=0.9\linewidth]{results/nzoverlap_dc2_funbins.pdf}
-\caption{The pairwise fractions of total objects in redshift regions where multiple tomographic bins contain galaxies, for 
+\caption{The pairwise fractions $f_\mathrm{mis}$ of total objects in redshift regions where multiple tomographic bins contain galaxies, for 
 the \textsc{funbins} tomography method and three choices of bands.  
 The $x$- and $y$-axes 
 show tomographic bin indices, 
@@ -562,10 +575,10 @@ Further development solving these challenges should be valuable, since they are 
 methods.
 
 \subsection{Non-assignment}
-The challenge did not require entrants to assign all galaxies to bins; aside from the impact of reduced final sample size on the metrics, no penalty was applied for discarding galaxies entirely.  Several methods
+The challenge did not require entrants to assign all galaxies to bins; aside from the impact of reduced final sample size on the metrics, no additional penalty was applied for discarding galaxies entirely.  Several methods
 took advantage of this.  The ComplexSom method (see \autoref{sec:csom}) found
 it did not improve scores, but as noted in \autoref{sec:pqnld} this may be an artifact
-of the high density of the training data, and so could be explored in future challenges.
+of the high density of the training data, and so could be explored in future challenges\footnote{In real data or more realistic simulations discarding galaxies has a more complicated effects than simply decreasing sample size as it does here - removing objects with broad $p(z)$ can narrow the final $n(z)$, not just lower it. This was not a factor in this challenge because we use true redshifts to calculate our metrics.}.
 
 
 \subsection{Metric comparisons} \label{sec:metric-results}
@@ -581,7 +594,7 @@ distribution, and hence on the survey properties.  The largest outlier comes fro
 {\sc Neural Network} entry.
 
 This is not true of the overall winning method for large bin counts - as shown in the tables
-in \autoref{app:tables}, significantly more methods acheive a top-scoring spot in the Buzzard
+in \autoref{app:tables}, significantly more methods achieve a top-scoring spot in the Buzzard
 table \ref{tab:full_buzz} than in the CosmoDC2 table \ref{tab:full_dc2}. This reinforces the
 conclusions made below in \autoref{sec:train-vs-fix}, though of course the relatively noisy
 results make this difficult to interpret.
@@ -600,7 +613,7 @@ which fix them, as described below in Section \ref{sec:train-vs-fix}.
 \begin{figure}[htbp]
 % \centering
 \includegraphics[width=0.9\linewidth]{results/metric_comparisons.pdf}
-\caption{A comparison of the metrics used in our challenge. The x-axis is shared, and shows
+\caption{A comparison of the metrics used in our challenge for the different methods that were entered. The x-axis is shared, and shows
 the 3x2pt $w_0 - w_a$ (DETF) figure of merit on the CosmoDC2 data set for all methods, 
 with colours labelling the number
 of bins used.  Each of the panels shows a metric which is the same except for a single change, 
@@ -630,15 +643,16 @@ but until the end of the survey this is unlikely to be the limiting factor in ov
  when comparing them on methods including and excluding
 the g-band, in terms of the ratio of the $w_0-w_a$ figure of merit.  The left-hand panel shows
 results for the CosmoDC2 scenarios, and the right-hand panel for the Buzzard scenarios.  Colours
-indicate the number of bins used in the analysis.}
+indicate the number of bins used in the analysis. Some methods perform worse when adding the $g$-band 
+and have ratios greater than unity.}
 \label{fig:loss}
 \end{figure*}
 
 \subsection{Trained edges vs fixed edges}\label{sec:train-vs-fix}
 
 Some of the methods in the challenge accepted target bin edges as an input to their algorithms,
-and then used classifiers to assign objects to those bins.  Other methods optimized the values
-of bin edges themselves, by optimizing the metric.  For the runs shown here, these methods mostly
+and then used classifiers to assign objects to those bins.  Entrants could select these edges; many followed the example random forest entry and split into equal counts per bin. Other methods optimized the values
+of bin edges themselves, by maximizing a metric.  For the runs shown here, these methods mostly
 targeted one of the 3x2pt metrics.
 
 A comparison of trained-edge and fixed-edge methods on the CosmoDC2 griz scenarios
@@ -666,12 +680,12 @@ effectively classify by bin, at least in this case of representative, extensive 
 information.  Notably, this is the case even for the \textsc{UTOPIA} entry, which uses the nearest 
 training set neighbour to assign bins and thus is explicitly optimised
 for this idealised scenario; it should give an upper limit when using the same fixed bins.
-That other methods with the same nominal bin choice acheive scores close to it once again
+That other methods with the same nominal bin choice achieve scores close to it once again
 confirms that many entries are close to the best possible score for this approach.
 
 
 Several of the methods with optimized target bin edges break this
-barrier and acheive very high scores.  This included ZotNet, ZotBin,  and JaxResNet.  The
+barrier and achieve very high scores.  This included ZotNet, ZotBin,  and JaxResNet.  The
 Stacked Generalization method similarly included manually tuned bin edges to maximize
 score for this scenario (and indeed its ensemble combination method could be applied to
 combine the other successful methods). The typical 15--20\% improvement in FoM scores when optimizing
@@ -687,13 +701,13 @@ the importance of science- and sample-specific training.
 The Tomography Challenge has proved a useful mechanism for encouraging the development
 of methods for this science question.  We encourage this challenge structure for other
 well-specified science cases, and DESC has subsequently run other challenges along the same lines
-such is its N5K beyond-limber challege\footnote{\url{https://github.com/LSSTDESC/N5K}}.
+such as the N5K beyond-limber challenge\footnote{\url{https://github.com/LSSTDESC/N5K}}.
 We describe in Appendix \ref{sec:mistakes} some lessons we have learned from this challenge
 that may be useful for future ones.
 
 The results of the challenge have shown first that three or four-band photometry
 is sufficient for specifying tomography even up to a large number of bins, if
-the training data is complete enough: degneracies between colour do not make this impossible.
+the training data is complete enough: degeneracies between colour do not make this impossible.
 Excluding the g-band from the data reduces the constraining power by a noticeable but
 not catastrophic amount.
 
@@ -710,13 +724,13 @@ a good general choice in the winning method in the challenge, {\sc funbins}.
 The challenge was heavily simplified, with the intention of testing whether
 effective bin-assignments with limited photometry is possible even in theory,
 and of generating as many potential methods for the task as possible.  With
-both these acheived, future directions for simulating the problem are clear.
+both these achieved, future directions for simulating the problem are clear.
 The most obvious is limited spectroscopic completeness and size.  Realistic
 training data sets will be far smaller than the millions of objects we used here,
 and the difficulty of measuring spectra for faint galaxies will make the them
 incomplete and highly unrepresentative. Machine learning methods will be particularly
 affected by the latter problem.  Future challenges must explore these important limitations
-using simulated incompleteness.
+using simulated incompleteness, and use realistic photo-z methods to compute metrics.
 
 
 \section{Acknowledgements}
@@ -764,6 +778,9 @@ total number density over all bins of 20 galaxies per square arcminute) and $\si
 
 \section{Method Details} \label{app:methods}
 This appendix details the different methods submitted to the challenge.
+
+Method implementations used in the challenge may be found in the \textsc{grand\_merge} branch
+of the challenge repository \url{http://github.com/LSSTDESC/tomo_challenge}.
 
 \subsection{ {\sc RandomForest} } \label{sec:randomforest}
 This method was submitted by the challenge organizers and used a random
@@ -870,7 +887,7 @@ They consist of kernels that are convolved with the data as it flows through the
 models have emerged as state-of-the-art in several computer vision tasks, such as image
 classification and pose estimations, as well as having applicability in a range of different fields.
  
-We combine the Convolutional layers are with dimensionality reduction (pooling layers) and different
+We combine the convolutional layers with dimensionality reduction (pooling layers) and different
 activation functions. Here, we used Autokeras to optimize a general convolutional architecture,
 using the galaxies' magnitudes and colours to assign them to redshift bins, which were chosen such
 that an equal number of galaxies were assigned to each.
@@ -917,7 +934,7 @@ mechanism for distilling $N_{\rm cell}$ SOM cells into $N_{\rm group}<N_{\rm
 cell}$ groups of cells, while maintaining optimal redshift resolution. This is
 done by invoking a hierarchical clustering of SOM cells \citep[see Appendix B of
 ][]{Wright/etal:2020a}, where in this case we combine cells based on the
-similarity of the cells' $n(z) $moments (mean, median, and normalised median absolute
+similarity of the cells' $n(z)$ moments (mean, median, and normalised median absolute
 deviation from median) using complete-linkage clustering. The result of this
 procedure is the construction of fewer discrete groups of training and reference
 data, while not introducing pathological redshift-distribution broadening (as
@@ -1129,17 +1146,17 @@ Linear Unit (ReLU) activation function under the ADAM optimizer \cite{adam} with
 a learning rate of 0.001. 
  
 We chose the learning algorithm for both methods to minimize the reciprocal of
-the figure of merit $F$, where $F$ is defined in eqref{E:FOM}. We implement
+the figure of merit $F$, where $F$ is defined in \ref{eq:fom}. We implement
 these models using the JAX-based Flax neural network library \cite{jax}. 
 
 
-\subsection{ {\sc NeuralNetwork 1 \& 2} }
+\subsection{ {\sc NeuralNetwork 1 \& 2} } \label{sec:nn}
 This method was submitted by the author FL.
 
 The {\sc NeuralNetwork} approach combines the two following ideas:
 \begin{itemize}
 	\item Using a simple neural network to parameterize a bin assignment function $f_\theta$ taking available photometry as the input and returning a bin number. 
-	\item Optimizing the parameters of $f_\theta$ as to maximize a target score, either the total SNR \autoref{eq:snr}, or the DETF FoM \autoref{eq:fom}.
+	\item Optimizing the parameters of $f_\theta$ as to maximize a target score, either the total SNR (\autoref{eq:snr}), or the DETF FoM (\autoref{eq:fom}).
 \end{itemize}
 The method directly solves the problem of optimal bin assignment given available photometry, to maximize the cosmological information, without estimating a redshift.
 
@@ -1194,7 +1211,7 @@ data used.
 
 
 
-\subsection{ {\sc ZotBin and ZotNet} }
+\subsection{ {\sc ZotBin and ZotNet} } \label{sec:zot}
 
 This pair of related methods was submitted by author DPK and its associated code is available at
 \url{https://github.com/dkirkby/zotbin}.
@@ -1233,6 +1250,8 @@ $N$ output bins by optimizing the specified metric combination. The resulting ma
 interpretable, but also less constrained than ZotBin, so expected to achieve somewhat better performance.
 
 \subsection{ {\sc funbins} } \label{sec:funbins}
+This entry was submitted by author AB.
+
 This method uses the random forest algorithm described in section \ref{sec:randomforest} to assign galaxies to tomographic bins, but modifies the target bin edge selection method. There are 3 options for determining the edges used to assign labels to the training data: \textit{log}, \textit{random}, and \textit{chi}. 
 
 The first option, \textit{log}, calculates bin edges such that the number of galaxies in each bin grows logarithmically instead of being constant as in section 4.1. This option uses increasingly large bins for more distant galaxies and tests the relative importance of nearby galaxies.
@@ -1295,7 +1314,7 @@ where $N$ is the number of input features (depending on the experiment).
 The decay was set to 0.1.
 
 
-\subsection{ {\sc Stacked Generalization} }
+\subsection{ {\sc Stacked Generalization} } \label{sec:stackgen}
 This method was submitted by author JEC.
 
 \emph{Stacked generalization} consists of stacking the output of several individual estimators and 
@@ -1381,7 +1400,7 @@ pathological bin assignments (-).  Failure rates were higher for the 9-bin runs 
 \movetabledown=65mm
 \begin{rotatetable*}
 \begin{deluxetable*}{ |l | c c c | c c c | c c c | c c c | c c c | c c c |}
-\tablecaption{The 9-bin results on the CosmoDC2 data set for all the metrics and all methods on the CosmoDC2 sample.
+\tablecaption{The 9-bin results for all metrics calculated for all methods on the CosmoDC2 sample.
  \label{tab:full_dc2}}
 \tablehead{
 \colhead{Method} & \multicolumn{9}{|c|}{riz} & \multicolumn{9}{c|}{griz}
