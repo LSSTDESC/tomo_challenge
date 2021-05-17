@@ -661,7 +661,11 @@ fare much worse on the lensing-only metrics (the methods were not re-trained on 
 we show the metrics for the same assigned bins).  This suggests that the difference between
 optimal bins for different science cases is a significant one, and thus that analysis pipelines
 should make it straightforward to calibrate multiple configurations and pass them to
-subsequent science anlysis.
+subsequent science anlysis; this will probably be true even when comparing models with
+different systematic parametrizations.  
+This feature is highlighted by the comparison between the two variants
+of the \textsc{NeuralNetwork} entry, which differed only in which metric they were targeting;
+optimizing one metric does not optimize the other.
 
 \begin{figure}
 \includegraphics[width=0.9\columnwidth]{results/edge_comparison.pdf}
