@@ -60,7 +60,7 @@ methods_with_fixed_edges = [m for m in method_names if m not in methods_with_tra
 
 
 methods_reordered = methods_with_trained_edges + methods_with_fixed_edges
-
+method_names = methods_reordered
 metrics = ["SNR_ww", "SNR_gg", "SNR_3x2", "FOM_ww", "FOM_gg", "FOM_3x2", "FOM_DETF_ww", "FOM_DETF_gg", "FOM_DETF_3x2"]
 
 
@@ -99,6 +99,8 @@ def make_table(results, metric, filename):
 
         f.write(row_format.format(*row))
         f.write("\n")
+        if name == methods_with_trained_edges[-1]:
+            f.write("\\hline\n")
     f.close()
 
 

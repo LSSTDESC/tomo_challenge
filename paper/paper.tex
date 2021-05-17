@@ -470,7 +470,7 @@ These methods are listed in \autoref{tab:entrants} and described in full in \aut
 		\hline
 	\end{tabular}
 	\caption{Values of the 3x2pt DETF ($w_0,w_a$) figure-of-merit achieved by entrant methods on the 
-		CosmoDC2 part of the challenge.}
+		CosmoDC2 part of the challenge. The horizontal line separates two general approaches to the problem, as discussed in \autoref{sec:train-vs-fix}.}
 	\label{tab:cosmodc2}
 \end{table*}
 
@@ -577,7 +577,7 @@ methods.
 The challenge did not require entrants to assign all galaxies to bins; aside from the impact of reduced final sample size on the metrics, no additional penalty was applied for discarding galaxies entirely.  Several methods
 took advantage of this.  The ComplexSom method (see \autoref{sec:csom}) found
 it did not improve scores, but as noted in \autoref{sec:pqnld} this may be an artifact
-of the high density of the training data, and so could be explored in future challenges\footnote{In real data or more realistic simulations discarding galaxies has a more complicated effects than simply decreasing sample size as it does here - removing objects with broad $p(z)$ can narrow the final $n(z)$, not just lower it. This was not a factor in this challenge because we use true redshifts to calculate our metrics.}.
+of the high density of the training data, and so could be explored in future challenges\footnote{In real data or more realistic simulations discarding galaxies has more complicated effects than simply decreasing sample size as it does here - removing objects with broad $p(z)$ can narrow the final $n(z)$, not just lower it. This was not a factor in this challenge because we use true redshifts to calculate our metrics.}.
 
 
 \subsection{Metric comparisons} \label{sec:metric-results}
