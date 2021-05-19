@@ -661,8 +661,8 @@ fare much worse on the lensing-only metrics (the methods were not re-trained on 
 we show the metrics for the same assigned bins).  This suggests that the difference between
 optimal bins for different science cases is a significant one, and thus that analysis pipelines
 should make it straightforward to calibrate multiple configurations and pass them to
-subsequent science anlysis; this will probably be true even when comparing models with
-different systematic parametrizations.  
+subsequent science anlysis; this will probably be true even when comparing models
+differing only in their systematic parametrizations.  
 This feature is highlighted by the comparison between the two variants
 of the \textsc{NeuralNetwork} entry, which differed only in which metric they were targeting;
 optimizing one metric does not optimize the other.
@@ -1149,7 +1149,7 @@ Linear Unit (ReLU) activation function under the ADAM optimizer \cite{adam} with
 a learning rate of 0.001. 
  
 We chose the learning algorithm for both methods to minimize the reciprocal of
-the figure of merit $F$, where $F$ is defined in \ref{eq:fom}. We implement
+the figure of merit $F$, where $F$ is defined in \autoref{eq:fom}. We implement
 these models using the JAX-based Flax neural network library \cite{jax}. 
 
 
