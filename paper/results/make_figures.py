@@ -138,6 +138,63 @@ def color_plot(data, x, y, ax):
         ax.plot(x[s], y[s], '.', markersize=8, color=cmap.colors[i], label=f'$n_b={nbin}$')
 
 
+def plot_metric_grid(data, data_set, bands, filename):
+    fig, axes = plt.subplots(3, 3, figsize=(10,9), sharex=True, sharey=True)
+    min_sel = (data['bands'] == bands) & (data['method'] == 'Random')
+    ymin_data = data[min_sel]
+
+    # pick out equal
+    if data_set == "dc2":
+        ymax_data = Table.read(f"output_dc2_FIEGE_validation_riz.txt", format='ascii')
+    else:
+        ymax_data = Table.read(f"output_buzzard_FIEGE_validation_griz.txt", format='ascii')
+
+    cmap = plt.get_cmap("tab10")
+    x = np.array([3, 5, 7, 9])
+    for i, metric in enumerate(metrics):
+        ymin = ymin_data[metric]
+        ymax = ymax_data[metric][:4]
+        ymax_equalz = ymax_data[metric][4:]
+        ax = axes[i//3, i%3]
+        method_sets = [methods_with_fixed_edges, methods_with_trained_edges]
+        for j, method_set in enumerate(method_sets):
+            c = cmap(j)
+            for method in method_set:
+                if method == "Random":
+                    continue
+                sel = (data['bands'] == bands) & (data['method'] == method)
+                y = data[sel][metric]
+                b = data[sel]['bins']
+                s = y != 0
+                ax.plot(x[s], ((y - ymin) / (ymax - ymin))[s], color=c, lw=1)
+                ax.set_xticks([3, 5, 7, 9])
+                ax.tick_params(axis='x', which='minor', bottom=False)
+                ax.text(3.5, 1.7, metric, bbox={'facecolor': 'white'})
+                if i//3 == 0 :
+                    ax.set_yticks([0.0, 0.5, 1.0, 1.5])
+                if i == 3:
+                    ax.set_ylabel("Normalized metric")
+        ax.plot(x, ((ymax_equalz - ymin) / (ymax - ymin)), color=cmap(2), lw=3)
+        ax.plot(x, [0, 0, 0, 0], color='k', lw=3)
+        ax.plot(x, [1, 1, 1, 1], color='r', lw=3)
+
+    ax.set_ylim(-0.01, 1.98)
+    ax.set_xlim(3, 9)
+    fig.tight_layout()
+    fig.subplots_adjust(hspace=0.025, wspace=0.0)
+
+    legend_elements = [
+        plt.Line2D([0], [0], color='k', lw=3),
+        plt.Line2D([0], [0], color='r', lw=3),
+        plt.Line2D([0], [0], color=cmap(2), lw=3),
+        plt.Line2D([0], [0], color=cmap(0), lw=1),
+        plt.Line2D([0], [0], color=cmap(1), lw=1)
+    ]
+    axes[0, 0].legend(legend_elements, ["Random", "Equal-N Truth", "Equal-z Truth", "Fixed edges", "Trained edges"], loc='upper right')
+
+    fig.savefig(filename)
+    plt.close()
+
 def plot_metric_comparisons(dc2, buzzard, filename):
     assert (dc2['method'] == buzzard['method']).all()
     assert (dc2['bins'] == buzzard['bins']).all()
@@ -479,6 +536,10 @@ if __name__ == '__main__':
 
     dc2 = load_table('cosmodc2')
     buzzard = load_table('buzzard')
+    plot_metric_grid(dc2, "dc2", "riz", "metric_grid_dc2_riz.pdf")
+    plot_metric_grid(dc2, "dc2", "griz", "metric_grid_dc2_griz.pdf")
+    plot_metric_grid(buzzard, "buzzard", "riz", "metric_grid_buzzard_riz.pdf")
+    plot_metric_grid(buzzard, "buzzard", "griz", "metric_grid_buzzard_griz.pdf")
     plot_metric_comparisons(dc2, buzzard, "metric_comparisons.pdf")
     plot_g_band_loss(dc2, buzzard, "g_band_loss.pdf")
     make_tex_tables(dc2, buzzard, 'tables')
