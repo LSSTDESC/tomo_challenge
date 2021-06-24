@@ -8,6 +8,7 @@ import subprocess
 import h5py
 import collections
 import matplotlib.pyplot as plt
+import scipy.stats
 # set default styles
 
 
@@ -530,6 +531,81 @@ def make_9bin_table(results, filename):
     f.close()
 
 
+def make_metric_grid(data_set, bands):
+    
+    # cut doen to the correct bands
+    data_set = data_set[data_set['bands'] == bands]
+    metrics = ['SNR_ww','SNR_gg','SNR_3x2','FOM_ww','FOM_gg','FOM_3x2','FOM_DETF_ww','FOM_DETF_gg','FOM_DETF_3x2']
+    bins = [3, 5, 7, 9]
+    
+    nmetric = len(metrics)
+    nbin = len(bins)
+
+    nrow = nbin * nmetric
+    row_meanings = [(b, metric) for b in bins for metric in metrics]
+    row_labels = [f'n={b} {metric}' for b in bins for metric in metrics]
+    
+    methods = np.unique(data_set['method'])
+    ncol = len(methods)
+
+    grid = np.zeros((nrow, ncol), dtype=int)
+    for i, (row, row_label) in enumerate(zip(row_meanings, row_labels)):
+        b, metric = row
+        d = data_set[data_set['bins']==b]
+        # check that the ordering is the same.  should be
+        assert (d['method'] == method_names).all()
+        ranks = len(method_names) - scipy.stats.rankdata(d[metric]) + 1
+        grid[i, :] = ranks
+    
+    return row_labels, grid
+        
+def plot_rank_grid(dcz, buzz, filename):
+    fig, axes = plt.subplots(2, 2, figsize=(14.5, 13))
+    # make_metric_grid(dc2, 'riz')
+    for i, (data_set_name, data_set) in enumerate([("CosmoDC2", dc2), ("Buzzard", buzz)]):
+        for j, bands in enumerate(["riz", "griz"]):
+            row_labels, grid = make_metric_grid(data_set, bands)
+            im = axes[i, j].imshow(grid.T, cmap='summer_r')
+            ax = axes[i, j]
+            
+            if i == 0:
+                ax.title.set_text(f"{bands}")
+            
+            xlabels = row_labels if i == 1 else []
+            
+            ylabels = method_names if j == 0 else []
+            ax.set_yticks(np.arange(len(method_names)))
+            ax.set_yticklabels(ylabels, fontsize=10)        
+            ax.tick_params('y', length=0, width=1)
+            ax.tick_params('y', length=0, width=1, which='minor')
+
+            # The major ticks, which we use for the text
+            ax.set_xticks(np.arange(len(row_labels)))
+            ax.set_xticklabels(xlabels, fontsize=10, rotation=90)
+            ax.tick_params('x', length=0, width=1, which='major')
+            
+            # The minor, which we use for the tick itself
+            ax.set_xticks(np.arange(len(row_labels))+0.5, minor=True)        
+            ax.set_xticklabels([], minor=True)
+            minor_length = 10 if i == 1 else 0
+            ax.tick_params('x', length=minor_length, width=1, which='minor')
+
+    fig.subplots_adjust(bottom=0.25, hspace=-0.03, wspace=0.03)
+
+    cbar_ax = fig.add_axes([0.15, 0.05, 0.7, 0.05])
+    cbar_ax.text(12, -12, "Rank", fontsize=20)
+    fig.colorbar(im, cax=cbar_ax, orientation='horizontal')
+    cbar_ax.grid(which='both', color='black')
+    cbar_ax.tick_params('both', length=0, which='both')
+
+    label_ax = fig.add_axes([0.95, 0.05, 0.05, 0.9])
+    label_ax.axis('off')
+    label_ax.text(-0.75, 0.64, "CosmoDC2", rotation=-90., fontsize=25)
+    label_ax.text(-0.75, 0.32, "Buzzard", rotation=-90., fontsize=25)
+
+    fig.savefig(filename)
+    plt.close(fig)
+
 if __name__ == '__main__':
     matplotlib.use('agg')
     plt.style.use('StyleSheet.mplstyle')
@@ -549,3 +625,7 @@ if __name__ == '__main__':
     make_initial_nz("initial_data.pdf")
     make_9bin_table(buzzard, "9bin_buzzard.tex")
     make_9bin_table(dc2, "9bin_dc2.tex")
+    plot_rank_grid(dc2, buzzard, "rank_grid.pdf")
+
+
+

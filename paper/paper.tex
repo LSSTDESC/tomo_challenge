@@ -515,6 +515,19 @@ which used a random forest to assign bins, but chose nominal bin edges by splitt
 by the sample into equal co-moving distance bins. 
 Other methods performed better in other branches of the challenge; in particular we note \textsc{ZotNet}, \textsc{Stacked Generalization}, and \textsc{NeuralNetwork} (see sections \ref{sec:zot}, \ref{sec:stackgen}, and \ref{sec:nn} respectively), which each won more than three 9-bin scenarios.
 
+An illustration of the rank acheived by each method within each challenge configuration and for each metric
+is shown in \autoref{fig:rank_grid}.
+
+
+
+\begin{figure*}[htbp]
+	% \centering
+	\includegraphics[width=\linewidth]{results/rank_grid.pdf}
+	\caption{The rank of each method (1 = highest scoring, 25 = lowest scoring) within each configuration of the challenge, for each metric separately.  A method that was good everywhere would appear as yellow strip across an entire horizontal range.}
+	\label{fig:rank_grid}
+\end{figure*}
+
+
 As described in \autoref{sec:funbins},  \textsc{funbins} was designed
 to minimze the shot noise for the angular power in each bin, and this has proven successful. 
 Figure \ref{fig:funbin_nz} shows the number density obtained by this method, for both the riz and griz 
@@ -655,7 +668,10 @@ of bin edges themselves, by maximizing a metric.  For the runs shown here, these
 targeted one of the 3x2pt metrics.
 
 A comparison of trained-edge and fixed-edge methods on the CosmoDC2 griz scenarios
-is shown in Figure \ref{fig:edges}.  One important point to note is that while trained-edge
+is shown in Figure \ref{fig:edges}, and the same data normalized against the score acheived
+by objects binned in true redshift (i.e. a perfect assigment method) are shown in Figure \ref{fig:metric_grid_dc2_griz}.
+
+One important point to note is that while trained-edge
 methods dominate the highest scores for the 3x2pt DETF metric, on which they trained, they
 fare much worse on the lensing-only metrics (the methods were not re-trained on the lensing metrics;
 we show the metrics for the same assigned bins).  This suggests that the difference between
@@ -676,6 +692,13 @@ for the lensing-only metric shown in the lower panel illustrates the need for sc
 binning choices. In each case, classification is done using griz bands on the CosmoDC2 data set.}
 \label{fig:edges}
 \end{figure}
+
+\begin{figure*}
+\includegraphics[width=1\linewidth]{results/metric_grid_dc2_griz.pdf}
+\caption{Normalized scores for each method, normalized between the score for random assignment (zero) and truth assignment to bins with equal number counts (one).  It can be seen that both equal-number and equal-redshift spacings can be beaten for certain metrics.  In each case, classification is done using griz bands on the CosmoDC2 data set; equivalent plots for Buzzard and riz are shown in \autoref{app:metric_grids}.}
+\label{fig:metric_grid_dc2_griz}
+\end{figure*}
+
 
 Among methods with fixed bins, those using equal numbers in each tend to plateau at scores of
 120-140 in Table \ref{tab:cosmodc2}, suggesting that a range of machine learning models can
@@ -1388,6 +1411,31 @@ Additionally, the challenge supplied the data described in Section \ref{sec:data
 and some assumed that it was safe to hard-code specific paths to them or
 otherwise assume fixed data inputs.  This led to problems when switching to new test data sets. 
 Again, a requirement enforced by continuous integration could have checked this.
+
+\section{Normalized metric scores} \label{app:metric_grids}
+Figures \ref{fig:metric_grid_dc2_riz}, \ref{fig:metric_grid_buzzard_griz}, and \ref{fig:metric_grid_buzzard_riz} show metric scores normalized bewteen random assignment and perfect assignemtn to equal number density bins for CosmoDC2/riz, Buzzard/griz and Buzzard/riz respectively
+
+\begin{figure*}
+\includegraphics[width=1\linewidth]{results/metric_grid_dc2_riz.pdf}
+\caption{Normalized scores for each method, following the scheme of Figure \ref{fig:metric_grid_dc2_griz}
+but for CosmoDC2 with riz bands}
+\label{fig:metric_grid_dc2_riz}
+\end{figure*}
+
+\begin{figure*}
+\includegraphics[width=1\linewidth]{results/metric_grid_buzzard_griz.pdf}
+\caption{Normalized scores for each method, following the scheme of Figure \ref{fig:metric_grid_dc2_griz}
+but for Buzzard with griz bands}
+\label{fig:metric_grid_buzzard_griz}
+\end{figure*}
+
+\begin{figure*}
+\includegraphics[width=1\linewidth]{results/metric_grid_buzzard_riz.pdf}
+\caption{Normalized scores for each method, following the scheme of Figure \ref{fig:metric_grid_dc2_griz}
+but for Buzzard with riz bands}
+\label{fig:metric_grid_buzzard_riz}
+\end{figure*}
+
 
 \section{Full 9-bin results tables} \label{app:tables}
 Tables \ref{tab:full_dc2} and \ref{tab:full_buzz} show all calculated metrics when generating nine tomographic 
