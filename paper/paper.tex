@@ -256,7 +256,7 @@ between metric scores on the two data sets in Section \ref{sec:metric-results}.
 Each of these data sets come from cosmological simulations which provide truth values of galaxy magnitudes
 and sizes.  We simulate and add noise to the objects as described below.
 
-\subsubsection{CosmoDC2}
+\subsubsection{CosmoDC2} \label{sec:cosmodc2}
 
 The CosmoDC2 simulation was designed to support DESC and 
 is described in detail in \citet{cosmodc2}.  It covers 440
@@ -565,7 +565,7 @@ metrics.   While this is only a general indication and not a thorough exploratio
 the \textsc{funbins} tomography method and three choices of bands.  
 The $x$- and $y$-axes 
 show tomographic bin indices, 
-and the color represents the fraction of objects (compared to the total number in the challenge) that are 
+and the colour represents the fraction of objects (compared to the total number in the challenge) that are 
 at redshifts where both tomographic bins have members, in bins of width $\delta z=10^{-3}$.  
 This metric corresponds to
 the fraction of the area that is shaded in two colours in Figure \ref{fig:funbin_nz}.
@@ -681,7 +681,9 @@ subsequent science anlysis; this will probably be true even when comparing model
 differing only in their systematic parametrizations.  
 This feature is highlighted by the comparison between the two variants
 of the \textsc{NeuralNetwork} entry, which differed only in which metric they were targeting;
-optimizing one metric does not optimize the other.
+optimizing one metric does not optimize the other (though the changes between results on the two simulations
+could also indicate that this is related to the high-redshift behaviour in the CosmoDC2 simulation
+described in \ref{sec:cosmodc2}).
 
 \begin{figure}
 \includegraphics[width=0.9\columnwidth]{results/edge_comparison.pdf}
