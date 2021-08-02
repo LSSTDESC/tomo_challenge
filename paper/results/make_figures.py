@@ -182,7 +182,7 @@ def plot_metric_grid(data, data_set, bands, filename):
     ax.set_ylim(-0.01, 1.98)
     ax.set_xlim(3, 9)
     fig.tight_layout()
-    fig.subplots_adjust(hspace=0.025, wspace=0.0)
+    fig.subplots_adjust(hspace=0.025, wspace=0.06)
 
     legend_elements = [
         plt.Line2D([0], [0], color='k', lw=3),
