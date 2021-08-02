@@ -515,7 +515,7 @@ which used a random forest to assign bins, but chose nominal bin edges by splitt
 by the sample into equal co-moving distance bins. 
 Other methods performed better in other branches of the challenge; in particular we note \textsc{ZotNet}, \textsc{Stacked Generalization}, and \textsc{NeuralNetwork} (see sections \ref{sec:zot}, \ref{sec:stackgen}, and \ref{sec:nn} respectively), which each won more than three 9-bin scenarios.
 
-An illustration of the rank acheived by each method within each challenge configuration and for each metric
+An illustration of the rank achieved by each method within each challenge configuration and for each metric
 is shown in \autoref{fig:rank_grid}.
 
 
@@ -668,7 +668,7 @@ of bin edges themselves, by maximizing a metric.  For the runs shown here, these
 targeted one of the 3x2pt metrics.
 
 A comparison of trained-edge and fixed-edge methods on the CosmoDC2 griz scenarios
-is shown in Figure \ref{fig:edges}, and the same data normalized against the score acheived
+is shown in Figure \ref{fig:edges}, and the same data normalized against the score achieved
 by objects binned in true redshift (i.e. a perfect assigment method) are shown in Figure \ref{fig:metric_grid_dc2_griz}.
 
 One important point to note is that while trained-edge
@@ -960,7 +960,7 @@ mechanism for distilling $N_{\rm cell}$ SOM cells into $N_{\rm group}<N_{\rm
 cell}$ groups of cells, while maintaining optimal redshift resolution. This is
 done by invoking a hierarchical clustering of SOM cells \citep[see Appendix B of
 ][]{Wright/etal:2020a}, where in this case we combine cells based on the
-similarity of the cells' $n(z)$ moments (mean, median, and normalised median absolute
+similarity of the cells' $n(z)$ moments (mean, median, and normalized median absolute
 deviation from median) using complete-linkage clustering. The result of this
 procedure is the construction of fewer discrete groups of training and reference
 data, while not introducing pathological redshift-distribution broadening (as
@@ -1413,7 +1413,7 @@ otherwise assume fixed data inputs.  This led to problems when switching to new 
 Again, a requirement enforced by continuous integration could have checked this.
 
 \section{Normalized metric scores} \label{app:metric_grids}
-Figures \ref{fig:metric_grid_dc2_riz}, \ref{fig:metric_grid_buzzard_griz}, and \ref{fig:metric_grid_buzzard_riz} show metric scores normalized bewteen random assignment and perfect assigment to equal number density bins for CosmoDC2/riz, Buzzard/griz and Buzzard/riz respectively
+Figures \ref{fig:metric_grid_dc2_riz}, \ref{fig:metric_grid_buzzard_griz}, and \ref{fig:metric_grid_buzzard_riz} show metric scores normalized between random assignment and perfect assigment to equal number density bins for CosmoDC2/riz, Buzzard/griz and Buzzard/riz respectively
 
 \begin{figure*}
 \includegraphics[width=1\linewidth]{results/metric_grid_dc2_riz.pdf}
