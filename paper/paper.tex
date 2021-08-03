@@ -449,7 +449,7 @@ These methods are listed in \autoref{tab:entrants} and described in full in \aut
 	\textsc{FFNN} & Feed-forward neural network & EN \\
 	\textsc{FunBins} & Random forest with various nominal bin edge selection & AB \\
 	\textsc{MLPQNA} & Multi-layer perceptron & SC, MB \\
-	\textsc{Stacked Generalization} & Combination of  Gradient Boosted Trees classifiers with standard Random Forests (50/50) & JEC\\
+	\textsc{Stacked Generalization} & Combination of Gradient Boosted Trees classifiers with standard Random Forests (50/50) & JEC\\
 	\hline
 	\end{tabular}
 	\caption{Methods entered into the challenge. The algorithms are described more fully in \autoref{app:methods}.}
@@ -1282,7 +1282,7 @@ This entry was submitted by author AB.
 
 This method uses the random forest algorithm described in section \ref{sec:randomforest} to assign galaxies to tomographic bins, but modifies the target bin edge selection method. There are 3 options for determining the edges used to assign labels to the training data: \textit{log}, \textit{random}, and \textit{chi}. 
 
-The first option, \textit{log}, calculates bin edges such that the number of galaxies in each bin grows logarithmically instead of being constant as in section 4.1. This option uses increasingly large bins for more distant galaxies and tests the relative importance of nearby galaxies.
+The first option, \textit{log}, calculates bin edges such that the number of galaxies in each bin grows logarithmically instead of being constant as in section \ref{sec:randomforest}. This option uses increasingly large bins for more distant galaxies and tests the relative importance of nearby galaxies.
 
 The second option, \textit{random}, draws the intermediate bin edges from a uniform distribution while fixing the outer edges to the limits of the data. This option is not theoretically motivated and designed only to study the sensitivity to the binning. 
 
