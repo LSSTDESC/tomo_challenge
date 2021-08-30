@@ -46,9 +46,6 @@ We further find that adding the \emph{g} band to \emph{riz} photometry improves 
 
 \keywords{methods: statistical -- dark energy  -- large-scale structure of the universe}
 
-%\accepted{}
-%\submitjournal{the Astrophysical Journal Supplement}
-
 
 %\tableofcontents%-----------------------------
 %===========================
@@ -1163,11 +1160,6 @@ accounting for uncertainty contributions from both variance in the data
 given part of parameter space (by marginalising over the functions supported by
 the GP that could have produced the data).
 
-%During the training stage of the algorithm GPz is inferring the locations and
-%spreads that describe the basis functions; during the validation stage it is
-%inferring the appropriate complexity of the model, essentially how many basis
-%functions to use.
-
 
 GPzBin is a simple extension to GPz for the problem of tomographic binning. For
 a given number of tomographic bins it selects redshift bin edges $z_{i}$ such
@@ -1190,8 +1182,6 @@ colour-magnitude distributions.
 We used these settings in GPz for this challenge (see
 \citealp{Almosallam2016a,Almosallam2016b} for definitions): x=100, maxIter=500, 
 maxAttempts$=50$, method=GPVC, normalize=True, and joint=True.
-
-%GPz requires very little fine-tuning. The most important parameter is $m$, the number of basis functions. A higher $m$ corresponds to higher model complexity and longer training times.
 
 
 \subsection{{\sc JaxCNN \& JaxResNet} }
@@ -1243,7 +1233,6 @@ Training is performed using batches of 5000 galaxies, over 2000 iterations under
 \end{itemize}  
 
 
-%\subsection{ {\sc NeuralNetwork 2} }
 
 
 \subsection{ {\sc PCACluster} }
