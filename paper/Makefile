@@ -4,8 +4,17 @@ PLOTS = results/edge_comparison.pdf \
 		results/g_band_loss.pdf \
 		results/metric_comparisons.pdf \
 		results/tables/table_FOM_DETF_3x2_dc2.tex \
-		results/tables/table_FOM_ww_dc2.tex \
-		results/tables/table_FOM_ww_buzzard.tex
+		results/initial_data.pdf \
+		results/colour_colour.pdf \
+		results/nzbinned_dc2_funbins.pdf \
+		results/nzoverlap_dc2_funbins.pdf \
+		results/metric_grid_dc2_griz.pdf \
+		results/metric_grid_dc2_riz.pdf \
+		results/metric_grid_buzzard_griz.pdf \
+		results/metric_grid_buzzard_riz.pdf \
+		results/rank_grid.pdf \
+		results/9bin_dc2.tex \
+		results/9bin_buzzard.tex
 
 # for bibliography tests
 BIB = $(ROOT).bib
@@ -16,7 +25,7 @@ AUTH = authors.tex
 
 all: $(PDF)
 
-$(PDF): $(PLOTS) $(TEX) $(BIB) $(AUTH)
+$(PDF): $(TEX) $(BIB) $(AUTH)
 	pdflatex $(ROOT)
 	bibtex $(ROOT)
 	bibtex $(ROOT)
@@ -25,6 +34,9 @@ $(PDF): $(PLOTS) $(TEX) $(BIB) $(AUTH)
 	pdflatex $(ROOT)
 
 plots: $(PLOTS)
+
+arxiv.tar.gz:  $(TEX)
+	tar -zvcf arxiv.tar.gz $(PLOTS) $(AUTH) $(TEX) $(ROOT).bbl apjfonts.sty aasjournal.bst aastex63.cls
 
 results/%.pdf: results/make_figures.py
 	cd results; python3 make_figures.py
