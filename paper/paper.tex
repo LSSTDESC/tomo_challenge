@@ -54,7 +54,7 @@ We further find that adding the \emph{g} band to \emph{riz} photometry improves 
 
 \section{Introduction}
 Weak gravitational lensing (WL) has emerged over the last decade as a powerful
-cosmological probe \citep{cfhtlens,rcslens,des,kids,hsc}.  WL
+cosmological probe \citep{cfhtlens,rcslens,desy3a,desy3b,kids,hsc}.  WL
 uses measurements of coherent shear distortion to the observed shapes of galaxies
 to track the evolution of large-scale gravitational fields.  It measures the integrated
 gravitational potential along lines of sight to source galaxies, and can thence constrain
@@ -72,7 +72,7 @@ background (source) galaxies and the locations of foreground (lens) galaxies, wh
 dark matter haloes.  The three combinations (source-source, source-lens, and lens-lens) are
 measured in either Fourier or configuration space, and can be predicted from a combination of 
 perturbation theory and simulation results.  The method has been used in the Dark Energy Survey, DES, 
-\citep{des-3x2pt}, and to combine the Kilo-Degree 
+\citep{des-3x2pt, desy3-3x2pt}, and to combine the Kilo-Degree 
 Survey, KiDS with spectroscopic surveys \citep{kids-3x2pt, kids_gama, kids_2df}.
 
 Most lensing and 3x2pt analyses have chosen to analyze data \emph{tomographically}, 
@@ -109,6 +109,12 @@ fine tomographic bins as an alternative to fully 3D lensing, and found that the 
 per bin is less effective at high redshift, a result we will echo in this paper. The fine-binning strategy
 also allows a set of nulling methods to be applied, offering various advantages in avoiding poorly-understood
 regimes \citep{taylor18b,bnt,xcut}.
+Most recently, \citet{euclid-nz} studied this question with respect to the Euclid mission, using the Flagship
+simulation \citep{euclid-flagship} and applying realistic photometric redshift estimation methods to the
+sample (we defer this question in this work). They highlight the power of using large numbers of bins,
+differences in ideal binnings when
+changing the choice of data (the inclusion galaxy galaxy-lensing), and
+note the value in discarding galaxies with high redshift uncertainty. We will echo many of these issues below.
 
 This paper is part of preparations for the analysis to be run by the Dark Energy Science Collaboration (DESC) of Legacy Survey of Space and Time (LSST) data from the Rubin Observatory.
 In it, we discuss and evaluate the related challenge
@@ -175,7 +181,7 @@ The DESC Tomographic Challenge opened in May 2020 and accepted entries until Sep
 In the challenge, participants assigned simulated galaxies to tomographic bins,
 using only their (g)riz bands and associated errors, and the galaxy size.  Their goal was to maximize the cosmological
 information in the final split data set; this is generally achieved by separating different bins by 
-redshift as much as possible.  Particpants were free to optimize or simply select nominal (target) 
+redshift as much as possible.  Participants were free to optimize or simply select nominal (target) 
 redshift bin edges from their training sample, but in either case had to assign galaxies into the 
 different bins.
 
@@ -203,6 +209,10 @@ challenge we avoided both these issues -- the training samples we provided (see 
 in size to the testing sample, and drawn from the same population.  Given this, the challenge
 represents a best-case scenario -- if no method succeeded on this easier case then more realistic
 cases would probably be impossible.
+These simplifications will increase scores overall, since one source of uncertainty in the calculation
+is removed. We expect that they will disproportionately increase scores for large numbers of
+tomographic bins, since the relative widening from individual galaxy uncertainties will be larger. Faint
+galaxy samples, including those at higher redshift, will also be more affected.
 
 Despite these simplifications, the other aspects of the challenge and process were designed to be
 as directly relevant as possible to the particular WL science case we focus on.  The data set
@@ -293,8 +303,13 @@ using the LSST band passes were provided in the catalogue.
 
 We add noise to the truth values in the extra-galactic catalogues to simulate real observations.
 In each case we simulate first year Rubin observations
-using the DESC {\sc TXPipe} framework\footnote{\url{https://github.com/LSSTDESC/TXPipe}}, following the methodology of \citet{ivezic_jones_lupton}
-and assuming the numerical values for telescope and sky characteristics therein.
+using the DESC {\sc TXPipe} framework\footnote{\url{https://github.com/LSSTDESC/TXPipe}}.
+This follows the methodology of \citet{ivezic_jones_lupton}
+and assuming the numerical values for telescope and sky properties therein:
+for each galaxy it generates a poisson sample of the number of photons per band based on
+its true magnitude, the sky brightness, and instrumental characteristics.
+No noise is added to the redshifts of the galaxy; we defer discussion of photometric
+redshift uncertainty to future work.
 
 In both simulations we add two cuts to approximately simulate the selection used in a real
 lensing catalogue.  In both cases we apply a cut on the combined $riz$ signal to noise of
@@ -339,6 +354,9 @@ whereas metrics 2 and 3 would be the final output of such an analysis.  They the
 would be multiple stages in the wider pipeline. In each case the metrics are constructed so that a larger
 value is a better score.
 
+Entrants to the challenge were permitted to use the metrics here on the training data, and several did
+so to optimize their target bin edges (see \autoref{sec:train-vs-fix}).
+
 \subsubsection{Metric 1: SNR}
 
 Our first metric is the total signal-to-noise ratio (SNR) of the power spectrum derived from the assigned
@@ -348,7 +366,7 @@ $n_i(z)$ values:
 \label{eq:snr}
 \end{equation}
 where $\mu$ is a stack of the theoretical predictions for the $C_\ell$ spectra for each tomographic 
-bin, in turn, and $C$ a estimate of the covariance between them, making the approximation that the underlying density field has a Gaussian distribution as described in
+bin pair, in turn (including auto- and cross-correlations for both clustering and lensing), and $C$ a estimate of the covariance between them, making the approximation that the underlying density field has a Gaussian distribution as described in
 \citet{takada_jain} and summarized in \autoref{app:theory}.   We compute this metric for lensing alone, clustering alone, and the full 3x2pt combination.
 
 \subsubsection{Metrics 2 \& 3: $w_{0}-w_{a}$ and $\Omega_c-\sigma_8$ FOMs}
@@ -366,8 +384,11 @@ DETF variant in which $p_1 = w_0$ and $p_2 = w_a$, representing the constraining
 evolution, and a version in which $p_1 = \Omega_c$ and $p_2 = \sigma_8$, representing constraining
 power on overall cosmic structure amplitude ($\sigma_8$), and its evolution (a function of $\Omega_c$). In each case the complete parameter space consists
 of the seven $w_0w_aCDM$ cosmological parameters; we used the parameter combination used natively by the DESC core cosmology library \citep{ccl} ($\Omega_c, \Omega_b, \mathrm{H}_0, \sigma_8, n_s, w_0, w_a$). This simplified measure does not include any nuisance
-parameters modelling systematic errors in the analysis (most importantly the galaxy bias parameters in the clustering 
-spectra), and like all Fisher analyses approximates posterior constraints as Gaussian. 
+parameters modelling systematic errors in the analysis, most importantly the galaxy bias parameters in the clustering 
+spectra; this artifically increases the constraining power of the galaxy clustering-only metric, as we will see below, but the metric still acts as a useful proxy for science cases dependent on finding well separated bins.
+Like all Fisher analyses, this metric approximates posterior constraints as Gaussian. 
+
+The JAX library provides automatic differentiation of the calculation of the $C_\ell$ values, and so avoids the painful numerical sensitivity which usually affects Fisher matrix calculations. We verified this by comparing the code code to tuned finite difference estimates on CCL spectrum calculations.
 
 \subsection{Infrastructure}
 
@@ -404,10 +425,13 @@ are very small when using this number of galaxies).  Using this method, we expec
 that increasing the number of bins should not increase any metric score, since bins are
 maximally correlated.  We find this to be true for all our metrics.
 
-The \textsc{IBandOnly} method used only the $i$-band to select tomographic bins,
-splitting galaxies in equal-sized bins in this magnitude. We expect only a small
+The \textsc{IBandOnly} method used only the $i$-band to select bin assignments.
+Edge values of bins in $i$ were chosen such that each bin had the same number of training galaxies in,
+and then test sample galaxies assigned to a bin based only on their $i$ band value. The band correlates
+only weakly with redshift, so the scores of the method are poor.
+We expect only a small
 increase in metric score with the number of bins, and also that the addition of the $g$-band
-should make no difference to scores.  Again, we find this to be true.
+should make no difference to scores, because that column of data is not used in the method.  Again, we find this to be true.
 
 
 
@@ -590,7 +614,7 @@ methods.
 The challenge did not require entrants to assign all galaxies to bins; aside from the impact of reduced final sample size on the metrics, no additional penalty was applied for discarding galaxies entirely.  Several methods
 took advantage of this.  The ComplexSom method (see \autoref{sec:csom}) found
 it did not improve scores, but as noted in \autoref{sec:pqnld} this may be an artifact
-of the high density of the training data, and so could be explored in future challenges\footnote{In real data or more realistic simulations discarding galaxies has more complicated effects than simply decreasing sample size as it does here - removing objects with broad $p(z)$ can narrow the final $n(z)$, not just lower it. This was not a factor in this challenge because we use true redshifts to calculate our metrics.}.
+of the high density of the training data, and so could be explored in future challenges\footnote{In real data or more realistic simulations discarding galaxies has more complicated effects than simply decreasing sample size as it does here - removing objects with broad $p(z)$ can narrow the final $n(z)$, not just lower it. This was not a factor in this challenge because we use true redshifts to calculate our metrics.}. See \citet{euclid-flagship} for a discussion of this topic in the Euclid context.
 
 
 \subsection{Metric comparisons} \label{sec:metric-results}
