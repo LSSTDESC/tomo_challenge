@@ -111,7 +111,7 @@ also allows a set of nulling methods to be applied, offering various advantages 
 regimes \citep{taylor18b,bnt,xcut}.
 Most recently, \citet{euclid-nz} studied this question with respect to the Euclid mission, using the \textit{Flagship}
 simulation and applying realistic photometric redshift estimation methods to the
-sample (we defer this question in this work). They highlight the power of using large numbers of bins,
+sample (we defer the latter in this work). They highlight the power of using large numbers of bins,
 differences in ideal binnings when
 changing the choice of data (the inclusion galaxy galaxy-lensing), and
 note the value in discarding galaxies with high redshift uncertainty. We will echo many of these issues below.
@@ -730,7 +730,7 @@ binning choices. In each case, classification is done using griz bands on the Co
 \begin{figure*}
 \includegraphics[width=1\linewidth]{results/metric_grid_dc2_griz.pdf}
 \caption{Normalized scores for each method, normalized between the score for random assignment (zero) and truth assignment to bins with equal number counts (one).  It can be seen that both equal-number and equal-redshift spacings can be beaten for certain metrics.  In each case, classification is done using griz bands on the CosmoDC2 data set; equivalent plots for Buzzard and riz are shown in \autoref{app:metric_grids}.
-\emph{ww} indicates lensing-only metrics, \emph{gg} indicates clustering only, and \emph{3x2pt} their combination.
+\emph{ww} indicates lensing-only metrics, \emph{gg} indicates clustering only, and \emph{3x2} their combination.
 The three metrics are defined in \autoref{sec:metrics}.
 }
 \label{fig:metric_grid_dc2_griz}
@@ -878,7 +878,7 @@ intrinsic alignments, non-Gaussian covariance, and a range of effects on spectra
 bias and beyond-Limber effects. Collectively these effects mean that our tests are exaggerating the constraining
 power of small-scale signals, and increasing all our metrics (especially as our $\ell$ range is fixed with $z$).  
 Although this unrealistic aspect mostly affects algorithms equally, the relation between redshift, angle, and physical scale means that the exaggeration is especially strong for low redshift, and so it
-could plausibly favour methods that are better in that range.
+could plausibly favour methods that create narrower bins in that range.
 
 
 
@@ -1227,7 +1227,7 @@ maxAttempts$=50$, method=GPVC, normalize=True, and joint=True.
 
 \subsection{{\sc JaxCNN \& JaxResNet} }
  
-These method were submitted by the author AP.
+These methods were submitted by the author AP.
 They used optimized bin edges.
  
 \textsc{JaxCNN} and \textsc{JaxResNet} are convolutional neural network based algorithms that
