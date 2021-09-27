@@ -73,6 +73,32 @@ class EverythingIsNan:
     def __getitem__(self, x):
         return np.nan
 
+def make_disp_name(name):
+    repls = [
+        ('TensorFlow_FFNN', 'FFNN'),
+        ("myCombinedClassifiers", "Stacked Generalization"),
+        ('Autokeras_LSTM', 'AutokerasLSTM'),
+        ('mlpqna', 'MLPQNA'),
+        ('funbins', 'FunBins'),
+        ('ENSEMBLE1', 'ENSEMBLE'),
+    ]
+    for a, b in repls:
+        name = name.replace(a, b)
+    return rf"{{\sc {name} }}"
+
+def make_disp_name_plot(name):
+    repls = [
+        ('TensorFlow_FFNN', 'FFNN'),
+        ("myCombinedClassifiers", "Stacked Generalization"),
+        ('Autokeras_LSTM', 'AutokerasLSTM'),
+        ('mlpqna', 'MLPQNA'),
+        ('funbins', 'FunBins'),
+        ('ENSEMBLE1', 'ENSEMBLE'),
+    ]
+    for a, b in repls:
+        name = name.replace(a, b)
+    return name
+
 
 def make_table(results, metric, filename):
     N = np.array([3, 5, 7, 9])
@@ -86,7 +112,7 @@ def make_table(results, metric, filename):
 
     f = open(filename, 'w')
     for name in method_names:
-        disp_name = rf"{{\sc {name} }}".replace('TensorFlow_FFNN', 'FFNN').replace("_", r"\_").replace("myCombinedClassifiers", "Stacked Generalization")
+        disp_name = make_disp_name(name)
         row = [disp_name]
         for i, bands in enumerate(['riz', 'griz']):
             for n in N:
@@ -508,7 +534,7 @@ def make_9bin_table(results, filename):
     f = open(filename, 'w')
 
     for name in methods_reordered:
-        disp_name = rf"{{\sc {name} }}".replace('TensorFlow_FFNN', 'FFNN').replace("_", r"\_").replace("myCombinedClassifiers", "Stacked Generalization")
+        disp_name = make_disp_name(name)
         row = [disp_name]
         for i, bands in enumerate(['riz', 'griz']):
             for j, metric in enumerate(metrics):
@@ -573,9 +599,9 @@ def plot_rank_grid(dcz, buzz, filename):
             
             xlabels = row_labels if i == 1 else []
             
-            ylabels = method_names if j == 0 else []
+            ylabels = [make_disp_name_plot(m) for m in method_names] if j == 0 else []
             ax.set_yticks(np.arange(len(method_names)))
-            ax.set_yticklabels(ylabels, fontsize=10)        
+            ax.set_yticklabels(ylabels, fontsize=10)
             ax.tick_params('y', length=0, width=1)
             ax.tick_params('y', length=0, width=1, which='minor')
 
