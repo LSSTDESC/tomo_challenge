@@ -306,7 +306,7 @@ In each case we simulate first year Rubin observations
 using the DESC {\sc TXPipe} framework\footnote{\url{https://github.com/LSSTDESC/TXPipe}}.
 This follows the methodology of \citet{ivezic_jones_lupton}
 and assuming the numerical values for telescope and sky properties therein:
-for each galaxy it generates a poisson sample of the number of photons per band based on
+for each galaxy it generates a Poisson sample of the number of photons per band based on
 its true magnitude, the sky brightness, and instrumental characteristics.
 No noise is added to the redshifts of the galaxy; we defer discussion of photometric
 redshift uncertainty to future work.
@@ -388,7 +388,7 @@ parameters modelling systematic errors in the analysis, most importantly the gal
 spectra; this artifically increases the constraining power of the galaxy clustering-only metric, as we will see below, but the metric still acts as a useful proxy for science cases dependent on finding well separated bins.
 Like all Fisher analyses, this metric approximates posterior constraints as Gaussian. 
 
-The JAX library provides automatic differentiation of the calculation of the $C_\ell$ values, and so avoids the painful numerical sensitivity which usually affects Fisher matrix calculations. We verified this by comparing the code code to tuned finite difference estimates on CCL spectrum calculations.
+The JAX library provides automatic differentiation of the calculation of the $C_\ell$ values, and so avoids the painful numerical sensitivity which usually affects Fisher matrix calculations. We verified this by comparing the code to tuned finite difference estimates on CCL spectrum calculations.
 
 \subsection{Infrastructure}
 
