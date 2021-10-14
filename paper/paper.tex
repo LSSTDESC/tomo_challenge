@@ -1,5 +1,6 @@
+\RequirePackage{rotating}
 \PassOptionsToPackage{usenames,dvipsnames}{xcolour}
-\documentclass[twocolumn,twocolappendix]{aastex63}
+\documentclass[twocolumn,twocolappendix]{openjournal}
 
 % Add your own macros here:
 \pdfoutput=1 %for arXiv submission
@@ -9,13 +10,14 @@
 \usepackage{apjfonts}
 \usepackage{ae,aecompl}
 \usepackage[utf8]{inputenc}
+\usepackage{hyperref}
 \usepackage[figure,figure*]{hypcap}
 \usepackage{natbib}
 \usepackage{url}
 \usepackage{mdwlist}
 \usepackage{listings}
 \usepackage{rotating}
-% \usepackage{pdflscape}
+\usepackage{multirow}
 \urlstyle{same}
 
 \usepackage{lineno}
@@ -33,7 +35,7 @@
 
 \begin{document}
 \title{The LSST-DESC 3x2pt Tomography Optimization Challenge}
-\input{authors}
+\input{authors2}
 
 \begin{abstract}
 This paper presents the results of the Rubin Observatory Dark Energy Science Collaboration (DESC) 3x2pt tomography challenge, which served as a first step toward optimizing the tomographic binning strategy for the main DESC analysis. 
@@ -444,6 +446,7 @@ rather than trying to perform a full photometric redshift analysis.
 These methods are listed in \autoref{tab:entrants} and described in full in \autoref{app:methods}.
 
 \begin{table*}[]
+\centering
 	\begin{tabular}{|l|p{8cm}|c|}
 	\hline
 	\textbf{Name} & \textbf{Description} & \textbf{Submitters} \\
@@ -481,6 +484,7 @@ These methods are listed in \autoref{tab:entrants} and described in full in \aut
 \subsection{Result types}
 
 \begin{table*}[]
+\centering
 	\begin{tabular}{|l|llll|llll|}
 		\hline
 		& \multicolumn{4}{c|}{\textbf{riz}}      & \multicolumn{4}{c|}{\textbf{griz}}                                \\ \hline
@@ -1483,7 +1487,7 @@ Since the training process for the challenge could be slow for some algorithms, 
 (very reasonably) cached trained models or other values for later use.  In some cases these
 cached values were then incorrectly picked up by subsequent runs on new data sets, leading
 to (at best) crashes and at worst silently poor scores\footnote{We checked for this problem in 
-our final results by running each method in turn and checking for new files in the working
+our final results by running each method and checking for new files in the working
 directory.}.  
 We should have provided an explicit
 caching mechanism for entrants to avoid such issues.
@@ -1530,54 +1534,49 @@ cases did some hand-tuning of them before submission. In each section the highes
 
 As in table \ref{tab:cosmodc2}, some values are missing due to failure or time-out of the method (*) or 
 pathological bin assignments (-).  Failure rates were higher for the 9-bin runs than for the lower bin counts.
+\vspace{0.5cm}
 
-
-\movetabledown=65mm
-\begin{rotatetable*}
-\begin{deluxetable*}{ |l | c c c | c c c | c c c | c c c | c c c | c c c |}
-\tablecaption{The 9-bin results for all metrics calculated for all methods on the CosmoDC2 sample.
-\textit{ww} are weak-lensing metrics, \textit{gg} clustering, and \textit{3x} the full 3x2pt.
- \label{tab:full_dc2}}
-\tablehead{
-\colhead{Method} & \multicolumn{9}{|c|}{riz} & \multicolumn{9}{c|}{griz}
-}
-\startdata
+\renewcommand{\arraystretch}{1.8}
+\begin{sidewaystable}
+\vspace{10cm}
+\begin{tabular}{ |l | c c c | c c c | c c c | c c c | c c c | c c c |}
+\hline
+\multirow{3}{*}{Method} & \multicolumn{9}{|c|}{riz} & \multicolumn{9}{c|}{griz} \\
+\cline{2-19}
 &  \multicolumn{3}{c|}{SNR}   &  \multicolumn{3}{c|}{$\sigma_8-\Omega_m$ FOM} & \multicolumn{3}{c|}{$w_0-w_a$ FOM}
 &  \multicolumn{3}{c|}{SNR}   &  \multicolumn{3}{c|}{$\sigma_8-\Omega_m$ FOM} & \multicolumn{3}{c|}{$w_0-w_a$ FOM} \\
-\hline
+\cline{2-19}
 & ww & gg & 3x & ww & gg & 3x & ww & gg & 3x & ww & gg & 3x & ww & gg & 3x & ww & gg & 3x \\
 \hline
 \input{results/9bin_dc2.tex}
-    \enddata
-\end{deluxetable*}
-\end{rotatetable*}
-
-
-\movetabledown=65mm
-\begin{rotatetable*}
-\begin{deluxetable*}{ |l | c c c | c c c | c c c | c c c | c c c | c c c |}
-\tablecaption{The 9-bin results for all the metrics calculated for all methods on the Buzzard sample. 
+\hline
+\end{tabular}
+\caption{The 9-bin results for all metrics calculated for all methods on the CosmoDC2 sample.
 \textit{ww} are weak-lensing metrics, \textit{gg} clustering, and \textit{3x} the full 3x2pt.
-\label{tab:full_buzz}
+\label{tab:full_dc2}
 }
-\tablehead{
-\colhead{Method} & \multicolumn{9}{c|}{riz} & \multicolumn{9}{c|}{griz}
-}
-\startdata
+\end{sidewaystable}
+
+\begin{sidewaystable}
+\vspace{10cm}
+\begin{tabular}{ |l | c c c | c c c | c c c | c c c | c c c | c c c |}
+\hline
+\multirow{3}{*}{Method} & \multicolumn{9}{|c|}{riz} & \multicolumn{9}{c|}{griz} \\
+\cline{2-19}
 &  \multicolumn{3}{c|}{SNR}   &  \multicolumn{3}{c|}{$\sigma_8-\Omega_m$ FOM} & \multicolumn{3}{c|}{$w_0-w_a$ FOM}
 &  \multicolumn{3}{c|}{SNR}   &  \multicolumn{3}{c|}{$\sigma_8-\Omega_m$ FOM} & \multicolumn{3}{c|}{$w_0-w_a$ FOM} \\
-\hline
+\cline{2-19}
 & ww & gg & 3x & ww & gg & 3x & ww & gg & 3x & ww & gg & 3x & ww & gg & 3x & ww & gg & 3x \\
 \hline
 \input{results/9bin_buzzard.tex}
-    \enddata
-\end{deluxetable*}
-\end{rotatetable*}
+\hline
+\end{tabular}
+\caption{The 9-bin results for all metrics calculated for all methods on the Buzzard sample.
+\textit{ww} are weak-lensing metrics, \textit{gg} clustering, and \textit{3x} the full 3x2pt.
+\label{tab:full_buzz}
+}
+\end{sidewaystable}
 
-
-% \begin{table}[htbp]
-% \centering
-% \end{table} 
 
 
 
