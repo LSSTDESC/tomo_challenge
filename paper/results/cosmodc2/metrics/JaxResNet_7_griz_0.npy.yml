@@ -1,0 +1,17 @@
+FOM_3x2: .nan
+FOM_DETF_3x2: .nan
+FOM_DETF_gg: .nan
+FOM_DETF_ww: .nan
+FOM_gg: .nan
+FOM_ww: .nan
+SNR_3x2: .nan
+SNR_gg: .nan
+SNR_ww: .nan
+counts:
+  0: 2809224
+  1: 2525999
+  3: 853775
+  4: 1603728
+  5: 649853
+  6: 168613
+name: JaxResNet_7_griz_0.npy

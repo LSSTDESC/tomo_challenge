@@ -1,0 +1,20 @@
+FOM_3x2: .nan
+FOM_DETF_3x2: .nan
+FOM_DETF_gg: .nan
+FOM_DETF_ww: .nan
+FOM_gg: .nan
+FOM_ww: .nan
+SNR_3x2: .nan
+SNR_gg: .nan
+SNR_ww: .nan
+counts:
+  0: 314678
+  1: 749738
+  2: 83486
+  3: 5626
+  4: 5119
+  6: 1066372
+  7: 1201401
+  8: 1926770
+  9: 50583
+name: Autokeras_LSTM_9_riz_0.npy

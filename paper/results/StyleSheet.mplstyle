@@ -1,0 +1,47 @@
+#lines
+lines.linewidth     : 1.0
+lines.linestyle     : -  
+lines.color         : black
+ 
+#fonts & text
+font.family         : serif
+font.weight         : normal
+font.size           : 10.0
+text.color          : black
+text.usetex         : False
+ 
+#axes & ticks
+axes.edgecolor      : black
+axes.linewidth      : 1.0  
+axes.grid           : False
+axes.titlesize      : x-large
+axes.labelsize      : x-large
+axes.labelweight    : normal
+axes.labelcolor     : black
+axes.formatter.limits : -4, 4
+ 
+xtick.major.size     : 7
+xtick.minor.size     : 4
+xtick.major.pad      : 8
+xtick.minor.pad      : 8
+xtick.labelsize      : x-large
+xtick.minor.width    : 1.0
+xtick.major.width    : 1.0
+xtick.direction      : in
+xtick.minor.visible  : True
+
+ytick.major.size     : 7
+ytick.minor.size     : 4
+ytick.major.pad      : 8
+ytick.minor.pad      : 8
+ytick.labelsize      : x-large
+ytick.minor.width    : 1.0
+ytick.major.width    : 1.0
+ytick.direction      : in
+ytick.minor.visible  : True
+
+#legends
+legend.numpoints     : 1
+legend.fontsize      : large
+legend.shadow        : False
+legend.frameon       : False

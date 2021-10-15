@@ -1,0 +1,19 @@
+FOM_3x2: .nan
+FOM_DETF_3x2: .nan
+FOM_DETF_gg: .nan
+FOM_DETF_ww: .nan
+FOM_gg: .nan
+FOM_ww: .nan
+SNR_3x2: .nan
+SNR_gg: .nan
+SNR_ww: .nan
+counts:
+  0: 756831
+  1: 322248
+  2: 1212913
+  3: 546621
+  4: 1156649
+  5: 486361
+  7: 424869
+  8: 497281
+name: JaxCNN_9_riz_0.npy
