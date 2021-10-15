@@ -20,7 +20,7 @@ PLOTS = results/edge_comparison.pdf \
 BIB = $(ROOT).bib
 TEX := $(ROOT).tex
 PDF := $(ROOT).pdf
-AUTH = authors.tex
+AUTH = authors2.tex
 
 
 all: $(PDF)
@@ -36,7 +36,7 @@ $(PDF): $(TEX) $(BIB) $(AUTH)
 plots: $(PLOTS)
 
 arxiv.tar.gz:  $(TEX)
-	tar -zvcf arxiv.tar.gz $(PLOTS) $(AUTH) $(TEX) $(ROOT).bbl apjfonts.sty aasjournal.bst aastex63.cls
+	tar -zvcf arxiv.tar.gz $(PLOTS) $(AUTH) $(TEX) $(ROOT).bbl apjfonts.sty aasjournal.bst openjournal.cls
 
 results/%.pdf: results/make_figures.py
 	cd results; python3 make_figures.py
